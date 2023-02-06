@@ -22,47 +22,12 @@ Result: ds 2
 BSEG
 mf: dbit 1
 
+CSEG
+
 $NOLIST
 $include(math32.inc)
+$include(macros.inc)
 $LIST
-
-; code from prof jesus on piazza 	
-Send_BCD mac
-	push ar0
-	mov r0, %0
-	lcall ?Send_BCD
-	pop ar0
-endmac
-
-?Send_BCD:
-	push acc
-	mov a, r0
-	swap a
-	anl a, #0fh
-	orl a, #30h
-	lcall putchar
-	mov a, r0
-	anl a, #0fh
-	orl a, #30h
-	lcall putchar
-	pop acc
-	ret
-
-Left_blank mac
-	mov a, %0
-	anl a, #0xf0
-	swap a
-	jz Left_blank_%M_a
-	ljmp %1
-Left_blank_%M_a:
-	Display_char(#' ')
-	mov a, %0
-	anl a, #0x0f
-	jz Left_blank_%M_b
-	ljmp %1
-Left_blank_%M_b:
-	Display_char(#' ')
-endmac
 
 ; These 'equ' must match the hardware wiring
 ; They are used by 'LCD_4bit.inc'
@@ -83,8 +48,6 @@ SOUND_OUT     equ P1.1
 $NOLIST
 $include(LCD_4bit.inc)
 $LIST
-
-CSEG
 
 Initial_Message:  db 'Temperature (C):', 0
 
