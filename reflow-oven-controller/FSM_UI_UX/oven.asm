@@ -224,4 +224,11 @@ Send_10_Digit_BCD:
 	lcall putchar
 	ret
 
+; Send a character using the serial port
+putchar:
+    jnb TI, putchar
+    clr TI
+    mov SBUF, a
+    ret
+
 END
