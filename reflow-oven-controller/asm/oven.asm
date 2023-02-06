@@ -34,6 +34,20 @@ Send_BCD mac
 	pop ar0
 endmac
 
+?Send_BCD:
+	push acc
+	mov a, r0
+	swap a
+	anl a, #0fh
+	orl a, #30h
+	lcall putchar
+	mov a, r0
+	anl a, #0fh
+	orl a, #30h
+	lcall putchar
+	pop acc
+	ret
+
 Left_blank mac
 	mov a, %0
 	anl a, #0xf0
@@ -245,20 +259,6 @@ Send_10_Digit_BCD:
 	lcall putchar
 	mov a, #'\n'
 	lcall putchar
-	ret
-
-?Send_BCD:
-	push acc
-	mov a, r0
-	swap a
-	anl a, #0fh
-	orl a, #30h
-	lcall putchar
-	mov a, r0
-	anl a, #0fh
-	orl a, #30h
-	lcall putchar
-	pop acc
 	ret
 
 END
