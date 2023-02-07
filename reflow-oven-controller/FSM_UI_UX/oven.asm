@@ -6,11 +6,12 @@ org 0000H
 org 0x000B
 	ljmp Timer0_ISR
 
-CLK  EQU 22118400
-BAUD equ 115200
-BRG_VAL equ (0x100-(CLK/(16*BAUD)))
-TIMER0_RATE   EQU 4096     ; 2048Hz squarewave (peak amplitude of CEM-1203 speaker)
-TIMER0_RELOAD EQU ((65536-(CLK/TIMER0_RATE)))
+CLK  			EQU 22118400
+BAUD 			EQU 115200
+BRG_VAL 		EQU (0x100-(CLK/(16*BAUD)))
+TIMER0_RATE   	EQU 4096     ; 2048Hz squarewave (peak amplitude of CEM-1203 speaker)
+TIMER0_RELOAD 	EQU ((65536-(CLK/TIMER0_RATE)))
+
 
 ; These register definitions needed by 'math32.inc'
 DSEG at 30H
@@ -19,7 +20,7 @@ y:   ds 4
 bcd: ds 5
 Result: ds 2
 
-;----for FSM---------------------------------------
+;--------------------for FSM------------------------
 state: ds 1				
 soak_temp: ds 1
 soak_time: ds 1
@@ -39,20 +40,24 @@ $LIST
 
 ; These 'equ' must match the hardware wiring
 ; They are used by 'LCD_4bit.inc'
-LCD_RS equ P3.2
+LCD_RS 			EQU P3.2
 ; LCD_RW equ Px.x ; Always grounded
-LCD_E  equ P3.3
-LCD_D4 equ P3.4
-LCD_D5 equ P3.5
-LCD_D6 equ P3.6
-LCD_D7 equ P3.7
+LCD_E  			EQU P3.3
+LCD_D4 			EQU P3.4
+LCD_D5 			EQU P3.5
+LCD_D6 			EQU P3.6
+LCD_D7 			EQU P3.7
 ; These ’EQU’ must match the wiring between the microcontroller and ADC 
-CE_ADC EQU P2.0 
-MY_MOSI EQU P2.1 
-MY_MISO EQU P2.2 
-MY_SCLK EQU P2.3 
+CE_ADC 			EQU P2.0 
+MY_MOSI 		EQU P2.1 
+MY_MISO 		EQU P2.2 
+MY_SCLK 		EQU P2.3 
 
-SOUND_OUT     equ P1.1
+SOUND_OUT     	EQU P1.1
+RESET 			EQU	P	; button to reset
+EDIT			EQU P	; button for changing what to edit
+START_STOP 		EQU P 	; button to start/stop reflow
+
 $NOLIST
 $include(LCD_4bit.inc)
 $LIST
@@ -239,18 +244,26 @@ putchar:
     mov SBUF, a
     ret
 
-;-----------------------------FSM-----------------------------------
-mov a, state
+reset:
+	jb RESET, DONT_RESET 		; if 'RESET' is pressed, wait for rebouce
+	Wait_Milli_Seconds(#50)		; Debounce delay.  This macro is also in 'LCD_4bit.inc'
+	jb RESET, DONT_RESET 		; if the 'RESET' button is not pressed skip
+	jnb RESET, $
+	mov a #0h
+	mov state, a
+	DONT_RESET: ret	
 
+;-----------------------------FSM state transistion-----------------------------------
+FSM:
+	mov a, state
 state0:
 	cjne a, #0, state1
-	mov pwm, #0
-	jb PB6, state0_done
-	jnb PB6, $ ; Wait for key release
+	mov pwm, #0				; 
+	jb , state0_done
+	jnb , $ 				; Wait for key release
 	mov state, #1
 state0_done:	
 	ljmp forever
-
 
 state1:
 	cjne a, #1, state2
@@ -263,7 +276,6 @@ state1:
 	mov state, #2
 state1_done:
 	ljmp forever
-
 
 state2:
 	cjne a, #2, state3
@@ -278,7 +290,10 @@ state2_done:
 
 
 
+;-----------------------------FSM state output-----------------------------------
 
-;---------------------------------------------------------------
+
+
+;--------------------------------------------------------------------------------
 
 END
