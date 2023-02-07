@@ -62,7 +62,7 @@ $NOLIST
 $include(LCD_4bit.inc)
 $LIST
 
-Initial_Message:  db 'Temperature (C):', 0
+setup1:  db 'Temperature (C):', 0
 
 Timer0_Init:
 	mov a, TMOD
@@ -133,8 +133,10 @@ forever: ;loop() please only place function calls into the loop!
 	lcall Delay ; hardcoded 1s delay can change
 
 	lcall Do_Something_With_Result ; convert to bcd and send to serial
-    lcall reset
 
+    lcall generateDisplay
+    
+    lcall reset
     ljmp FSM
 
 	ljmp forever
@@ -247,6 +249,9 @@ putchar:
     clr TI
     mov SBUF, a
     ret
+
+;----------------------------------UI CODE----------------------------------------------
+
 
 reset:
 	jb RESET, DONT_RESET 		; if 'RESET' is pressed, wait for rebouce
