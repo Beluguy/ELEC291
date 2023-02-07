@@ -31,7 +31,7 @@ sec: 			ds 1
 ;---------------------------------------------------
 
 BSEG
-mf: 			dbit 1
+mf: 			dbit 1 ; flag for math32
 start_flag: 	dbit 1
 
 CSEG
@@ -65,7 +65,15 @@ $NOLIST
 $include(LCD_4bit.inc)
 $LIST
 
-setup1:  db 'Temperature (C):', 0
+;------------------UI-UX vars---------------------
+;            1234567890123456
+setup1:  db 'soak            ', 0
+setup2:  db 'tmp:XXX time:XXX', 0
+setup3:  db 'reflow          ', 0
+
+run1:    db 'temp:XXX state X', 0
+run2:    db 'elapsed XX:XX   ', 0
+
 
 Timer0_Init:
 	mov a, TMOD
@@ -254,7 +262,28 @@ putchar:
     ret
 
 ;----------------------------------UI CODE----------------------------------------------
+generateDisplay:
+    jb start_flag, startDisplay
+    
 
+;             1234567890123456
+;setup1:  db 'soak            ', 0
+;setup2:  db 'tmp:XXX time:XXX', 0
+;setup3:  db 'reflow          ', 0
+
+;run1:    db 'temp:XXX state X', 0
+;run2:    db 'elapsed XX:XX   ', 0
+startDisplay:
+    Set_Cursor(1,1)
+    Send_Constant_String(#run1)
+    Set_Cursor(2,1)
+    Send_Constant_String(#run2)
+    
+    Set_Cursor(1,6)
+    load_X(0)
+    mov 
+    
+;---------------------------------------------------------------------------------------
 
 reset:
 	jb RESET, DONT_RESET 		; if 'RESET' is pressed, wait for rebouce
