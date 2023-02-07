@@ -20,6 +20,11 @@ y:   			ds 4
 bcd: 			ds 5
 Result: 		ds 2
 
+;--------------------for clock----------------------
+secs_ctr:       ds 1
+mins_ctr:       ds 1
+;---------------------------------------------------
+
 ;--------------------for FSM------------------------
 state: 			ds 1				
 soak_temp: 		ds 1
@@ -279,9 +284,28 @@ startDisplay:
     Set_Cursor(2,1)
     Send_Constant_String(#run2)
     
-    Set_Cursor(1,6)
+    Set_Cursor(1,5)
     load_X(0)
-    mov 
+    mov x+0, temp
+    ljmp hex2bcd
+    Display_BCD(bcd+1)
+    Display_BCD(bcd+0)
+    Set_Cursor(1,5)
+    Display_char(#':') ; fill in gap
+
+    Set_Cursor(1,15)
+    load_X(0)
+    mov x+0, state
+    ljmp hex2bcd
+    Display_BCD(bcd+0)
+    Set_Cursor(1,15)
+    Display_char(#' ') ; fill in gap
+
+    Set_Cursor(2,9)
+    Display_BCD(mins_ctr)
+    Set_Cursor(2,12)
+    Display_BCD(secs_ctr)
+    ret
     
 ;---------------------------------------------------------------------------------------
 
