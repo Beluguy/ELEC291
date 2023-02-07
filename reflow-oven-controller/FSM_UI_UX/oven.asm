@@ -6,11 +6,17 @@ org 0000H
 org 0x000B
 	ljmp Timer0_ISR
 
+; Timer/Counter 2 overflow interrupt vector
+org 0x002B
+	ljmp Timer2_ISR
+
 CLK  			EQU 22118400
 BAUD 			EQU 115200
 BRG_VAL 		EQU (0x100-(CLK/(16*BAUD)))
 TIMER0_RATE   	EQU 4096     ; 2048Hz squarewave (peak amplitude of CEM-1203 speaker)
 TIMER0_RELOAD 	EQU ((65536-(CLK/TIMER0_RATE)))
+TIMER2_RATE     EQU 1000     ; 1000Hz, for a timer tick of 1ms
+TIMER2_RELOAD   EQU ((65536-(CLK/TIMER2_RATE)))
 
 ; These register definitions needed by 'math32.inc'
 DSEG at 30H
@@ -22,6 +28,7 @@ Result: 		ds 2
 ;--------------------for clock----------------------
 secs_ctr:       ds 1
 mins_ctr:       ds 1
+
 ;---------------------------------------------------
 
 ;--------------------for FSM------------------------
@@ -38,6 +45,8 @@ cool_temp:		ds 1
 BSEG
 mf: 			dbit 1 ; flag for math32
 start_flag: 	dbit 1
+one_seconds_flag: dbit 1 ; Set to one in the ISR every time 1000 ms had passed
+
 
 CSEG
 
@@ -66,6 +75,8 @@ RST				EQU	P	; button to reset
 EDIT			EQU P	; button for changing what to edit
 START_STOP 		EQU P 	; button to start/stop reflow
 OUTPUT			EQU P
+
+; i have buttons on 2.4, 4.5, 0.6, 0.3, 0.0 (left to right)
 
 $NOLIST
 $include(LCD_4bit.inc)
@@ -111,6 +122,122 @@ Timer0_ISR:
 	mov RL0, #low(TIMER0_RELOAD)
 	reti
 
+;---------------------------------;
+; Routine to initialize the ISR   ;
+; for timer 2                     ;
+;---------------------------------;
+Timer2_Init:
+	mov T2CON, #0 ; Stop timer/counter.  Autoreload mode.
+	mov TH2, #high(TIMER2_RELOAD)
+	mov TL2, #low(TIMER2_RELOAD)
+	; Set the reload value
+	mov RCAP2H, #high(TIMER2_RELOAD)
+	mov RCAP2L, #low(TIMER2_RELOAD)
+	; Init One millisecond interrupt counter.  It is a 16-bit variable made with two 8-bit parts
+	clr a
+	mov Count1ms+0, a
+	mov Count1ms+1, a
+	; Enable the timer and interrupts
+    setb ET2  ; Enable timer 2 interrupt
+    setb TR2  ; Enable timer 2
+	ret
+
+;---------------------------------;
+; ISR for timer 2                 ;
+;---------------------------------;
+Timer2_ISR:
+	clr TF2  ; Timer 2 doesn't clear TF2 automatically. Do it in ISR
+	cpl P1.0 ; To check the interrupt rate with oscilloscope. It must be precisely a 1 ms pulse.
+	
+	; The two registers used in the ISR must be saved in the stack
+	push acc
+	push psw
+	
+	; Increment the 16-bit one mili second counter
+	inc Count1ms+0    ; Increment the low 8-bits first
+	mov a, Count1ms+0 ; If the low 8-bits overflow, then increment high 8-bits
+	jnz Inc_Done
+	inc Count1ms+1
+
+Inc_Done:
+	; Check if second has passed
+	mov a, Count1ms+0
+	cjne a, #low(1000), Timer2_ISR_done ; Warning: this instruction changes the carry flag!
+	mov a, Count1ms+1
+	cjne a, #high(1000), Timer2_ISR_done
+	
+	; 1000 milliseconds have passed.  Set a flag so the main program knows
+	setb one_seconds_flag ; Let the main program know second had passed
+	
+	cpl tone 
+	
+	; Reset to zero the milli-seconds counter, it is a 16-bit variable
+	clr a
+	mov Count1ms+0, a
+	mov Count1ms+1, a
+	
+	; reset BCD_counter if hits 60, increment 1 to minutes
+	; Increment the seconds counter
+	mov a, BCD_counter
+	cjne a, #0x59, Timer2_ISR_increment_s
+	clr a
+	da a ; Decimal adjust instruction.  Check datasheet for more details!
+	mov BCD_counter, a
+	
+	; increment the minutes counter
+	mov a, Minutes_Counter
+	cjne a, #0x59, Timer2_ISR_increment_m
+	clr a
+	da a
+	mov Minutes_Counter, a
+	
+	; increment the hours counter
+	mov a, Hours_Counter
+	cjne a, #0x11, Timer2_ISR_increment_h
+	clr a
+	da a ; Decimal adjust instruction.  Check datasheet for more details!
+	mov Hours_Counter, a
+	
+	; toggle AM/PM
+	cpl AM_PM
+	
+	ljmp Timer2_ISR_done
+	
+Timer2_ISR_increment_s:
+	add a, #0x01
+	da a ; Decimal adjust instruction.  Check datasheet for more details!
+	mov BCD_counter, a
+	ljmp Timer2_ISR_done
+Timer2_ISR_decrement_s:
+	add a, #0x99 ; Adding the 10-complement of -1 is like subtracting 1.
+	da a ; Decimal adjust instruction.  Check datasheet for more details!
+	mov BCD_counter, a
+	ljmp Timer2_ISR_done
+Timer2_ISR_increment_m:
+	add a, #0x01
+	da a ; Decimal adjust instruction.  Check datasheet for more details!
+	mov Minutes_Counter, a
+	ljmp Timer2_ISR_done
+Timer2_ISR_decrement_m:
+	add a, #0x99 ; Adding the 10-complement of -1 is like subtracting 1.
+	da a ; Decimal adjust instruction.  Check datasheet for more details!
+	mov Minutes_Counter, a
+	ljmp Timer2_ISR_done
+Timer2_ISR_increment_h:
+	add a, #0x01
+	da a ; Decimal adjust instruction.  Check datasheet for more details!
+	mov Hours_Counter, a
+	ljmp Timer2_ISR_done
+Timer2_ISR_decrement_h:
+	add a, #0x99 ; Adding the 10-complement of -1 is like subtracting 1.
+	da a ; Decimal adjust instruction.  Check datasheet for more details!
+	mov Hours_Counter, a
+	ljmp Timer2_ISR_done
+Timer2_ISR_done:
+	pop psw
+	pop acc
+	reti
+
 ; Configure the serial port and baud rate
 InitSerialPort:
     ; Since the reset button bounces, we need to wait a bit before
@@ -147,7 +274,7 @@ MainProgram: ; setup()
 
 forever: ;loop() please only place function calls into the loop!
     lcall readADC ; reads ch0 and saves result to Result as 2 byte binary
-	lcall Delay ; hardcoded 1s delay can change
+	lcall Delay ; hardcoded 1s delay can change or use the Timer
 
 	lcall Do_Something_With_Result ; convert to bcd and send to serial
 
@@ -189,8 +316,6 @@ Do_Something_With_Result:
 	lcall sub32
 	
 	lcall hex2bcd
-	lcall Display_10_digit_BCD
-	
 	lcall Send_10_digit_BCD
 	
 	mov a, x
