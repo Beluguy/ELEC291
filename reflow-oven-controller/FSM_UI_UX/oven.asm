@@ -65,7 +65,7 @@ SOUND_OUT     	EQU P1.1
 RST				EQU	P	; button to reset
 EDIT			EQU P	; button for changing what to edit
 START_STOP 		EQU P 	; button to start/stop reflow
-pwm				EQU P
+OUTPUT			EQU P
 
 $NOLIST
 $include(LCD_4bit.inc)
