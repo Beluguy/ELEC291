@@ -15,21 +15,24 @@ TIMER0_RELOAD 	EQU ((65536-(CLK/TIMER0_RATE)))
 
 ; These register definitions needed by 'math32.inc'
 DSEG at 30H
-x:   ds 4
-y:   ds 4
-bcd: ds 5
-Result: ds 2
+x:   			ds 4
+y:   			ds 4
+bcd: 			ds 5
+Result: 		ds 2
 
 ;--------------------for FSM------------------------
-state: ds 1				
-soak_temp: ds 1
-soak_time: ds 1
-reflow_temp: ds 1
-reflow_time: ds 1
+state: 			ds 1				
+soak_temp: 		ds 1
+soak_time: 		ds 1
+reflow_temp: 	ds 1
+reflow_time: 	ds 1
+pwm: 			ds 1
+sec: 			ds 1
 ;---------------------------------------------------
 
 BSEG
-mf: dbit 1
+mf: 			dbit 1
+start_flag: 	dbit 1
 
 CSEG
 
@@ -267,18 +270,17 @@ start_or_not:
 	Wait_Milli_Seconds(#50)		; Debounce delay.  This macro is also in 'LCD_4bit.inc'
 	jb START_STOP, DONT_START 		; if the 'RESET' button is not pressed skip
 	jnb START, $
-	setb start
+	cpl start_flag
 	DONT_START: ret	
 
 ;-----------------------------FSM state transistion-----------------------------------
 FSM:
 	mov a, state
 state0:
-	cjne a, #0, state1		; if not state 0, then go to next branch
-	mov pwm, #0				; at state 0, pwm is 0%
+	cjne a, #0, state1			; if not state 0, then go to next branch
+	mov pwm, #0					; at state 0, pwm is 0%
 	lcall start_or_not
-	jb , state0_done		; 
-	jnb , $ 				; Wait for key release
+	jb start_flag, state0_done	; if start key is not press, continue the loop
 	mov state, #1
 state0_done:	
 	ljmp forever
