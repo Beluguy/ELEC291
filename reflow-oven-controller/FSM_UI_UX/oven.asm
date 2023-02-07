@@ -128,12 +128,16 @@ MainProgram: ; setup()
     Set_Cursor(1, 1)
     Send_Constant_String(#Initial_Message)
 
-Forever: ;loop() please only place function calls into the loop!
+forever: ;loop() please only place function calls into the loop!
     lcall readADC ; reads ch0 and saves result to Result as 2 byte binary
 	lcall Delay ; hardcoded 1s delay can change
-	lcall Do_Something_With_Result ; convert to bcd and send to serial
 
-	ljmp Forever
+	lcall Do_Something_With_Result ; convert to bcd and send to serial
+    lcall reset
+
+    ljmp FSM
+
+	ljmp forever
 
 readADC:
     clr CE_ADC
@@ -251,7 +255,7 @@ reset:
 	jnb RESET, $
 	mov a #0h
 	mov state, a
-	DONT_RESET: ret	
+DONT_RESET: ret	
 
 ;-----------------------------FSM state transistion-----------------------------------
 FSM:
