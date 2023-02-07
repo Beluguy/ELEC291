@@ -54,7 +54,7 @@ MY_MISO 		EQU P2.2
 MY_SCLK 		EQU P2.3 
 
 SOUND_OUT     	EQU P1.1
-RESET 			EQU	P	; button to reset
+RST				EQU	P	; button to reset
 EDIT			EQU P	; button for changing what to edit
 START_STOP 		EQU P 	; button to start/stop reflow
 
@@ -253,17 +253,26 @@ reset:
 	Wait_Milli_Seconds(#50)		; Debounce delay.  This macro is also in 'LCD_4bit.inc'
 	jb RESET, DONT_RESET 		; if the 'RESET' button is not pressed skip
 	jnb RESET, $
-	mov a #0h
+	mov a, #0h
 	mov state, a
 DONT_RESET: ret	
+
+start_or_not:
+	jb START_STOP, DONT_START 		; if 'RESET' is pressed, wait for rebouce
+	Wait_Milli_Seconds(#50)		; Debounce delay.  This macro is also in 'LCD_4bit.inc'
+	jb START_STOP, DONT_START 		; if the 'RESET' button is not pressed skip
+	jnb START, $
+	setb start
+	DONT_START: ret	
 
 ;-----------------------------FSM state transistion-----------------------------------
 FSM:
 	mov a, state
 state0:
-	cjne a, #0, state1
-	mov pwm, #0				; 
-	jb , state0_done
+	cjne a, #0, state1		; if not state 0, then go to next branch
+	mov pwm, #0				; at state 0, pwm is 0%
+	lcall start_or_not
+	jb , state0_done		; 
 	jnb , $ 				; Wait for key release
 	mov state, #1
 state0_done:	
