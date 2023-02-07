@@ -12,7 +12,6 @@ BRG_VAL 		EQU (0x100-(CLK/(16*BAUD)))
 TIMER0_RATE   	EQU 4096     ; 2048Hz squarewave (peak amplitude of CEM-1203 speaker)
 TIMER0_RELOAD 	EQU ((65536-(CLK/TIMER0_RATE)))
 
-
 ; These register definitions needed by 'math32.inc'
 DSEG at 30H
 x:   			ds 4
@@ -28,6 +27,7 @@ reflow_temp: 	ds 1
 reflow_time: 	ds 1
 pwm: 			ds 1
 sec: 			ds 1
+cool_temp:		ds 1
 ;---------------------------------------------------
 
 BSEG
@@ -60,6 +60,7 @@ SOUND_OUT     	EQU P1.1
 RST				EQU	P	; button to reset
 EDIT			EQU P	; button for changing what to edit
 START_STOP 		EQU P 	; button to start/stop reflow
+pwm				EQU P
 
 $NOLIST
 $include(LCD_4bit.inc)
@@ -269,46 +270,73 @@ start_or_not:
 	DONT_START: ret	
 
 ;-----------------------------FSM state transistion-----------------------------------
-FSM:
+FSM:							; FSM time!!
 	mov a, state
-state0:
+state0:							; default state
 	cjne a, #0, state1			; if not state 0, then go to next branch
 	mov pwm, #0					; at state 0, pwm is 0%
 	lcall start_or_not
-	jb start_flag, state0_done	; if start key is not press, continue the loop
+	jnb start_flag, state0_done	; if start key is not press, the go to state0_done
 	mov state, #1
-state0_done:	
+state0_done:
 	ljmp forever
 
-state1:
+state1:							; ramp to soak
 	cjne a, #1, state2
 	mov pwm, #100
 	mov sec, #0
 	mov a, soak_temp
 	clr c
-	subb a, temp
-	jnc state1_done
+	subb a, temp				; if temp > soak_temp, c = 1
+	jnc state1_done				; if temp is not at soak temp, then go to state1_done
 	mov state, #2
 state1_done:
 	ljmp forever
 
-state2:
+state2:							; soak/preheat
 	cjne a, #2, state3
 	mov pwm, #20
 	mov a, soak_time
 	clr c
-	subb a, sec
-	jnc state2_done
-	mov state, #3
+	subb a, sec					; if sec > soak time, c = 1
+	jnc state2_done				; if sec is not at soak time, then go to state2_done 
+	mov state, #3	
 state2_done:
 	ljmp forever
 
+state3:							; ramp to peak, prepare to reflow
+	cjne a, #3, state4
+	mov pwm, #100
+	mov sec, #0
+	mov a, reflow_temp
+	clr c
+	subb a, temp				; if temp > reflow_temp, c = 1
+	jnc state3_done				; if temp is not at reflow_temp, then go to state3_done 
+	mov state, #4	
+state3_done:
+	ljmp forever
 
+state4:							; ramp to peak, prepare to reflow
+	cjne a, #4, state5
+	mov pwm, #20
+	mov a, reflow_time
+	clr c
+	subb a, sec					; if sec > reflow_temp, c = 1
+	jnc state4_done				; if sec is not at reflow time, then go to state4_done 
+	mov state, #5	
+state4_done:
+	ljmp forever
 
-;-----------------------------FSM state output-----------------------------------
-
-
-
+state5:							; cooling state
+	cjne a, #5, state0
+	mov pwm, #0
+	mov a, temp
+	clr c
+	subb a, cool_temp			; if cool_temp > temp, c = 1
+	jnc state5_done				; if temp is not at cool_temp, then go to state5_done 
+	mov state, #0	
+state5_done:
+	ljmp forever
 ;--------------------------------------------------------------------------------
 
 END
