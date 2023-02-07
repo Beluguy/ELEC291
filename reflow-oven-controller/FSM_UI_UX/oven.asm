@@ -26,6 +26,7 @@ bcd: 			ds 5
 Result: 		ds 2
 
 ;--------------------for clock----------------------
+Count1ms:       ds 2 ; Used to determine when one second has passed
 secs_ctr:       ds 1
 mins_ctr:       ds 1
 
@@ -168,9 +169,7 @@ Inc_Done:
 	
 	; 1000 milliseconds have passed.  Set a flag so the main program knows
 	setb one_seconds_flag ; Let the main program know second had passed
-	
-	cpl tone 
-	
+		
 	; Reset to zero the milli-seconds counter, it is a 16-bit variable
 	clr a
 	mov Count1ms+0, a
@@ -178,60 +177,30 @@ Inc_Done:
 	
 	; reset BCD_counter if hits 60, increment 1 to minutes
 	; Increment the seconds counter
-	mov a, BCD_counter
+	mov a, secs_ctr
 	cjne a, #0x59, Timer2_ISR_increment_s
 	clr a
 	da a ; Decimal adjust instruction.  Check datasheet for more details!
-	mov BCD_counter, a
+	mov secs_ctr, a
 	
 	; increment the minutes counter
-	mov a, Minutes_Counter
+	mov a, mins_ctr
 	cjne a, #0x59, Timer2_ISR_increment_m
 	clr a
 	da a
-	mov Minutes_Counter, a
-	
-	; increment the hours counter
-	mov a, Hours_Counter
-	cjne a, #0x11, Timer2_ISR_increment_h
-	clr a
-	da a ; Decimal adjust instruction.  Check datasheet for more details!
-	mov Hours_Counter, a
-	
-	; toggle AM/PM
-	cpl AM_PM
-	
+	mov mins_ctr, a
+
 	ljmp Timer2_ISR_done
 	
 Timer2_ISR_increment_s:
 	add a, #0x01
 	da a ; Decimal adjust instruction.  Check datasheet for more details!
-	mov BCD_counter, a
-	ljmp Timer2_ISR_done
-Timer2_ISR_decrement_s:
-	add a, #0x99 ; Adding the 10-complement of -1 is like subtracting 1.
-	da a ; Decimal adjust instruction.  Check datasheet for more details!
-	mov BCD_counter, a
+	mov secs_ctr, a
 	ljmp Timer2_ISR_done
 Timer2_ISR_increment_m:
 	add a, #0x01
 	da a ; Decimal adjust instruction.  Check datasheet for more details!
-	mov Minutes_Counter, a
-	ljmp Timer2_ISR_done
-Timer2_ISR_decrement_m:
-	add a, #0x99 ; Adding the 10-complement of -1 is like subtracting 1.
-	da a ; Decimal adjust instruction.  Check datasheet for more details!
-	mov Minutes_Counter, a
-	ljmp Timer2_ISR_done
-Timer2_ISR_increment_h:
-	add a, #0x01
-	da a ; Decimal adjust instruction.  Check datasheet for more details!
-	mov Hours_Counter, a
-	ljmp Timer2_ISR_done
-Timer2_ISR_decrement_h:
-	add a, #0x99 ; Adding the 10-complement of -1 is like subtracting 1.
-	da a ; Decimal adjust instruction.  Check datasheet for more details!
-	mov Hours_Counter, a
+	mov mins_ctr, a
 	ljmp Timer2_ISR_done
 Timer2_ISR_done:
 	pop psw
@@ -278,8 +247,11 @@ forever: ;loop() please only place function calls into the loop!
 
 	lcall Do_Something_With_Result ; convert to bcd and send to serial
 
+    jnb one_seconds_flag, skipDisplay
+    clr one_seconds_flag
     lcall generateDisplay
-    
+skipDisplay:
+
     lcall reset
     ljmp FSM
 
