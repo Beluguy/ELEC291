@@ -13,40 +13,40 @@ org 0x002B
 CLK  			EQU 22118400
 BAUD 			EQU 115200
 BRG_VAL 		EQU (0x100-(CLK/(16*BAUD)))
-TIMER0_RATE   	EQU 4096     ; 2048Hz squarewave (peak amplitude of CEM-1203 speaker)
+TIMER0_RATE   	EQU 1000    ; 1000Hz PWM output signal 
 TIMER0_RELOAD 	EQU ((65536-(CLK/TIMER0_RATE)))
 TIMER2_RATE     EQU 1000     ; 1000Hz, for a timer tick of 1ms
 TIMER2_RELOAD   EQU ((65536-(CLK/TIMER2_RATE)))
 
 ; These register definitions needed by 'math32.inc'
 DSEG at 30H
-x:   			ds 4
-y:   			ds 4
-bcd: 			ds 5
-Result: 		ds 2
+x:   				ds 4
+y:   				ds 4
+bcd: 				ds 5
+Result: 			ds 2
 
 ;--------------------for clock----------------------
-Count1ms:       ds 2 ; Used to determine when one second has passed
-secs_ctr:       ds 1
-mins_ctr:       ds 1
-
+Count1ms:       	ds 2 ; Used to determine when one second has passed
+secs_ctr:       	ds 1
+mins_ctr:       	ds 1
 ;---------------------------------------------------
 
 ;--------------------for FSM------------------------
-state: 			ds 1				
-soak_temp: 		ds 1
-soak_time: 		ds 1
-reflow_temp: 	ds 1
-reflow_time: 	ds 1
-pwm: 			ds 1
-sec: 			ds 1
-cool_temp:		ds 1
+state: 				ds 1				
+soak_temp: 			ds 1
+soak_time: 			ds 1
+reflow_temp: 		ds 1
+reflow_time: 		ds 1
+pwm: 				ds 1
+sec: 				ds 1
+cool_temp:			ds 1
+temp:				ds 1
 ;---------------------------------------------------
 
 BSEG
-mf: 			dbit 1 ; flag for math32
-start_flag: 	dbit 1
-one_seconds_flag: dbit 1 ; Set to one in the ISR every time 1000 ms had passed
+mf: 				dbit 1 ; flag for math32
+start_flag: 		dbit 1
+one_second_flag: 	dbit 1 ; Set to one in the ISR every time 1000 ms had passed
 
 
 CSEG
@@ -75,7 +75,7 @@ SOUND_OUT     	EQU P1.1
 RST				EQU	P	; button to reset
 EDIT			EQU P	; button for changing what to edit
 START_STOP 		EQU P 	; button to start/stop reflow
-OUTPUT			EQU P
+OUTPUT			EQU P	; output signal to the relay box
 
 ; i have buttons on 2.4, 4.5, 0.6, 0.3, 0.0 (left to right)
 
@@ -91,7 +91,6 @@ setup3:  db 'reflow          ', 0
 
 run1:    db 'temp:XXX state X', 0
 run2:    db 'elapsed XX:XX   ', 0
-
 
 Timer0_Init:
 	mov a, TMOD
@@ -115,7 +114,6 @@ Timer0_Init:
 ;---------------------------------;
 Timer0_ISR:
 	;clr TF0  ; According to the data sheet this is done for us already.
-	cpl SOUND_OUT ; Connect speaker to P1.1!
 	mov TH0, #high(TIMER0_RELOAD)
 	mov TL0, #low(TIMER0_RELOAD)
 	; Set autoreload value
@@ -168,7 +166,7 @@ Inc_Done:
 	cjne a, #high(1000), Timer2_ISR_done
 	
 	; 1000 milliseconds have passed.  Set a flag so the main program knows
-	setb one_seconds_flag ; Let the main program know second had passed
+	setb one_second_flag ; Let the main program know second had passed
 		
 	; Reset to zero the milli-seconds counter, it is a 16-bit variable
 	clr a
@@ -247,8 +245,8 @@ forever: ;loop() please only place function calls into the loop!
 
 	lcall Do_Something_With_Result ; convert to bcd and send to serial
 
-    jnb one_seconds_flag, skipDisplay
-    clr one_seconds_flag
+    jnb one_second_flag, skipDisplay
+    clr one_second_flag
     lcall generateDisplay
 skipDisplay:
 
@@ -424,7 +422,18 @@ start_or_not:
 	cpl start_flag
 	DONT_START: ret	
 
-;-----------------------------FSM time!!-----------------------------------------------
+PWM_OUTPUT:
+	
+	ret
+
+Load_Defaults: ; Load defaults if 'keys' are incorrect
+	mov temp_soak, #150
+	mov time_soak, #45
+	mov temp_refl, #225
+	mov time_refl, #30
+	ret
+
+;-------------------------------------FSM time!!---------------------------------------
 FSM:							 
 	mov a, state
 state0:							; default state
