@@ -29,6 +29,15 @@ Result: 		ds 2
 Count1ms:       ds 2 ; Used to determine when one second has passed
 secs_ctr:       ds 1
 mins_ctr:       ds 1
+;---------------------------------------------------
+
+;--------------------for settings-------------------
+edit_sett:	ds 1 ; which segment are we editing 
+; 0 - soak temp
+; 1 - soak time
+; 2 - reflow temp
+; 3 - reflow time
+; 4 - cool temp
 
 ;---------------------------------------------------
 
@@ -247,10 +256,10 @@ forever: ;loop() please only place function calls into the loop!
 
 	lcall Do_Something_With_Result ; convert to bcd and send to serial
 
-    jnb one_seconds_flag, skipDisplay
+    jnb one_seconds_flag, skipDisplay ; this segment only executes once a second
     clr one_seconds_flag
     lcall generateDisplay
-skipDisplay:
+skipDisplay: ; end segment
 
     lcall reset
     ljmp FSM
@@ -367,7 +376,7 @@ putchar:
 ;----------------------------------UI CODE----------------------------------------------
 generateDisplay:
     jb start_flag, startDisplay
-    
+    ljmp setupDisplay
 
 ;             1234567890123456
 ;setup1:  db 'soak            ', 0
@@ -376,6 +385,43 @@ generateDisplay:
 
 ;run1:    db 'temp:XXX state X', 0
 ;run2:    db 'elapsed XX:XX   ', 0
+
+; 0 - soak temp
+; 1 - soak time
+; 2 - reflow temp
+; 3 - reflow time
+; 4 - cool temp
+setupDisplay:
+    cjne edit_sett, #0, checkScreen2
+    ljmp soakScreen
+    cjne edit_sett, #1, checkScreen2
+    ljmp soakScreen
+checkScreen2:
+    cjne edit_sett, #2, checkScreen3
+    ljmp reflowScreen
+    cjne edit_sett, #3, checkScreen3
+    ljmp reflowScreen
+checkScreen3:
+    ljmp coolScreen
+soakScreen:
+    Set_Cursor(1,1)
+    Send_Constant_String(#setup1)
+    Set_Cursor(2,1)
+    Send_Constant_String(#setup2)
+    ret
+reflowScreen:
+    Set_Cursor(1,1)
+    Send_Constant_String(#setup3)
+    Set_Cursor(2,1)
+    Send_Constant_String(#setup2)
+    ret
+coolScreen:
+    Set_Cursor(1,1)
+    Send_Constant_String(#run1)
+    Set_Cursor(2,1)
+    Send_Constant_String(#run2)
+    ret
+
 startDisplay:
     Set_Cursor(1,1)
     Send_Constant_String(#run1)
@@ -404,7 +450,7 @@ startDisplay:
     Set_Cursor(2,12)
     Display_BCD(secs_ctr)
     ret
-    
+
 ;---------------------------------------------------------------------------------------
 
 reset:
