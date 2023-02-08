@@ -452,8 +452,8 @@ start_or_not:
 	cpl start_flag
 	DONT_START: ret	
 
-;-----------------------------FSM state transistion-----------------------------------
-FSM:							; FSM time!!
+;-----------------------------FSM time!!-----------------------------------------------
+FSM:							 
 	mov a, state
 state0:							; default state
 	cjne a, #0, state1			; if not state 0, then go to next branch
@@ -520,6 +520,6 @@ state5:							; cooling state
 	mov state, #0	
 state5_done:
 	ljmp forever
-;--------------------------------------------------------------------------------
+;----------------------------------------------------------------------------------------
 
 END
