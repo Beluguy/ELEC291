@@ -18,6 +18,9 @@ TIMER0_RELOAD 		EQU ((65536-(CLK/TIMER0_RATE)))
 TIMER2_RATE     	EQU 1000     ; 1000Hz, for a timer tick of 1ms
 TIMER2_RELOAD   	EQU ((65536-(CLK/TIMER2_RATE)))
 
+PWM_20				EQU (TIMER0_RATE-200)
+HOLD_PWM			EQU 20		; 20% pwm for holding the temp constant 
+
 ; These register definitions needed by 'math32.inc'
 DSEG at 30H
 x:   				ds 4
@@ -536,9 +539,9 @@ DONT_DEC: ret
 ;---------------------------------------------------------------------------------------
 
 reset:
-	jb RST, DONT_RESET 		; if 'RESET' is pressed, wait for rebouce
-	Wait_Milli_Seconds(#50)		; Debounce delay.  This macro is also in 'LCD_4bit.inc'
-	jb RST, DONT_RESET 		; if the 'RESET' button is not pressed skip
+	jb RST, DONT_RESET 				; if 'RESET' is pressed, wait for rebouce
+	Wait_Milli_Seconds(#50)			; Debounce delay.  This macro is also in 'LCD_4bit.inc'
+	jb RST, DONT_RESET 				; if the 'RESET' button is not pressed skip
 	jnb RST, $
 	mov a, #0h
 	mov state, a
@@ -546,18 +549,30 @@ DONT_RESET: ret
 
 start_or_not:
 	jb START_STOP, DONT_START 		; if 'RESET' is pressed, wait for rebouce
-	Wait_Milli_Seconds(#50)		; Debounce delay.  This macro is also in 'LCD_4bit.inc'
+	Wait_Milli_Seconds(#50)			; Debounce delay.  This macro is also in 'LCD_4bit.inc'
 	jb START_STOP, DONT_START 		; if the 'RESET' button is not pressed skip
 	jnb START, $
 	cpl start_flag
 	DONT_START: ret	
 
 PWM_OUTPUT:
-	pwm_time
 	mov a, pwm
+	cjne, a, #100, holding_temp		; if pwm is 100, then OUPUT = 1 all 
+	setb OUTPUT						; the time
+	ret
+
+	cjne, a, #0, holding_temp		; if pwm is 0, then OUTPUT = 0 all
+	clr OUTPUT						; the time
+	ret
+
+	holding_temp:					
+	cjne 
+	mov a, PWM_20
 	cjne a, Count1ms, Not_yet	; check whether it is time to turn on the pwm pin
 	
 Not_yet: ret
+
+	setb OUTPUT
 
 Load_Defaults: ; Load defaults if 'keys' are incorrect
 	mov soak_temp, #150
@@ -592,7 +607,7 @@ state1_done:
 
 state2:							; soak/preheat
 	cjne a, #2, state3
-	mov pwm, #20
+	mov pwm, HOLD_PWM
 	mov a, soak_time
 	clr c
 	subb a, sec					; if sec > soak time, c = 1
@@ -615,7 +630,7 @@ state3_done:
 
 state4:							; ramp to peak, prepare to reflow
 	cjne a, #4, state5
-	mov pwm, #20
+	mov pwm, HOLD_PWM
 	mov a, reflow_time
 	clr c
 	subb a, sec					; if sec > reflow_temp, c = 1
