@@ -29,6 +29,19 @@ Result: 			ds 2
 Count1ms:       	ds 2 ; Used to determine when one second has passed
 secs_ctr:       	ds 1
 mins_ctr:       	ds 1
+Count1ms:           ds 2 ; Used to determine when one second has passed
+secs_ctr:           ds 1
+mins_ctr:           ds 1
+;---------------------------------------------------
+
+;--------------------for settings-------------------
+edit_sett:	ds 1 ; which segment are we editing 
+; 0 - soak temp
+; 1 - soak time
+; 2 - reflow temp
+; 3 - reflow time
+; 4 - cool temp
+
 ;---------------------------------------------------
 
 ;--------------------for FSM------------------------
@@ -74,6 +87,8 @@ MY_SCLK 		EQU P2.3
 SOUND_OUT     	EQU P1.1
 RST				EQU	P	; button to reset
 EDIT			EQU P	; button for changing what to edit
+INC             EQU P   ; button to increment current selection
+DEC             EQU P   ; button to increment current selection
 START_STOP 		EQU P 	; button to start/stop reflow
 OUTPUT			EQU P	; output signal to the relay box
 
@@ -88,6 +103,8 @@ $LIST
 setup1:  db 'soak            ', 0
 setup2:  db 'tmp:XXX time:XXX', 0
 setup3:  db 'reflow          ', 0
+setup4:  db 'cool            ', 0
+setup5:  db 'temp:XXX        ', 0
 
 run1:    db 'temp:XXX state X', 0
 run2:    db 'elapsed XX:XX   ', 0
@@ -173,7 +190,7 @@ Inc_Done:
 	mov Count1ms+0, a
 	mov Count1ms+1, a
 	
-	; reset BCD_counter if hits 60, increment 1 to minutes
+	; reset secs_ctr if hits 60, increment 1 to minutes
 	; Increment the seconds counter
 	mov a, secs_ctr
 	cjne a, #0x59, Timer2_ISR_increment_s
@@ -226,6 +243,8 @@ INIT_SPI:
 	clr MY_SCLK ; For mode (0,0) SCLK is zero
 	ret
 
+; -------------------------------------------------- MAIN PROGRAM LOOP ----------------------------------------------
+
 MainProgram: ; setup()
     mov SP, #7FH 	; Set the stack pointer to the begining of idata
     
@@ -242,19 +261,25 @@ MainProgram: ; setup()
     Send_Constant_String(#Initial_Message)
 
 forever: ;loop() please only place function calls into the loop!
-    lcall readADC ; reads ch0 and saves result to Result as 2 byte binary
-	lcall Delay ; hardcoded 1s delay can change or use the Timer
-
-	lcall Do_Something_With_Result ; convert to bcd and send to serial
-
-    jnb one_second_flag, skipDisplay
-    clr one_second_flag
+    jnb one_seconds_flag, skipDisplay ; this segment only executes once a second
+    clr one_seconds_flag
     lcall generateDisplay
-skipDisplay:
-    lcall reset
-    ljmp FSM
+    lcall readADC ; reads ch0 and saves result to Result as 2 byte binary
+	;lcall Delay ; hardcoded 1s delay can change or use the Timer // COMMENTED SINCE WE ARE USING TIMER NOW
+    lcall Do_Something_With_Result ; convert to bcd and send to serial
+    skipDisplay: ; end segment
+
+    jb start_flag, skipPoll
+    lcall pollButtons ; poll buttons for editing screen
+    skipPoll: 
+
+    lcall reset ; check if reset is pressed
+    ljmp FSM ; finite state machine logic
 
 	ljmp forever
+
+; ---------------------------------------------------------------------------------------------------
+
 
 readADC:
     clr CE_ADC
@@ -366,7 +391,7 @@ putchar:
 ;----------------------------------UI CODE----------------------------------------------
 generateDisplay:
     jb start_flag, startDisplay
-    
+    ljmp setupDisplay
 
 ;             1234567890123456
 ;setup1:  db 'soak            ', 0
@@ -375,6 +400,87 @@ generateDisplay:
 
 ;run1:    db 'temp:XXX state X', 0
 ;run2:    db 'elapsed XX:XX   ', 0
+
+; 0 - soak temp
+; 1 - soak time
+; 2 - reflow temp
+; 3 - reflow time
+; 4 - cool temp
+setupDisplay:
+    cjne edit_sett, #0, checkScreen2
+    ljmp soakScreen
+    cjne edit_sett, #1, checkScreen2
+    ljmp soakScreen
+checkScreen2:
+    cjne edit_sett, #2, checkScreen3
+    ljmp reflowScreen
+    cjne edit_sett, #3, checkScreen3
+    ljmp reflowScreen
+checkScreen3:
+    ljmp coolScreen
+soakScreen:
+    Set_Cursor(1,1)
+    Send_Constant_String(#setup1)
+    Set_Cursor(2,1)
+    Send_Constant_String(#setup2)
+
+    Set_Cursor(2,4)
+    load_X(0)
+    mov x+0, soak_temp
+    lcall hex2bcd
+    Display_BCD(bcd+1)
+    Display_BCD(bcd+0)
+    Set_Cursor(2,4)
+    Display_char(#':') ; fill in gap
+
+    Set_Cursor(2,13)
+    load_X(0)
+    mov x+0, soak_time
+    lcall hex2bcd
+    Display_BCD(bcd+1)
+    Display_BCD(bcd+0)
+    Set_Cursor(2,13)
+    Display_char(#':') ; fill in gap
+    ret
+reflowScreen:
+    Set_Cursor(1,1)
+    Send_Constant_String(#setup3)
+    Set_Cursor(2,1)
+    Send_Constant_String(#setup2)
+  
+    Set_Cursor(2,4)
+    load_X(0)
+    mov x+0, reflow_temp
+    lcall hex2bcd
+    Display_BCD(bcd+1)
+    Display_BCD(bcd+0)
+    Set_Cursor(2,4)
+    Display_char(#':') ; fill in gap
+
+    Set_Cursor(2,13)
+    load_X(0)
+    mov x+0, reflow_time
+    lcall hex2bcd
+    Display_BCD(bcd+1)
+    Display_BCD(bcd+0)
+    Set_Cursor(2,13)
+    Display_char(#':') ; fill in gap
+    ret
+coolScreen:
+    Set_Cursor(1,1)
+    Send_Constant_String(#setup4)
+    Set_Cursor(2,1)
+    Send_Constant_String(#setup5)
+
+    Set_Cursor(2,4)
+    load_X(0)
+    mov x+0, cool_temp
+    lcall hex2bcd
+    Display_BCD(bcd+1)
+    Display_BCD(bcd+0)
+    Set_Cursor(2,4)
+    Display_char(#':') ; fill in gap
+    ret
 startDisplay:
     Set_Cursor(1,1)
     Send_Constant_String(#run1)
@@ -384,7 +490,7 @@ startDisplay:
     Set_Cursor(1,5)
     load_X(0)
     mov x+0, temp
-    ljmp hex2bcd
+    lcall hex2bcd
     Display_BCD(bcd+1)
     Display_BCD(bcd+0)
     Set_Cursor(1,5)
@@ -393,7 +499,7 @@ startDisplay:
     Set_Cursor(1,15)
     load_X(0)
     mov x+0, state
-    ljmp hex2bcd
+    lcall hex2bcd
     Display_BCD(bcd+0)
     Set_Cursor(1,15)
     Display_char(#' ') ; fill in gap
@@ -403,7 +509,30 @@ startDisplay:
     Set_Cursor(2,12)
     Display_BCD(secs_ctr)
     ret
+
+pollButtons:
+    jb EDIT, DONT_EDIT 		
+	Wait_Milli_Seconds(#50)		
+	jb EDIT, DONT_EDIT
+	jnb EDIT, $
+    cjne edit_sett, #4, incEdit
+    mov edit_sett, #0
+    incEdit: inc_setting(edit_sett)
     
+DONT_EDIT:
+    jb INC, DONT_INC	
+	Wait_Milli_Seconds(#50)		
+	jb INC, DONT_INC 		
+	jnb INC, $
+    
+DONT_INC:
+    jb DEC, DONT_DEC
+	Wait_Milli_Seconds(#50)		
+	jb DEC, DONT_DEC	
+	jnb DEC, $
+
+DONT_DEC: ret
+
 ;---------------------------------------------------------------------------------------
 
 reset:
