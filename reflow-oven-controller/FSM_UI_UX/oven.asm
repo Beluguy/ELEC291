@@ -10,13 +10,13 @@ org 0x000B
 org 0x002B
 	ljmp Timer2_ISR
 
-CLK  			EQU 22118400
-BAUD 			EQU 115200
-BRG_VAL 		EQU (0x100-(CLK/(16*BAUD)))
-TIMER0_RATE   	EQU 1000    ; 1000Hz PWM output signal 
-TIMER0_RELOAD 	EQU ((65536-(CLK/TIMER0_RATE)))
-TIMER2_RATE     EQU 1000     ; 1000Hz, for a timer tick of 1ms
-TIMER2_RELOAD   EQU ((65536-(CLK/TIMER2_RATE)))
+CLK  				EQU 22118400
+BAUD 				EQU 115200
+BRG_VAL 			EQU (0x100-(CLK/(16*BAUD)))
+TIMER0_RATE   		EQU 1000    ; 1000Hz PWM output signal 
+TIMER0_RELOAD 		EQU ((65536-(CLK/TIMER0_RATE)))
+TIMER2_RATE     	EQU 1000     ; 1000Hz, for a timer tick of 1ms
+TIMER2_RELOAD   	EQU ((65536-(CLK/TIMER2_RATE)))
 
 ; These register definitions needed by 'math32.inc'
 DSEG at 30H
@@ -32,6 +32,7 @@ mins_ctr:       	ds 1
 Count1ms:           ds 2 ; Used to determine when one second has passed
 secs_ctr:           ds 1
 mins_ctr:           ds 1
+pwm_time: 			ds 1 ; Used to check whether it is time to turn on the pwm output
 ;---------------------------------------------------
 
 ;--------------------for settings-------------------
@@ -537,10 +538,10 @@ DONT_DEC: ret
 ;---------------------------------------------------------------------------------------
 
 reset:
-	jb RESET, DONT_RESET 		; if 'RESET' is pressed, wait for rebouce
+	jb RST, DONT_RESET 		; if 'RESET' is pressed, wait for rebouce
 	Wait_Milli_Seconds(#50)		; Debounce delay.  This macro is also in 'LCD_4bit.inc'
-	jb RESET, DONT_RESET 		; if the 'RESET' button is not pressed skip
-	jnb RESET, $
+	jb RST, DONT_RESET 		; if the 'RESET' button is not pressed skip
+	jnb RST, $
 	mov a, #0h
 	mov state, a
 DONT_RESET: ret	
@@ -554,6 +555,7 @@ start_or_not:
 	DONT_START: ret	
 
 PWM_OUTPUT:
+	pwm_time
 	mov a, pwm
 	cjne a, Count1ms, Not_yet	; check whether it is time to turn on the pwm pin
 	
