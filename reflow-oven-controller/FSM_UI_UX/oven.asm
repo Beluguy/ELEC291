@@ -256,9 +256,6 @@ MainProgram: ; setup()
     
     lcall Timer0_Init
     setb EA   ; Enable Global interrupts
-    
-    Set_Cursor(1, 1)
-    Send_Constant_String(#Initial_Message)
 
 forever: ;loop() please only place function calls into the loop!
     jnb one_seconds_flag, skipDisplay ; this segment only executes once a second
