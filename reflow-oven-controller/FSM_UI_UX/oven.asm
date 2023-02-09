@@ -246,8 +246,10 @@ INIT_SPI:
 ; -------------------------------------------------- MAIN PROGRAM LOOP ----------------------------------------------
 
 MainProgram: ; setup()
-    mov SP, #7FH ; Set the stack pointer to the begining of idata
+    mov SP, #7FH 	; Set the stack pointer to the begining of idata
     
+	clr OUTPUT		; pwm is set to low by default
+
     lcall InitSerialPort
     lcall INIT_SPI
     lcall LCD_4BIT
@@ -552,14 +554,16 @@ start_or_not:
 	DONT_START: ret	
 
 PWM_OUTPUT:
+	mov a, pwm
+	cjne a, Count1ms, Not_yet	; check whether it is time to turn on the pwm pin
 	
-	ret
+Not_yet: ret
 
 Load_Defaults: ; Load defaults if 'keys' are incorrect
-	mov temp_soak, #150
-	mov time_soak, #45
-	mov temp_refl, #225
-	mov time_refl, #30
+	mov soak_temp, #150
+	mov soak_time, #45
+	mov reflow_temp, #225
+	mov reflow_time, #30
 	ret
 
 ;-------------------------------------FSM time!!---------------------------------------
