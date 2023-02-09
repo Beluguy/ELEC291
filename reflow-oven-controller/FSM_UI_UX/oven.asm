@@ -86,11 +86,11 @@ MY_MISO 		EQU P2.2
 MY_SCLK 		EQU P2.3 
 
 SOUND_OUT     	EQU P1.1
-RST				EQU	P	; button to reset
-EDIT			EQU P	; button for changing what to edit
-INCR            EQU P   ; button to increment current selection
-DECR            EQU P   ; button to increment current selection
-START_STOP 		EQU P 	; button to start/stop reflow
+RST				EQU	P4.5	; button to reset
+EDIT			EQU P0.6	; button for changing what to edit
+INCR            EQU P0.3   ; button to increment current selection
+DECR            EQU P0.0   ; button to increment current selection
+START_STOP 		EQU P2.4 	; button to start/stop reflow
 OUTPUT			EQU P	; output signal to the relay box
 
 ; i have buttons on 2.4, 4.5, 0.6, 0.3, 0.0 (left to right)
@@ -428,11 +428,6 @@ startDisplay:
 ;run1:    db 'temp:XXX state X', 0
 ;run2:    db 'elapsed XX:XX   ', 0
 
-; 0 - soak temp
-; 1 - soak time
-; 2 - reflow temp
-; 3 - reflow time
-; 4 - cool temp
 setupDisplay:
     mov a, edit_sett
     cjne a, #0, checkScreen2
@@ -510,6 +505,7 @@ coolScreen:
     Display_char(#':') ; fill in gap
     ret
 
+
 pollButtons:
     jb EDIT, DONT_EDIT 		
 	Wait_Milli_Seconds(#50)		
@@ -520,19 +516,65 @@ pollButtons:
     cjne a, #4, incEdit
     mov edit_sett, #0
     incEdit: inc_setting(edit_sett)
-    
+
+; 0 - soak temp
+; 1 - soak time
+; 2 - reflow temp
+; 3 - reflow time
+; 4 - cool temp   
 DONT_EDIT:
     jb INCR, DONT_INC	
 	Wait_Milli_Seconds(#50)		
 	jb INCR, DONT_INC 		
 	jnb INCR, $
     
+    mov a, edit_sett
+    cjne a, #0, elem1
+    inc_setting(soak_temp)
+    lcall generateDisplay
+    ret
+    elem1: cjne a, #1, elem2
+    inc_setting(soak_time)
+    lcall generateDisplay
+    ret
+    elem2: cjne a, #2, elem3
+    inc_setting(reflow_temp)
+    lcall generateDisplay
+    ret
+    elem3: cjne a, #3, elem4
+    inc_setting(reflow_time)
+    lcall generateDisplay
+    ret
+    elem4: inc_setting(cool_temp)
+    lcall generateDisplay
+    ret
     
 DONT_INC:
     jb DECR, DONT_DEC
 	Wait_Milli_Seconds(#50)		
 	jb DECR, DONT_DEC	
 	jnb DECR, $
+
+    mov a, edit_sett
+    cjne a, #0, delem1
+    dec_setting(soak_temp)
+    lcall generateDisplay
+    ret
+    delem1: cjne a, #1, delem2
+    dec_setting(soak_time)
+    lcall generateDisplay
+    ret
+    delem2: cjne a, #2, delem3
+    dec_setting(reflow_temp)
+    lcall generateDisplay
+    ret
+    delem3: cjne a, #3, delem4
+    dec_setting(reflow_time)
+    lcall generateDisplay
+    ret
+    delem4: dec_setting(cool_temp)
+    lcall generateDisplay
+    ret
 
 DONT_DEC: ret
 

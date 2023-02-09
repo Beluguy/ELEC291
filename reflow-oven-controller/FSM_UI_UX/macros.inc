@@ -50,6 +50,10 @@ ENDMAC
 
 dec_setting MAC
     mov a, %0
+    cjne a, #0, dec_setting_next_%M
+    sjmp dec_setting_end_%M
+dec_setting_next_%M:
     subb a, #1
     mov %0, a
+dec_setting_end_%M:
 ENDMAC
