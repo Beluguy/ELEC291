@@ -42,14 +42,14 @@ Left_blank_%M_b:
 	Display_char(#' ')
 endmac
 
-inc_setting mac
+inc_setting MAC
     mov a, %0
-    add a #1
+    add a, #1
     mov %0, a
-endmac
+ENDMAC
 
-dec_setting mac
+dec_setting MAC
     mov a, %0
-    subb a #1
+    subb a, #1
     mov %0, a
-endmac
+ENDMAC
