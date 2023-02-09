@@ -18,8 +18,8 @@ TIMER0_RELOAD 		EQU ((65536-(CLK/TIMER0_RATE)))
 TIMER2_RATE     	EQU 1000     ; 1000Hz, for a timer tick of 1ms
 TIMER2_RELOAD   	EQU ((65536-(CLK/TIMER2_RATE)))
 
-PWM_20				EQU (TIMER0_RATE-200)
 HOLD_PWM			EQU 20		; 20% pwm for holding the temp constant 
+PWM_20				EQU (TIMER0_RATE-(HOLD_PWM*10))
 
 ; These register definitions needed by 'math32.inc'
 DSEG at 30H
@@ -593,28 +593,31 @@ start_or_not:
 	jb START_STOP, DONT_START 		; if 'RESET' is pressed, wait for rebouce
 	Wait_Milli_Seconds(#50)			; Debounce delay.  This macro is also in 'LCD_4bit.inc'
 	jb START_STOP, DONT_START 		; if the 'RESET' button is not pressed skip
-	jnb START, $
+	jnb START_STOP, $
 	cpl start_flag
 	DONT_START: ret	
 
 PWM_OUTPUT:
 	mov a, pwm
-	cjne, a, #100, holding_temp		; if pwm is 100, then OUPUT = 1 all 
+	cjne a, #100, holding_temp		; if pwm is 100, then OUTPUT = 1 all 
 	setb OUTPUT						; the time
 	ret
 
-	cjne, a, #0, holding_temp		; if pwm is 0, then OUTPUT = 0 all
+	cjne a, #0, holding_temp		; if pwm is 0, then OUTPUT = 0 all
 	clr OUTPUT						; the time
 	ret
 
-	holding_temp:					
-	cjne 
-	mov a, PWM_20
-	cjne a, Count1ms, Not_yet	; check whether it is time to turn on the pwm pin
-	
+	holding_temp:	
+	mov a, Count1ms
+	cjne a, #0 , Not_yet			; check whether it is time to turn on the pwm pin		 
+	clr OUTPUT						; clr OUTPUT if at the begining of the period
+	mov a, Count1ms+0
+	cjne a, #low(PWM_20), Not_yet 	; Warning: this instruction changes the carry flag!
+	mov a, Count1ms+1
+	cjne a, #high(PWM_20), Not_yet	; if Count1ms = PWM_20, set the OUTPUT to 1
+	setb OUTPUT
 Not_yet: ret
 
-	setb OUTPUT
 
 Load_Defaults: ; Load defaults if 'keys' are incorrect
 	mov soak_temp, #150
@@ -649,7 +652,7 @@ state1_done:
 
 state2:							; soak/preheat
 	cjne a, #2, state3
-	mov pwm, HOLD_PWM
+	mov pwm, #HOLD_PWM
 	mov a, soak_time
 	clr c
 	subb a, sec					; if sec > soak time, c = 1
@@ -672,7 +675,7 @@ state3_done:
 
 state4:							; ramp to peak, prepare to reflow
 	cjne a, #4, state5
-	mov pwm, HOLD_PWM
+	mov pwm, #HOLD_PWM
 	mov a, reflow_time
 	clr c
 	subb a, sec					; if sec > reflow_temp, c = 1
