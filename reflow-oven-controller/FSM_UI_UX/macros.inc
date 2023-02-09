@@ -41,3 +41,15 @@ Left_blank_%M_a:
 Left_blank_%M_b:
 	Display_char(#' ')
 endmac
+
+inc_setting mac
+    mov a, %0
+    add a #1
+    mov %0, a
+endmac
+
+dec_setting mac
+    mov a, %0
+    subb a #1
+    mov %0, a
+endmac

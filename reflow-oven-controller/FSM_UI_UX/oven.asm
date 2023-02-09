@@ -29,9 +29,9 @@ Result: 			ds 2
 Count1ms:       	ds 2 ; Used to determine when one second has passed
 secs_ctr:       	ds 1
 mins_ctr:       	ds 1
-Count1ms:       ds 2 ; Used to determine when one second has passed
-secs_ctr:       ds 1
-mins_ctr:       ds 1
+Count1ms:           ds 2 ; Used to determine when one second has passed
+secs_ctr:           ds 1
+mins_ctr:           ds 1
 ;---------------------------------------------------
 
 ;--------------------for settings-------------------
@@ -87,6 +87,8 @@ MY_SCLK 		EQU P2.3
 SOUND_OUT     	EQU P1.1
 RST				EQU	P	; button to reset
 EDIT			EQU P	; button for changing what to edit
+INC             EQU P   ; button to increment current selection
+DEC             EQU P   ; button to increment current selection
 START_STOP 		EQU P 	; button to start/stop reflow
 OUTPUT			EQU P	; output signal to the relay box
 
@@ -241,6 +243,8 @@ INIT_SPI:
 	clr MY_SCLK ; For mode (0,0) SCLK is zero
 	ret
 
+; -------------------------------------------------- MAIN PROGRAM LOOP ----------------------------------------------
+
 MainProgram: ; setup()
     mov SP, #7FH ; Set the stack pointer to the begining of idata
     
@@ -255,20 +259,25 @@ MainProgram: ; setup()
     Send_Constant_String(#Initial_Message)
 
 forever: ;loop() please only place function calls into the loop!
-    lcall readADC ; reads ch0 and saves result to Result as 2 byte binary
-	lcall Delay ; hardcoded 1s delay can change or use the Timer
-
-	lcall Do_Something_With_Result ; convert to bcd and send to serial
-
     jnb one_seconds_flag, skipDisplay ; this segment only executes once a second
     clr one_seconds_flag
     lcall generateDisplay
-skipDisplay: ; end segment
+    lcall readADC ; reads ch0 and saves result to Result as 2 byte binary
+	;lcall Delay ; hardcoded 1s delay can change or use the Timer // COMMENTED SINCE WE ARE USING TIMER NOW
+    lcall Do_Something_With_Result ; convert to bcd and send to serial
+    skipDisplay: ; end segment
 
-    lcall reset
-    ljmp FSM
+    jb start_flag, skipPoll
+    lcall pollButtons ; poll buttons for editing screen
+    skipPoll: 
+
+    lcall reset ; check if reset is pressed
+    ljmp FSM ; finite state machine logic
 
 	ljmp forever
+
+; ---------------------------------------------------------------------------------------------------
+
 
 readADC:
     clr CE_ADC
@@ -430,7 +439,6 @@ soakScreen:
     Display_BCD(bcd+0)
     Set_Cursor(2,13)
     Display_char(#':') ; fill in gap
-    
     ret
 reflowScreen:
     Set_Cursor(1,1)
@@ -471,7 +479,6 @@ coolScreen:
     Set_Cursor(2,4)
     Display_char(#':') ; fill in gap
     ret
-
 startDisplay:
     Set_Cursor(1,1)
     Send_Constant_String(#run1)
@@ -500,6 +507,29 @@ startDisplay:
     Set_Cursor(2,12)
     Display_BCD(secs_ctr)
     ret
+
+pollButtons:
+    jb EDIT, DONT_EDIT 		
+	Wait_Milli_Seconds(#50)		
+	jb EDIT, DONT_EDIT
+	jnb EDIT, $
+    cjne edit_sett, #4, incEdit
+    mov edit_sett, #0
+    incEdit: inc_setting(edit_sett)
+    
+DONT_EDIT:
+    jb INC, DONT_INC	
+	Wait_Milli_Seconds(#50)		
+	jb INC, DONT_INC 		
+	jnb INC, $
+    
+DONT_INC:
+    jb DEC, DONT_DEC
+	Wait_Milli_Seconds(#50)		
+	jb DEC, DONT_DEC	
+	jnb DEC, $
+
+DONT_DEC: ret
 
 ;---------------------------------------------------------------------------------------
 
