@@ -412,18 +412,64 @@ soakScreen:
     Send_Constant_String(#setup1)
     Set_Cursor(2,1)
     Send_Constant_String(#setup2)
+
+    Set_Cursor(2,4)
+    load_X(0)
+    mov x+0, soak_temp
+    lcall hex2bcd
+    Display_BCD(bcd+1)
+    Display_BCD(bcd+0)
+    Set_Cursor(2,4)
+    Display_char(#':') ; fill in gap
+
+    Set_Cursor(2,13)
+    load_X(0)
+    mov x+0, soak_time
+    lcall hex2bcd
+    Display_BCD(bcd+1)
+    Display_BCD(bcd+0)
+    Set_Cursor(2,13)
+    Display_char(#':') ; fill in gap
+    
     ret
 reflowScreen:
     Set_Cursor(1,1)
     Send_Constant_String(#setup3)
     Set_Cursor(2,1)
     Send_Constant_String(#setup2)
+  
+    Set_Cursor(2,4)
+    load_X(0)
+    mov x+0, reflow_temp
+    lcall hex2bcd
+    Display_BCD(bcd+1)
+    Display_BCD(bcd+0)
+    Set_Cursor(2,4)
+    Display_char(#':') ; fill in gap
+
+    Set_Cursor(2,13)
+    load_X(0)
+    mov x+0, reflow_time
+    lcall hex2bcd
+    Display_BCD(bcd+1)
+    Display_BCD(bcd+0)
+    Set_Cursor(2,13)
+    Display_char(#':') ; fill in gap
     ret
 coolScreen:
     Set_Cursor(1,1)
     Send_Constant_String(#setup4)
     Set_Cursor(2,1)
     Send_Constant_String(#setup5)
+
+    Set_Cursor(2,4)
+    load_X(0)
+    mov x+0, cool_temp
+    lcall hex2bcd
+    Display_BCD(bcd+1)
+    Display_BCD(bcd+0)
+    Set_Cursor(2,4)
+    Display_char(#':') ; fill in gap
     ret
 
 startDisplay:
@@ -435,7 +481,7 @@ startDisplay:
     Set_Cursor(1,5)
     load_X(0)
     mov x+0, temp
-    ljmp hex2bcd
+    lcall hex2bcd
     Display_BCD(bcd+1)
     Display_BCD(bcd+0)
     Set_Cursor(1,5)
@@ -444,7 +490,7 @@ startDisplay:
     Set_Cursor(1,15)
     load_X(0)
     mov x+0, state
-    ljmp hex2bcd
+    lcall hex2bcd
     Display_BCD(bcd+0)
     Set_Cursor(1,15)
     Display_char(#' ') ; fill in gap
