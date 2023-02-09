@@ -101,6 +101,8 @@ $LIST
 setup1:  db 'soak            ', 0
 setup2:  db 'tmp:XXX time:XXX', 0
 setup3:  db 'reflow          ', 0
+setup4:  db 'cool            ', 0
+setup5:  db 'temp:XXX        ', 0
 
 run1:    db 'temp:XXX state X', 0
 run2:    db 'elapsed XX:XX   ', 0
@@ -186,7 +188,7 @@ Inc_Done:
 	mov Count1ms+0, a
 	mov Count1ms+1, a
 	
-	; reset BCD_counter if hits 60, increment 1 to minutes
+	; reset secs_ctr if hits 60, increment 1 to minutes
 	; Increment the seconds counter
 	mov a, secs_ctr
 	cjne a, #0x59, Timer2_ISR_increment_s
@@ -419,9 +421,9 @@ reflowScreen:
     ret
 coolScreen:
     Set_Cursor(1,1)
-    Send_Constant_String(#run1)
+    Send_Constant_String(#setup4)
     Set_Cursor(2,1)
-    Send_Constant_String(#run2)
+    Send_Constant_String(#setup5)
     ret
 
 startDisplay:
