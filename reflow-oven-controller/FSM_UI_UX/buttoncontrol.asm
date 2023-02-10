@@ -72,6 +72,18 @@ $include(LCD_4bit.inc) ; A library of LCD related functions and utility macros
 $LIST
 
 SendToLCD: ;check slides
+mov b, #100
+div ab
+orl a, #0x30 ; Convert hundreds to ASCII
+lcall ?WriteData ; Send to LCD
+mov a, b ; Remainder is in register b
+mov b, #10
+div ab
+orl a, #0x30 ; Convert tens to ASCII
+lcall ?WriteData; Send to LCD
+mov a, b
+orl a, #0x30 ; Convert units to ASCII
+lcall ?WriteData; Send to LCD
 
 ret
 
@@ -137,5 +149,11 @@ loop:
     lcall SendToLCD
     lcall Save_Configuration
     loop_d:
-        ljmp loop
+
+    ;/==========================FSM=======================\
+
+
+    ;/======================COLD_JUNCTION HOT_JUNCTION========================\
+
+    ljmp loop
 END
