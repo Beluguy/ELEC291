@@ -585,7 +585,7 @@ reset:
 	Wait_Milli_Seconds(#50)			; Debounce delay.  This macro is also in 'LCD_4bit.inc'
 	jb RST, DONT_RESET 				; if the 'RESET' button is not pressed skip
 	jnb RST, $
-	mov a, #0h
+	mov a, #5						; reset to state 5 when reset for safety
 	mov state, a
 DONT_RESET: ret	
 
@@ -693,7 +693,7 @@ state5:							; cooling state
 	jnc state5_done				; if temp is not at cool_temp, then go to state5_done 
 	mov state, #0	
 state5_done:
-	ljmp forever
+	ljmp forever 
 ;----------------------------------------------------------------------------------------
 
 END
