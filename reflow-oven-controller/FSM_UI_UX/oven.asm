@@ -618,7 +618,6 @@ PWM_OUTPUT:
 	setb OUTPUT
 Not_yet: ret
 
-
 Load_Defaults: ; Load defaults if 'keys' are incorrect
 	mov soak_temp, #150
 	mov soak_time, #45
