@@ -247,33 +247,33 @@ INIT_SPI:
 ; -------------------------------------------------- MAIN PROGRAM LOOP ----------------------------------------------
 
 MainProgram: ; setup()
-    mov SP, #7FH 	; Set the stack pointer to the begining of idata
+    mov SP, #7FH 						; Set the stack pointer to the begining of idata
     
-	clr OUTPUT		; pwm is set to low by default
-
+	clr OUTPUT							; pwm is set to low by default
+	lcall Load_Defaults
     lcall InitSerialPort
     lcall INIT_SPI
     lcall LCD_4BIT
     
     lcall Timer0_Init
-    setb EA   ; Enable Global interrupts
+    setb EA   							; Enable Global interrupts
 
 forever: ;loop() please only place function calls into the loop!
-    jnb one_second_flag, skipDisplay ; this segment only executes once a second
+    jnb one_second_flag, skipDisplay 	; this segment only executes once a second
     clr one_second_flag
     lcall generateDisplay
-    lcall readADC ; reads ch0 and saves result to Result as 2 byte binary
+    lcall readADC 						; reads ch0 and saves result to Result as 2 byte binary
 	;lcall Delay ; hardcoded 1s delay can change or use the Timer // COMMENTED SINCE WE ARE USING TIMER NOW
     lcall Do_Something_With_Result ; convert to bcd and send to serial
-    skipDisplay: ; end segment
+    skipDisplay: 						; end segment
 
     jb start_flag, skipPoll
-    lcall pollButtons ; poll buttons for editing screen
+    lcall pollButtons 					; poll buttons for editing screen
     skipPoll: 
 
-    lcall reset ; check if reset is pressed
-    ljmp FSM ; finite state machine logic
-
+    lcall reset 						; check if reset is pressed
+    ljmp FSM 							; finite state machine logic
+	lcall save_config					; save config to nvmem
 	ljmp forever
 
 ; ---------------------------------------------------------------------------------------------------
@@ -694,5 +694,66 @@ state5:							; cooling state
 state5_done:
 	ljmp forever 
 ;----------------------------------------------------------------------------------------
+
+;---------------------------------save to nvmem-------------------------------
+loadbyte mac
+	mov a, %0
+	movx @dptr, a
+	inc dptr
+endmac
+save_config:
+	mov FCON, #0x08 ; Page Buffer Mapping Enabled (FPS = 1)
+	mov dptr, #0x7f80 ; Last page of flash memory
+	; Save variables
+	loadbyte(temp_soak) ; @0x7f80
+	loadbyte(time_soak) ; @0x7f81
+	loadbyte(temp_refl) ; @0x7f82
+	loadbyte(time_refl) ; @0x7f83
+	loadbyte(#0x55) ; First key value @0x7f84
+	loadbyte(#0xAA) ; Second key value @0x7f85
+	mov FCON, #0x00 ; Page Buffer Mapping Disabled (FPS = 0)
+	orl EECON, #0b01000000 ; Enable auto-erase on next write sequence
+	mov FCON, #0x50 ; Write trigger first byte
+	mov FCON, #0xA0 ; Write trigger second byte
+	; CPU idles until writing of flash completes.
+	mov FCON, #0x00 ; Page Buffer Mapping Disabled (FPS = 0)
+	anl EECON, #0b10111111 ; Disable auto-erase
+	ret
+;-----------------------------------------------------------------------------
+
+;------------------------------read from nvmem--------------------------------
+getbyte mac
+clr a
+movc a, @a+dptr
+mov %0, a
+inc dptr
+Endmac
+Load_Configuration:
+mov dptr, #0x7f84 ; First key value location.
+getbyte(R0) ; 0x7f84 should contain 0x55
+cjne R0, #0x55, Load_Defaults
+getbyte(R0) ; 0x7f85 should contain 0xAA
+cjne R0, #0xAA, Load_Defaults
+; Keys are good. Get stored values.
+mov dptr, #0x7f80
+getbyte(temp_soak) ; 0x7f80
+getbyte(time_soak) ; 0x7f81
+getbyte(temp_refl) ; 0x7f82
+getbyte(time_refl) ; 0x7f83
+ret
+;----------------------------------------------------------------------------
+
+;----------------------------------------------------------------------
+cold_junc:
+
+ret
+;----------------------------------------------------------------------
+
+
+;----------------------------------------------------------------------
+hot_junc:
+
+ret
+;----------------------------------------------------------------------
 
 END
