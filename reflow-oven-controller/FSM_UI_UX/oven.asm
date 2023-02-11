@@ -103,8 +103,8 @@ $LIST
 ;            1234567890123456
 setup1:  db 'soak            ', 0
 setup2:  db 'tmp:XXX time:XXX', 0
-setup3:  db 'reflow          ', 0
-setup4:  db 'cool            ', 0
+setup3:  db 'refl            ', 0
+setup4:  db 'cool *          ', 0
 setup5:  db 'temp:XXX        ', 0
 
 run1:    db 'temp:XXX state X', 0
@@ -464,6 +464,15 @@ soakScreen:
     Display_BCD(bcd+0)
     Set_Cursor(2,13)
     Display_char(#':') ; fill in gap
+
+    mov a, edit_sett
+    cjne a, #0, indic_soak_time
+    Set_Cursor(1,6)
+    sjmp indic_soak_next
+indic_soak_time:
+    Set_Cursor(1,15)
+indic_soak_next:
+    Display_char(#'*')
     ret
 reflowScreen:
     Set_Cursor(1,1)
@@ -488,6 +497,14 @@ reflowScreen:
     Display_BCD(bcd+0)
     Set_Cursor(2,13)
     Display_char(#':') ; fill in gap
+    mov a, edit_sett
+    cjne a, #2, indic_refl_time
+    Set_Cursor(1,6)
+    sjmp indic_soak_next
+indic_refl_time:
+    Set_Cursor(1,15)
+indic_refl_next:
+    Display_char(#'*')
     ret
 coolScreen:
     Set_Cursor(1,1)
