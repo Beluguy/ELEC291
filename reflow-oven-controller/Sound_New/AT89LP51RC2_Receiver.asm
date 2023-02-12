@@ -29,13 +29,13 @@ TIMER1_RELOAD  EQU 0x10000-(SYSCLK/TIMER1_RATE)
 BAUDRATE       EQU 115200
 BRG_VAL        EQU (0x100-(SYSCLK/(16*BAUDRATE)))
 
-SPEAKER  EQU P2.6 ; Used with a MOSFET to turn off speaker when not in use
+SPEAKER  EQU P2.4 ; Used with a MOSFET to turn off speaker when not in use
 
 ; The pins used for SPI
-FLASH_CE  EQU  P2.5
-MY_MOSI   EQU  P2.4 
-MY_MISO   EQU  P2.1
-MY_SCLK   EQU  P2.0 
+FLASH_CE  EQU  P0.7			; 1, was 2.5
+MY_MOSI   EQU  P2.5 		; 5, was 2.4
+MY_MISO   EQU  P2.7			; 2, was 2.1
+MY_SCLK   EQU  P0.4 		; 6, was 2.0
 
 ; Commands supported by the SPI flash memory according to the datasheet
 WRITE_ENABLE     EQU 0x06  ; Address:0 Dummy:0 Num:0
@@ -369,6 +369,9 @@ CRC16_TL:
 MainProgram:
     mov SP, #0x7f ; Setup stack pointer to the start of indirectly accessable data memory minus one
     lcall Init_all ; Initialize the hardware  
+    ; In case you decide to use the pins of P0, configure the port in bidirectional mode:
+    mov P0M0, #0
+    mov P0M1, #0
     
 forever_loop:
 	jb RI, serial_get

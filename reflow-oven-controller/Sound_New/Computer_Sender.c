@@ -208,7 +208,7 @@ void Delay (int usec)
 
 #else // For Windows
 HANDLE hComm=INVALID_HANDLE_VALUE;
-char SerialPort[MAX_PATH]="COM1";
+char SerialPort[MAX_PATH]="COM4";
 
 int OpenSerialPort (char * devicename, DWORD baud, BYTE parity, BYTE bits, BYTE stop)
 {
