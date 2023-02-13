@@ -19,7 +19,8 @@ DSEG at 30H
 x:   ds 4
 y:   ds 4
 bcd: ds 5
-Result: ds 2
+Result_Cold: ds 2
+Result_Hot: ds 2
 
 BSEG
 mf: dbit 1
@@ -190,6 +191,7 @@ MyProgram:
     lcall InitSerialPort
 
 Forever:
+	;=========T-Cold Manipulation and Calculation
 	clr CE_ADC
 	mov R0, #00000001B ; Start bit:1
 	lcall DO_SPI_G
@@ -197,26 +199,49 @@ Forever:
 	lcall DO_SPI_G
 	mov a, R1          ; R1 contains bits 8 and 9
 	anl a, #00000011B  ; We need only the two least significant bits
-	mov Result+1, a    ; Save result high.
+	mov Result_Cold+1, a    ; Save result high.
 	mov R0, #55H ; It doesn't matter what we transmit...
 	lcall DO_SPI_G
-	mov Result, R1     ; R1 contains bits 0 to 7.  Save result low.
+	mov Result_Cold, R1     ; R1 contains bits 0 to 7.  Save result low.
 	setb CE_ADC
 	Wait_Milli_Seconds(#100)
-	
-	mov x+0, Result+0
-	mov x+1, Result+1
+	;NO CALCULATION REQUIRED Will be Added to hot juction calculations
+
+	;=============ADC Thermocouple Manipulation and Calculation
+	clr CE_ADC
+	mov R0, #00000001B ; Start bit:1
+	lcall DO_SPI_G
+	mov R0, #10010000B ; Single ended, read channel 0
+	lcall DO_SPI_G
+	mov a, R1          ; R1 contains bits 8 and 9
+	anl a, #00000011B  ; We need only the two least significant bits
+	mov Result_Hot+1, a    ; Save result high.
+	mov R0, #55H ; It doesn't matter what we transmit...
+	lcall DO_SPI_G
+	mov Result_Hot, R1     ; R1 contains bits 0 to 7.  Save result low.
+	setb CE_ADC
+	Wait_Milli_Seconds(#100)
+
+	mov x+0, Result_Hot+0
+	mov x+1, Result_Hot+1
 	mov x+2, #0
 	mov x+3, #0
-	
-	load_Y(410)
+
+	load_Y(4096) ; takes ADC * 4.096 in essence
 	lcall mul32
-	
+	load_Y(1000)
+	lcall div32
 	load_Y(1023)
 	lcall div32
+	load_Y(333)
+	lcall div32	
+	load_Y(24038) 
+	lcall mul32
+
+	load_X(Result_Hot)
+	load_Y(Result_Cold)
+	lcall add32
 	
-	load_Y(273)
-	lcall sub32
 	Wait_Milli_Seconds(#100)
 	lcall hex2bcd
 	lcall Display_10_digit_BCD
