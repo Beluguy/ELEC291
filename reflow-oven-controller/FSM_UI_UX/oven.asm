@@ -651,9 +651,9 @@ state0:							; default state
 	lcall start_or_not
 	jnb start_flag, state0_done	; if start key is not press, the go to state0_done
 	mov state, #1
+	clr start_flag
 state0_done:
 	ljmp forever
-
 state1:							; ramp to soak
 	cjne a, #1, state2
 	mov pwm, #100
@@ -663,6 +663,7 @@ state1:							; ramp to soak
 	subb a, temp				; if temp > soak_temp, c = 1
 	jnc state1_done				; if temp is not at soak temp, then go to state1_done
 	mov state, #2
+	setb start_flag
 state1_done:
 	ljmp forever
 
