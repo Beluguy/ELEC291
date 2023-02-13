@@ -747,8 +747,8 @@ loadbyte mac
 	inc dptr
 endmac
 save_config:
-    push IE ; Save the current state of bit EA in the stack
-    clr EA ; Disable interrupts
+    push IE ; Save the current state of bit EA in the stack
+    clr EA ; Disable interrupts
 	mov FCON, #0x08 ; Page Buffer Mapping Enabled (FPS = 1)
 	mov dptr, #0x7f80 ; Last page of flash memory
 	; Save variables
