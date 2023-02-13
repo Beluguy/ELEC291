@@ -333,7 +333,7 @@ Do_Something_With_Result:
 	lcall sub32
 	
 	lcall hex2bcd
-	lcall Send_10_digit_BCD
+	lcall Send_3_digit_BCD
 	
 	mov a, x
 	cjne a, #50, NOT_EQ
@@ -371,30 +371,13 @@ DO_SPI_G_LOOP:
 	djnz R2, DO_SPI_G_LOOP 
  	pop acc 
  	ret
-
-; Sends 10-digit BCD number in bcd to the LCD
-Display_10_digit_BCD:
-	Set_Cursor(2, 7)
-	Display_BCD(bcd+4)
-	Display_BCD(bcd+3)
-	Display_BCD(bcd+2)
-	Display_BCD(bcd+1)
-	Display_BCD(bcd+0)
-	; Replace all the zeros to the left with blanks
-	Set_Cursor(2, 7)
-	Left_blank(bcd+4, skip_blank)
-	Left_blank(bcd+3, skip_blank)
-	Left_blank(bcd+2, skip_blank)
-	Left_blank(bcd+1, skip_blank)
-	mov a, bcd+0
-	anl a, #0f0h
-	swap a
-	jnz skip_blank
-	Display_char(#' ')
-skip_blank:
-	ret
  	
-Send_10_Digit_BCD:
+Send_3_Digit_BCD: ;send 3 digits bcd in BCD var to putty
+    mov a, bcd+1
+    anl a, #0fh
+    orl a, #'0'
+    mov r0, a
+    lcall putchar
 	Send_BCD(bcd+0)
 	mov a, #'\r'
 	lcall putchar
@@ -420,22 +403,28 @@ startDisplay:
     Set_Cursor(2,1)
     Send_Constant_String(#run2)
     
-    Set_Cursor(1,5)
+    Set_Cursor(1,6)
     load_X(0)
     mov x+0, temp
     lcall hex2bcd
-    Display_BCD(bcd+1)
-    Display_BCD(bcd+0)
-    Set_Cursor(1,5)
-    Display_char(#':') ; fill in gap
+    ; Display digit 3
+    mov a, bcd+1
+    anl a, #0fh
+    orl a, #'0'
+    mov r0, a
+    WriteData(r0)
+    Display_BCD(bcd+0) ;display digit 2 and 1
 
-    Set_Cursor(1,15)
+    Set_Cursor(1,16)
     load_X(0)
     mov x+0, state
     lcall hex2bcd
-    Display_BCD(bcd+0)
-    Set_Cursor(1,15)
-    Display_char(#' ') ; fill in gap
+    ; Display digit 1
+    mov a, bcd+0
+    anl a, #0fh
+    orl a, #'0'
+    mov r0, a
+    WriteData(r0)
 
     Set_Cursor(2,9)
     Display_BCD(mins_ctr)
@@ -470,23 +459,29 @@ soakScreen:
     Set_Cursor(2,1)
     Send_Constant_String(#setup2)
 
-    Set_Cursor(2,4)
+    Set_Cursor(2,5)
     load_X(0)
     mov x+0, soak_temp
     lcall hex2bcd
-    Display_BCD(bcd+1)
+    ; Display digit 3
+    mov a, bcd+1
+    anl a, #0fh
+    orl a, #'0'
+    mov r0, a
+    WriteData(r0)
     Display_BCD(bcd+0)
-    Set_Cursor(2,4)
-    Display_char(#':') ; fill in gap
 
-    Set_Cursor(2,13)
+    Set_Cursor(2,14)
     load_X(0)
     mov x+0, soak_time
     lcall hex2bcd
-    Display_BCD(bcd+1)
+    ; Display digit 3
+    mov a, bcd+1
+    anl a, #0fh
+    orl a, #'0'
+    mov r0, a
+    WriteData(r0)
     Display_BCD(bcd+0)
-    Set_Cursor(2,13)
-    Display_char(#':') ; fill in gap
 
     mov a, edit_sett
     cjne a, #0, indic_soak_time
@@ -503,23 +498,28 @@ reflowScreen:
     Set_Cursor(2,1)
     Send_Constant_String(#setup2)
   
-    Set_Cursor(2,4)
+    Set_Cursor(2,5)
     load_X(0)
     mov x+0, reflow_temp
     lcall hex2bcd
-    Display_BCD(bcd+1)
+    ; Display digit 3
+    mov a, bcd+1
+    anl a, #0fh
+    orl a, #'0'
+    mov r0, a
+    WriteData(r0)
     Display_BCD(bcd+0)
-    Set_Cursor(2,4)
-    Display_char(#':') ; fill in gap
-
-    Set_Cursor(2,13)
+    Set_Cursor(2,14)
     load_X(0)
     mov x+0, reflow_time
     lcall hex2bcd
-    Display_BCD(bcd+1)
+    ; Display digit 3
+    mov a, bcd+1
+    anl a, #0fh
+    orl a, #'0'
+    mov r0, a
+    WriteData(r0)
     Display_BCD(bcd+0)
-    Set_Cursor(2,13)
-    Display_char(#':') ; fill in gap
     mov a, edit_sett
     cjne a, #2, indic_refl_time
     Set_Cursor(1,6)
@@ -535,14 +535,17 @@ coolScreen:
     Set_Cursor(2,1)
     Send_Constant_String(#setup5)
 
-    Set_Cursor(2,4)
+    Set_Cursor(2,5)
     load_X(0)
     mov x+0, cool_temp
     lcall hex2bcd
-    Display_BCD(bcd+1)
+    ; Display digit 3
+    mov a, bcd+1
+    anl a, #0fh
+    orl a, #'0'
+    mov r0, a
+    WriteData(r0)
     Display_BCD(bcd+0)
-    Set_Cursor(2,4)
-    Display_char(#':') ; fill in gap
     ret
 
 
