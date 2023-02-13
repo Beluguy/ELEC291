@@ -207,6 +207,23 @@ Forever:
 	Wait_Milli_Seconds(#100)
 	;NO CALCULATION REQUIRED Will be Added to hot juction calculations
 
+	mov x+0, Result_Cold+0
+	mov x+1, Result_Cold+1
+	mov x+2, #0
+	mov x+3, #0
+	
+	load_Y(410)
+	lcall mul32
+	
+	load_Y(1023)
+	lcall div32
+	
+	load_Y(273)
+	lcall sub32
+	
+	mov Result_Cold+0, x+0
+	mov Result_Cold+1, x+1
+	
 	;=============ADC Thermocouple Manipulation and Calculation
 	clr CE_ADC
 	mov R0, #00000001B ; Start bit:1
@@ -237,6 +254,9 @@ Forever:
 	lcall div32	
 	load_Y(24038) 
 	lcall mul32
+
+	mov Result_Hot+0, x+0
+	mov Result_Hot+1, x+1
 
 	load_X(Result_Hot)
 	load_Y(Result_Cold)
