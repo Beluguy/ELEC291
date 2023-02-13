@@ -659,11 +659,11 @@ PWM_OUTPUT:
 Not_yet: ret
 
 Load_Defaults: ; Load defaults if 'keys' are incorrect
-	mov soak_temp, #150
-	mov soak_time, #45
-	mov reflow_temp, #225
-	mov reflow_time, #30
-    mov cool_temp, #50
+	mov soak_temp, 35				; 150
+	mov soak_time, #10				; 45
+	mov reflow_temp, #50			; 225
+	mov reflow_time, #5				; 30
+    mov cool_temp, #30				;50
 	ret
 
 ;-------------------------------------FSM time!!---------------------------------------
