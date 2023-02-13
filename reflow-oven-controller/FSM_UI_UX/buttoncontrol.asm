@@ -33,6 +33,13 @@ inc %1
 skip%Ma:
 ENDMAC
 
+getbyte mac
+clr a
+movc a, @a+dptr
+mov %0, a
+inc dptr
+Endmac
+
 Load_Configuration:
 mov dptr, #0x7f84 ; First key value location.
 getbyte(R0) ; 0x7f84 should contain 0x55
@@ -131,19 +138,19 @@ loop:
     lcall SendToLCD
     lcall Save_Configuration
     loop_a:
-    Change_8bit_Variable(TIME_SOAK_PB, time_soak, loop_a) ; check var names may have wrong caps
+    Change_8bit_Variable(TIME_SOAK_PB, time_soak, loop_b) ; check var names may have wrong caps
     Set_Cursor(2, 5)
     mov a, time_soak
     lcall SendToLCD
     lcall Save_Configuration
     loop_b:
-    Change_8bit_Variable(TEMP_REFL_PB, temp_refl, loop_a)
+    Change_8bit_Variable(TEMP_REFL_PB, temp_refl, loop_c)
     Set_Cursor(2, 1)
     mov a, temp_refl
     lcall SendToLCD
     lcall Save_Configuration
     loop_c:
-    Change_8bit_Variable(TIME_REFL_PB, time_refl, loop_a)
+    Change_8bit_Variable(TIME_REFL_PB, time_refl, loop_d)
     Set_Cursor(2, 1)
     mov a, time_refl
     lcall SendToLCD
