@@ -258,7 +258,7 @@ MainProgram: ; setup()
 
     mov start_flag, #0
     mov safety_overheat, #0
-    
+
     
     lcall Timer0_Init
     setb EA   							; Enable Global interrupts
@@ -663,6 +663,7 @@ Load_Defaults: ; Load defaults if 'keys' are incorrect
 	mov soak_time, #45
 	mov reflow_temp, #225
 	mov reflow_time, #30
+    mov cool_temp, #50
 	ret
 
 ;-------------------------------------FSM time!!---------------------------------------
@@ -674,6 +675,7 @@ state0:							; default state
 	lcall start_or_not
 	jnb start_flag, state0_done	; if start key is not press, the go to state0_done
 	mov state, #1
+	clr start_flag
 state0_done:
 	ljmp forever
 state1:							; ramp to soak
@@ -730,8 +732,7 @@ state5:							; cooling state
 	clr c
 	subb a, cool_temp			; if cool_temp > temp, c = 1
 	jnc state5_done				; if temp is not at cool_temp, then go to state5_done 
-	mov state, #0
-	clr start_flag	
+	mov state, #0	
 state5_done:
 	ljmp forever 
 ;----------------------------------------------------------------------------------------
@@ -743,13 +744,16 @@ loadbyte mac
 	inc dptr
 endmac
 save_config:
+    push IE ; Save the current state of bit EA in the stack
+    clr EA ; Disable interrupts
 	mov FCON, #0x08 ; Page Buffer Mapping Enabled (FPS = 1)
 	mov dptr, #0x7f80 ; Last page of flash memory
 	; Save variables
-	loadbyte(temp_soak) ; @0x7f80
-	loadbyte(time_soak) ; @0x7f81
-	loadbyte(temp_refl) ; @0x7f82
-	loadbyte(time_refl) ; @0x7f83
+	loadbyte(soak_temp) ; @0x7f80
+	loadbyte(soak_time) ; @0x7f81
+	loadbyte(reflow_temp) ; @0x7f82
+	loadbyte(reflow_time) ; @0x7f83
+    loadbyte(cool_temp) ; @0x7f84
 	loadbyte(#0x55) ; First key value @0x7f84
 	loadbyte(#0xAA) ; Second key value @0x7f85
 	mov FCON, #0x00 ; Page Buffer Mapping Disabled (FPS = 0)
@@ -759,29 +763,31 @@ save_config:
 	; CPU idles until writing of flash completes.
 	mov FCON, #0x00 ; Page Buffer Mapping Disabled (FPS = 0)
 	anl EECON, #0b10111111 ; Disable auto-erase
-	ret
+	pop IE ; Restore the state of bit EA from the stack
+    ret
 ;-----------------------------------------------------------------------------
 
 ;------------------------------read from nvmem--------------------------------
 getbyte mac
-clr a
-movc a, @a+dptr
-mov %0, a
-inc dptr
+    clr a
+    movc a, @a+dptr
+    mov %0, a
+    inc dptr
 Endmac
 Load_Configuration:
-mov dptr, #0x7f84 ; First key value location.
-getbyte(R0) ; 0x7f84 should contain 0x55
-cjne R0, #0x55, Load_Defaults
-getbyte(R0) ; 0x7f85 should contain 0xAA
-cjne R0, #0xAA, Load_Defaults
+    mov dptr, #0x7f84 ; First key value location.
+    getbyte(R0) ; 0x7f84 should contain 0x55
+    cjne R0, #0x55, Load_Defaults
+    getbyte(R0) ; 0x7f85 should contain 0xAA
+    cjne R0, #0xAA, Load_Defaults
 ; Keys are good. Get stored values.
-mov dptr, #0x7f80
-getbyte(temp_soak) ; 0x7f80
-getbyte(time_soak) ; 0x7f81
-getbyte(temp_refl) ; 0x7f82
-getbyte(time_refl) ; 0x7f83
-ret
+    mov dptr, #0x7f80
+    getbyte(soak_temp) ; 0x7f80
+    getbyte(soak_time) ; 0x7f81
+    getbyte(reflow_temp) ; 0x7f82
+    getbyte(reflow_time) ; 0x7f83
+    getbyte(cool_temp)
+    ret
 ;----------------------------------------------------------------------------
 
 ;----------------------------------------------------------------------
