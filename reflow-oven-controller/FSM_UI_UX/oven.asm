@@ -255,6 +255,10 @@ MainProgram: ; setup()
     lcall InitSerialPort
     lcall INIT_SPI
     lcall LCD_4BIT
+
+    mov start_flag, #0
+    mov safety_overheat, #0
+    
     
     lcall Timer0_Init
     setb EA   							; Enable Global interrupts
