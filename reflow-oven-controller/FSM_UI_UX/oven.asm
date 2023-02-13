@@ -82,9 +82,9 @@ LCD_D6 			EQU P3.6
 LCD_D7 			EQU P3.7
 ; These ’EQU’ must match the wiring between the microcontroller and ADC 
 CE_ADC 			EQU P2.0 
-MY_MOSI 		EQU P2.1 
-MY_MISO 		EQU P2.2 
-MY_SCLK 		EQU P2.3 
+MY_MOSI_ADC	EQU P2.1 
+MY_MISO_ADC 	EQU P2.2 
+MY_SCLK_ADC 	EQU P2.3 
 
 SOUND_OUT     	EQU P1.1
 RST				EQU	P4.5	; button to reset
@@ -241,8 +241,8 @@ InitSerialPort:
     ret
     
 INIT_SPI: 
-	setb MY_MISO ; Make MISO an input pin
-	clr MY_SCLK ; For mode (0,0) SCLK is zero
+	setb MY_MISO_ADC ; Make MISO an input pin
+	clr MY_SCLK_ADC ; For mode (0,0) SCLK is zero
 	ret
 
 ; -------------------------------------------------- MAIN PROGRAM LOOP ----------------------------------------------
@@ -361,13 +361,13 @@ DO_SPI_G_LOOP:
 	mov a, R0 ; Byte to write is in R0
 	rlc a ; Carry flag has bit to write
 	mov R0, a 
-	mov MY_MOSI, c 
-	setb MY_SCLK ; Transmit
-	mov c, MY_MISO ; Read received bit
+	mov MY_MOSI_ADC, c 
+	setb MY_SCLK_ADC ; Transmit
+	mov c, MY_MISO_ADC ; Read received bit
 	mov a, R1 ; Save received bit in R1
 	rlc a 
 	mov R1, a 
-	clr MY_SCLK 
+	clr MY_SCLK_ADC 
 	djnz R2, DO_SPI_G_LOOP 
  	pop acc 
  	ret
