@@ -217,9 +217,15 @@ Init_all:
 	; Configure SPI pins and turn off speaker
 	;anl P2M0, #0b_1100_1110
 	;orl P2M1, #0b_0011_0001
-	; Configure P2.0, P2.4, P2.5 as open drain outputs
-	orl P2M0, #0b_0011_0001
-	orl P2M1, #0b_0011_0001
+
+	; Configure MY_MOSI/P2.5 as open drain output
+	orl P2M0, #0b_0010_0000
+	orl P2M1, #0b_0010_0000
+
+	; Configure FLASH_CE/P0.7 and MY_SCLK/P0.4 as open drain outputs
+	orl P0M0, #0b_1001_0000
+	orl P0M1, #0b_1001_000
+
 	setb MY_MISO  ; Configured as input
 	setb FLASH_CE ; CS=1 for SPI flash memory
 	clr MY_SCLK   ; Rest state of SCLK=0
