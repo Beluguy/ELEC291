@@ -674,7 +674,6 @@ state0:							; default state
 	lcall start_or_not
 	jnb start_flag, state0_done	; if start key is not press, the go to state0_done
 	mov state, #1
-	clr start_flag
 state0_done:
 	ljmp forever
 state1:							; ramp to soak
@@ -731,7 +730,8 @@ state5:							; cooling state
 	clr c
 	subb a, cool_temp			; if cool_temp > temp, c = 1
 	jnc state5_done				; if temp is not at cool_temp, then go to state5_done 
-	mov state, #0	
+	mov state, #0
+	clr start_flag	
 state5_done:
 	ljmp forever 
 ;----------------------------------------------------------------------------------------
