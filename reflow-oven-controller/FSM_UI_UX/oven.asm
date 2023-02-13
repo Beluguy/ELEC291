@@ -284,7 +284,7 @@ forever: ;loop() please only place function calls into the loop!
 checkOverheat:
     mov a, temp
 	clr c
-	subb a, #250				; if 250 > temp, c = 1
+	subb a, #251				; if 251 > temp, c = 1
 	jc notOverheat				; return if notOverheating
     jb safety_overheat, overheatReset ; check if flag is set, if set that means has been overheating for prolonged time
 	setb safety_overheat        ; set overheat flag for next time
