@@ -108,7 +108,7 @@ Timer1_ISR:
 keep_playing:
 	setb SPEAKER
 	lcall Send_SPI ; Read the next byte from the SPI Flash...
-	mov P0, a ; WARNING: Remove this if not using an external DAC to use the pins of P0 as GPIO
+	;mov P0, a ; WARNING: Remove this if not using an external DAC to use the pins of P0 as GPIO
 	add a, #0x80
 	mov DADH, a ; Output to DAC. DAC output is pin P2.3
 	orl DADC, #0b_0100_0000 ; Start DAC by setting GO/BSY=1
@@ -259,8 +259,8 @@ check_DAC_init:
 	; Not necesary if using internal DAC.
 	; If using an R-2R DAC connected to P0, configure the pins of P0
 	; (An external R-2R produces much better quality sound)
-	mov P0M0, #0b_0000_0000
-	mov P0M1, #0b_1111_1111
+	;mov P0M0, #0b_0000_0000
+	;mov P0M1, #0b_1111_1111
 	
 	ret
 
