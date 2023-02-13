@@ -61,6 +61,7 @@ BSEG
 mf: 				dbit 1 ; flag for math32
 start_flag: 		dbit 1
 one_second_flag: 	dbit 1 ; Set to one in the ISR every time 1000 ms had passed
+safety_overheat:    dbit 1 ; for overheat safety feature
 
 
 CSEG
@@ -254,6 +255,10 @@ MainProgram: ; setup()
     lcall InitSerialPort
     lcall INIT_SPI
     lcall LCD_4BIT
+
+    mov start_flag, #0
+    mov safety_overheat, #0
+    
     
     lcall Timer0_Init
     setb EA   							; Enable Global interrupts
@@ -265,6 +270,7 @@ forever: ;loop() please only place function calls into the loop!
     lcall readADC 						; reads ch0 and saves result to Result as 2 byte binary
 	;lcall Delay ; hardcoded 1s delay can change or use the Timer // COMMENTED SINCE WE ARE USING TIMER NOW
     lcall Do_Something_With_Result ; convert to bcd and send to serial
+    lcall checkOverheat
     skipDisplay: 						; end segment
 
     jb start_flag, skipPoll
@@ -278,6 +284,23 @@ forever: ;loop() please only place function calls into the loop!
 
 ; ---------------------------------------------------------------------------------------------------
 
+;----------------------------------safety-features---------------------------------------------------
+checkOverheat:
+    mov a, temp
+	clr c
+	subb a, #251				; if 251 > temp, c = 1
+	jc notOverheat				; return if notOverheating
+    jb safety_overheat, overheatReset ; check if flag is set, if set that means has been overheating for prolonged time
+	setb safety_overheat        ; set overheat flag for next time
+    ret
+notOverheat:
+    clr safety_overheat
+	ret
+overheatReset:
+    clr safety_overheat
+    mov a, #5						; reset to state 5 when reset for safety
+    ret
+;----------------------------------------------------------------------------------------------------
 
 readADC:
     clr CE_ADC
