@@ -502,8 +502,12 @@ readADC:
 	mov y+3, #0
 	lcall add32
 	
+	mov temp+0, x+0
+    mov temp+1, x+1
+	
 	lcall hex2bcd
 	lcall Send_3_digit_BCD
+    
 	
 	;mov a, x
 	;cjne a, #50, NOT_EQ
@@ -512,7 +516,7 @@ readADC:
 	;ret
 	;REQ_LOW:
 	;clr TR0
-	;ret
+	ret
 
 DO_SPI_G: 
 	push acc 
