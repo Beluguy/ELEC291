@@ -23,6 +23,8 @@ $NOLIST
 $MODLP51RC2
 $LIST
 
+
+
 SYSCLK         EQU 22118400  ; Microcontroller system clock frequency in Hz
 TIMER1_RATE    EQU 22050     ; 22050Hz is the sampling rate of the wav file we are playing
 TIMER1_RELOAD  EQU 0x10000-(SYSCLK/TIMER1_RATE)
@@ -56,9 +58,15 @@ dseg at 30H
 
 ; Interrupt vectors:
 cseg
+$NOLIST
+$include(LCD_4bit.inc)
+$include(math32.inc)
+$LIST
+
 
 org 0x0000 ; Reset vector
     ljmp MainProgram
+    
 
 org 0x0003 ; External interrupt 0 vector (not used in this code)
 	reti
@@ -80,6 +88,14 @@ org 0x005b ; Timer 2 interrupt vector. (not used in this code)
 
 org 0x0063 ; ADC interrupt (vector must be present if debugger is used)
 	reti
+   	
+   	
+
+
+
+;AFTER MOVING NEEDED NUMBER
+;PLAYAUDIO
+
 
 ;-------------------------------------;
 ; ISR for Timer 1.  Used to playback  ;
@@ -485,23 +501,68 @@ forever_loop:
 	clr FLASH_CE ; Enable SPI Flash
 	mov a, #READ_BYTES
 	lcall Send_SPI
+	
+	;mov dptr, #0x00 
+	;mov R0, #0x009384
+	
+	;mov a, #1
+	;add a, #-1
+	;mov b, #3
+	;mul ab
+	
+	mov dptr, #sound_index+((3-1)*3) ; The beginning of the index (3 bytes per entry)
+
+	; multiply R0 by 3 and add it to the dptr
+	mov a, R0
+	mov b, #3
+	mul ab
+	add a, dpl
+	mov dpl, a
+	mov a, b
+	addc a, dph
+	mov dph, a
+	
+	; dptr is pointing to the MSB of the 24-bit flash memory address
+	clr a
+	movc a, @a+dptr
+	lcall Send_SPI
+	
+	inc dptr
+	clr a
+	movc a, @a+dptr
+	lcall Send_SPI
+	
+	inc dptr
+	clr a
+	movc a, @a+dptr
+	lcall Send_SPI
+	
+	
+	
 	; Set the initial position in memory where to start playing
-	mov a, #0x00
-	lcall Send_SPI
-	mov a, #0x00
-	lcall Send_SPI
-	mov a, #0x00
-	lcall Send_SPI
-	mov a, #0x00 ; Request first byte to send to DAC
-	lcall Send_SPI
+	;mov a, sound_index+3
+	;lcall Send_SPI
+	;mov a, sound_index+4
+	;lcall Send_SPI
+	;mov a, sound_index+5
+	;lcall Send_SPI
+	;mov a, sound_index+3 ; Request first byte to send to DAC
+	;lcall Send_SPI
 	
 	; How many bytes to play? All of them!  Asume 4Mbytes memory: 0x3fffff
 	mov w+2, #0x3f
 	mov w+1, #0xff
 	mov w+0, #0xff
 	
+	
+	
 	setb SPEAKER ; Turn on speaker.
 	setb TR1 ; Start playback by enabling Timer 1
+	Wait_Milli_Seconds(#250)
+	Wait_Milli_Seconds(#250)
+	Wait_Milli_Seconds(#250)
+	Wait_Milli_Seconds(#250)
+	lcall stop_playing
 	ljmp forever_loop
 	
 serial_get:
