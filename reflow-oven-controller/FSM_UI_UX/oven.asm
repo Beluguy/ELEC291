@@ -168,6 +168,10 @@ Timer0_ISR:
 ; the WAV file stored in the SPI      ;
 ; flash memory.                       ;
 ;-------------------------------------;
+
+Timer1_Init:
+
+	ret
 Timer1_ISR:
     ; The registers used in the ISR must be saved in the stack
     push acc
@@ -186,7 +190,6 @@ Timer1_ISR:
     dec w+1
     cjne a, w+1, keep_playing
     dec w+2
-
 keep_playing:
     setb SPEAKER
     lcall Send_SPI ; Read the next byte from the SPI Flash...
@@ -194,14 +197,12 @@ keep_playing:
     mov DADH, a ; Output to DAC. DAC output is pin P2.3
     orl DADC, #0b_0100_0000 ; Start DAC by setting GO/BSY=1
     sjmp Timer1_ISR_Done
-
 stop_playing:
     clr TR1 ; Stop timer 1
     setb FLASH_CE ; Disable SPI Flash
     clr SPEAKER ; Turn off speaker.  Removes hissing noise when not playing sound.
     mov DADH, #0x80 ; middle of range
    orl DADC, #0b_0100_0000 ; Start DAC by setting GO/BSY=1
-
 Timer1_ISR_Done:
     pop psw
     pop acc
@@ -354,9 +355,8 @@ MainProgram: ; setup()
     mov edit_sett, #0
     
     lcall Timer0_Init
-    ;lcall Timer1_Init                   ;uncomment for speaker config
+    lcall Timer1_Init                   ;uncomment for speaker config
     lcall Timer2_Init
-
     setb EA   							; Enable Global interrupts
 
 forever: ;loop() please only place function calls into the loop!
@@ -860,18 +860,5 @@ Load_Configuration:
 jumpToLoadDef:
 	ljmp Load_Defaults
 ;----------------------------------------------------------------------------
-
-;----------------------------------------------------------------------
-cold_junc:
-
-ret
-;----------------------------------------------------------------------
-
-
-;----------------------------------------------------------------------
-hot_junc:
-
-ret
-;----------------------------------------------------------------------
 
 END
