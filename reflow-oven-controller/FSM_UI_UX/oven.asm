@@ -386,21 +386,19 @@ forever: ;loop() please only place function calls into the loop!
     jnb one_second_flag, skipDisplay 	; this segment only executes once a second
     clr one_second_flag
     
-    ;lcall readADC 						; reads ch0 and saves result to Result as 2 byte binary
-    ;lcall Do_Something_With_Result ; convert to bcd and send to serial
-    ;lcall checkOverheat
+    lcall readADC 						; reads ch0 and saves result to Result as 2 byte binary
+    lcall checkOverheat
     lcall generateDisplay
-    
     skipDisplay: 						; end segment
 
-    jb start_flag, skipPoll
+    jb start_flag, skipPoll ; code runs if start flag is unset
     lcall pollButtons 					; poll buttons for editing screen
-    ljmp forever
-    skipPoll: 
 
-    ;lcall reset 						; check if reset is pressed
-    ;ljmp FSM 							; finite state machine logic
-	ljmp forever
+    skipPoll: ; code runs always
+    lcall reset 						; check if reset is pressed
+    
+    ljmp FSM 							; finite state machine logic
+    ljmp forever                        ; just in case
 
 ; ---------------------------------------------------------------------------------------------------
 
@@ -706,26 +704,26 @@ DONT_INC:
     cjne a, #0, delem1
     dec soak_temp
     lcall updateSoakScreen
-    ;lcall save_config					; save config to nvmem
+    lcall save_config					; save config to nvmem
     ret
     delem1: cjne a, #1, delem2
     dec soak_time
     lcall updateSoakScreen
-    ;lcall save_config					; save config to nvmem
+    lcall save_config					; save config to nvmem
     ret
     delem2: cjne a, #2, delem3
     dec reflow_temp
     lcall updateReflowScreen
-    ;lcall save_config					; save config to nvmem
+    lcall save_config					; save config to nvmem
     ret
     delem3: cjne a, #3, delem4
     dec reflow_time
     lcall updateReflowScreen
-    ;lcall save_config					; save config to nvmem
+    lcall save_config					; save config to nvmem
     ret
     delem4: dec cool_temp
     lcall updateCoolScreen
-    ;lcall save_config					; save config to nvmem
+    lcall save_config					; save config to nvmem
     ret
 
 DONT_DEC: 
