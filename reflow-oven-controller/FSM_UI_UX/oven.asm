@@ -15,11 +15,46 @@ BAUD 				EQU 115200
 BRG_VAL 			EQU (0x100-(CLK/(16*BAUD)))
 TIMER0_RATE   		EQU 1000    ; 1000Hz PWM output signal 
 TIMER0_RELOAD 		EQU ((65536-(CLK/TIMER0_RATE)))
-TIMER2_RATE     	EQU 1000     ; 1000Hz, for a timer tick of 1ms
+TIMER1_RATE    		EQU 22050   ; 22050Hz is the sampling rate of the wav file we are playing
+TIMER1_RELOAD  		EQU 0x10000-(SYSCLK/TIMER1_RATE)
+TIMER2_RATE     	EQU 1000    ; 1000Hz, for a timer tick of 1ms
 TIMER2_RELOAD   	EQU ((65536-(CLK/TIMER2_RATE)))
 
 HOLD_PWM			EQU 20		; 20% pwm for holding the temp constant 
-PWM_20				EQU (TIMER0_RATE-(HOLD_PWM*10))
+PWM_HOLD_RATE		EQU (TIMER0_RATE-(HOLD_PWM*10))
+
+;----------------------------------Ports!----------------------------------------
+SPEAKER  		EQU P2.4 		; Used with a MOSFET to turn off speaker when not in use
+OUTPUT			EQU P0.2		; output signal to the relay box
+
+; These 'equ' must match the hardware wiring
+; They are used by 'LCD_4bit.inc'
+LCD_RS 			EQU P3.2
+; LCD_RW equ Px.x ; Always grounded
+LCD_E  			EQU P3.3
+LCD_D4 			EQU P3.4
+LCD_D5 			EQU P3.5
+LCD_D6 			EQU P3.6
+LCD_D7 			EQU P3.7
+; These ’EQU’ must match the wiring between the microcontroller and ADC 
+CE_ADC 			EQU P2.0 
+MY_MOSI_ADC	    EQU P2.1 
+MY_MISO_ADC 	EQU P2.2 
+MY_SCLK_ADC 	EQU P2.3 
+
+; The pins used for SPI for flash memory 
+FLASH_CE  		EQU  P0.7		; Pin 1
+MY_MOSI   		EQU  P2.5 		; Pin 5
+MY_MISO   		EQU  P2.7		; Pin 2
+MY_SCLK   		EQU  P0.4 		; Pin 6
+
+DECR            EQU P0.0   		; button to increment current selection
+INCR            EQU P0.3   		; button to increment current selection
+EDIT			EQU P0.6		; button for changing what to edit
+START_STOP 		EQU P4.4 		; button to start/stop reflow
+RST				EQU	P2.6		; button to reset
+; i have buttons on 2.6, 4.4, 0.6, 0.3, 0.0 (left to right)
+;--------------------------------------------------------------------------------
 
 ; These register definitions needed by 'math32.inc'
 DSEG at 30H
@@ -63,40 +98,10 @@ start_flag: 		dbit 1
 one_second_flag: 	dbit 1 ; Set to one in the ISR every time 1000 ms had passed
 safety_overheat:    dbit 1 ; for overheat safety feature
 
-
 CSEG
-
 $NOLIST
 $include(math32.inc)
 $include(macros.inc)
-$LIST
-
-; These 'equ' must match the hardware wiring
-; They are used by 'LCD_4bit.inc'
-LCD_RS 			EQU P3.2
-; LCD_RW equ Px.x ; Always grounded
-LCD_E  			EQU P3.3
-LCD_D4 			EQU P3.4
-LCD_D5 			EQU P3.5
-LCD_D6 			EQU P3.6
-LCD_D7 			EQU P3.7
-; These ’EQU’ must match the wiring between the microcontroller and ADC 
-CE_ADC 			EQU P2.0 
-MY_MOSI_ADC	    EQU P2.1 
-MY_MISO_ADC 	EQU P2.2 
-MY_SCLK_ADC 	EQU P2.3 
-
-SOUND_OUT     	EQU P1.1
-RST				EQU	P4.5	; button to reset
-EDIT			EQU P0.6	; button for changing what to edit
-INCR            EQU P0.3   ; button to increment current selection
-DECR            EQU P0.0   ; button to increment current selection
-START_STOP 		EQU P2.4 	; button to start/stop reflow
-OUTPUT			EQU P	; output signal to the relay box
-
-; i have buttons on 2.4, 4.5, 0.6, 0.3, 0.0 (left to right)
-
-$NOLIST
 $include(LCD_4bit.inc)
 $LIST
 
@@ -308,7 +313,6 @@ overheatReset:
     mov a, #5						; reset to state 5 when reset for safety
     ret
 ;----------------------------------------------------------------------------------------------------
-
 readADC:
     clr CE_ADC
 	mov R0, #00000001B ; Start bit:1
@@ -631,8 +635,9 @@ DONT_INC:
     ret
 
 DONT_DEC: ret
+;-------------------------------------------------------------------------------
 
-;---------------------------------------------------------------------------------------
+;-----------------------------------FSM & PWM----------------------------------------
 
 reset:
 	jb RST, DONT_RESET 				; if 'RESET' is pressed, wait for rebouce
@@ -666,18 +671,18 @@ PWM_OUTPUT:
 	cjne a, #0 , Not_yet			; check whether it is time to turn on the pwm pin		 
 	clr OUTPUT						; clr OUTPUT if at the begining of the period
 	mov a, Count1ms+0
-	cjne a, #low(PWM_20), Not_yet 	; Warning: this instruction changes the carry flag!
+	cjne a, #low(PWM_HOLD_RATE), Not_yet 	; Warning: this instruction changes the carry flag!
 	mov a, Count1ms+1
-	cjne a, #high(PWM_20), Not_yet	; if Count1ms = PWM_20, set the OUTPUT to 1
+	cjne a, #high(PWM_HOLD_RATE), Not_yet	; if Count1ms = PWM_HOLD_RATE, set the OUTPUT to 1
 	setb OUTPUT
 Not_yet: ret
 
 Load_Defaults: ; Load defaults if 'keys' are incorrect
-	mov soak_temp, 35				; 150
+	mov soak_temp, #35				; 150
 	mov soak_time, #10				; 45
 	mov reflow_temp, #50			; 225
 	mov reflow_time, #5				; 30
-    mov cool_temp, #30				;50
+    mov cool_temp, #30				; 50
 	ret
 
 ;-------------------------------------FSM time!!---------------------------------------
@@ -752,11 +757,6 @@ state5_done:
 ;----------------------------------------------------------------------------------------
 
 ;---------------------------------save to nvmem-------------------------------
-loadbyte mac
-	mov a, %0
-	movx @dptr, a
-	inc dptr
-endmac
 save_config:
     push IE ; Save the current state of bit EA in the stack
     clr EA ; Disable interrupts
@@ -782,12 +782,6 @@ save_config:
 ;-----------------------------------------------------------------------------
 
 ;------------------------------read from nvmem--------------------------------
-getbyte mac
-    clr a
-    movc a, @a+dptr
-    mov %0, a
-    inc dptr
-Endmac
 Load_Configuration:
     mov dptr, #0x7f84 ; First key value location.
     getbyte(R0) ; 0x7f84 should contain 0x55

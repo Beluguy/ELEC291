@@ -57,3 +57,18 @@ dec_setting_next_%M:
     mov %0, a
 dec_setting_end_%M:
 ENDMAC
+
+; macro for Load_Configuration
+getbyte mac
+    clr a
+    movc a, @a+dptr
+    mov %0, a
+    inc dptr
+ENDMAC
+
+; marco for save_config
+loadbyte mac
+	mov a, %0
+	movx @dptr, a
+	inc dptr
+ENDMAC
