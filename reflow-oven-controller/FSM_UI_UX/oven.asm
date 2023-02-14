@@ -350,6 +350,9 @@ MainProgram: ; setup()
     mov secs_ctr, #0
     mov mins_ctr, #0
     clr one_second_flag
+
+    ;init settings
+    mov edit_sett, #0
     
     lcall Timer0_Init
     lcall Timer1_Init                   ;uncomment for speaker config
@@ -359,7 +362,7 @@ MainProgram: ; setup()
 forever: ;loop() please only place function calls into the loop!
     jnb one_second_flag, skipDisplay 	; this segment only executes once a second
     clr one_second_flag
-    lcall generateDisplay
+    
     ;lcall readADC 						; reads ch0 and saves result to Result as 2 byte binary
     ;lcall Do_Something_With_Result ; convert to bcd and send to serial
     ;lcall checkOverheat
@@ -367,6 +370,7 @@ forever: ;loop() please only place function calls into the loop!
 
     jb start_flag, skipPoll
     lcall pollButtons 					; poll buttons for editing screen
+    lcall generateDisplay
     
     ljmp forever
     skipPoll: 
@@ -536,6 +540,7 @@ soakScreen:
     Set_Cursor(2,1)
     Send_Constant_String(#setup2)
 
+updateSoakScreen:
     Set_Cursor(2,5)
     mov a, soak_temp
     lcall SendToLCD
@@ -558,7 +563,7 @@ reflowScreen:
     Send_Constant_String(#setup3)
     Set_Cursor(2,1)
     Send_Constant_String(#setup2)
-  
+updateReflowScreen:
     Set_Cursor(2,5)
     mov a, reflow_temp
     lcall SendToLCD
@@ -581,7 +586,7 @@ coolScreen:
     Send_Constant_String(#setup4)
     Set_Cursor(2,1)
     Send_Constant_String(#setup5)
-
+updateCoolScreen:
     Set_Cursor(2,5)
     mov a, cool_temp
     lcall SendToLCD
@@ -590,16 +595,16 @@ coolScreen:
 
 pollButtons:
     jb EDIT, DONT_EDIT 		
-	Wait_Milli_Seconds(#50)		
+	Wait_Milli_Seconds(#100)		
 	jb EDIT, DONT_EDIT
 	jnb EDIT, $
 
     mov a, edit_sett
     cjne a, #4, incEdit
     mov edit_sett, #0
-    ljmp generateDisplay
-    incEdit: inc_setting(edit_sett)
-    ljmp generateDisplay
+    ljmp setupDisplay
+    incEdit: inc edit_sett
+    ljmp setupDisplay
 
 ; 0 - soak temp
 ; 1 - soak time
@@ -614,28 +619,28 @@ DONT_EDIT:
     
     mov a, edit_sett
     cjne a, #0, elem1
-    inc_setting(soak_temp)
-    lcall save_config					; save config to nvmem
-    ljmp generateDisplay
+    inc soak_temp
+    ;lcall save_config					; save config to nvmem
+    lcall updateSoakScreen
     ret
     elem1: cjne a, #1, elem2
-    inc_setting(soak_time)
-    lcall save_config					; save config to nvmem
-    ljmp generateDisplay
+    inc soak_temp
+    ;lcall save_config					; save config to nvmem
+    lcall updateSoakScreen
     ret
     elem2: cjne a, #2, elem3
-    inc_setting(reflow_temp)
-    lcall save_config					; save config to nvmem
-    ljmp generateDisplay
+    inc reflow_temp
+    lcall updateReflowScreen
+    ;lcall save_config					; save config to nvmem
     ret
     elem3: cjne a, #3, elem4
-    inc_setting(reflow_time)
-    lcall save_config					; save config to nvmem
-    ljmp generateDisplay
+    inc reflow_time
+    lcall updateReflowScreen
+    ;lcall save_config					; save config to nvmem
     ret
-    elem4: inc_setting(cool_temp)
-    lcall save_config					; save config to nvmem
-    ljmp generateDisplay
+    elem4: inc cool_temp
+    lcall updateCoolScreen
+    ;lcall save_config					; save config to nvmem
     ret
     
 DONT_INC:
@@ -646,28 +651,28 @@ DONT_INC:
 
     mov a, edit_sett
     cjne a, #0, delem1
-    dec_setting(soak_temp)
-    lcall save_config					; save config to nvmem
-    ljmp generateDisplay
+    dec soak_temp
+    lcall updateSoakScreen
+    ;lcall save_config					; save config to nvmem
     ret
     delem1: cjne a, #1, delem2
-    dec_setting(soak_time)
-    lcall save_config					; save config to nvmem
-    ljmp generateDisplay
+    dec soak_time
+    lcall updateSoakScreen
+    ;lcall save_config					; save config to nvmem
     ret
     delem2: cjne a, #2, delem3
-    dec_setting(reflow_temp)
-    lcall save_config					; save config to nvmem
-    ljmp generateDisplay
+    dec reflow_temp
+    lcall updateReflowScreen
+    ;lcall save_config					; save config to nvmem
     ret
     delem3: cjne a, #3, delem4
-    dec_setting(reflow_time)
-    lcall save_config					; save config to nvmem
-    ljmp generateDisplay
+    dec reflow_time
+    lcall updateReflowScreen
+    ;lcall save_config					; save config to nvmem
     ret
-    delem4: dec_setting(cool_temp)
-    lcall save_config					; save config to nvmem
-    ljmp generateDisplay
+    delem4: dec cool_temp
+    lcall updateCoolScreen
+    ;lcall save_config					; save config to nvmem
     ret
 
 DONT_DEC: 
