@@ -386,9 +386,9 @@ forever: ;loop() please only place function calls into the loop!
     jnb one_second_flag, skipDisplay 	; this segment only executes once a second
     clr one_second_flag
     
-    ;lcall readADC 						; reads ch0 and saves result to Result as 2 byte binary
+    lcall readADC 						; reads ch0 and saves result to Result as 2 byte binary
     ;lcall Do_Something_With_Result ; convert to bcd and send to serial
-    ;lcall checkOverheat
+    lcall checkOverheat
     lcall generateDisplay
     
     skipDisplay: 						; end segment
@@ -398,8 +398,8 @@ forever: ;loop() please only place function calls into the loop!
     ljmp forever
     skipPoll: 
 
-    ;lcall reset 						; check if reset is pressed
-    ;ljmp FSM 							; finite state machine logic
+    lcall reset 						; check if reset is pressed
+    ljmp FSM 							; finite state machine logic
 	ljmp forever
 
 ; ---------------------------------------------------------------------------------------------------
