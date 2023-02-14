@@ -366,12 +366,12 @@ forever: ;loop() please only place function calls into the loop!
     ;lcall readADC 						; reads ch0 and saves result to Result as 2 byte binary
     ;lcall Do_Something_With_Result ; convert to bcd and send to serial
     ;lcall checkOverheat
+    lcall generateDisplay
+    
     skipDisplay: 						; end segment
 
     jb start_flag, skipPoll
     lcall pollButtons 					; poll buttons for editing screen
-    lcall generateDisplay
-    
     ljmp forever
     skipPoll: 
 
@@ -595,16 +595,18 @@ updateCoolScreen:
 
 pollButtons:
     jb EDIT, DONT_EDIT 		
-	Wait_Milli_Seconds(#100)		
+	Wait_Milli_Seconds(#50)		
 	jb EDIT, DONT_EDIT
 	jnb EDIT, $
 
     mov a, edit_sett
     cjne a, #4, incEdit
     mov edit_sett, #0
-    ljmp setupDisplay
+    ;ljmp setupDisplay
+    ret
     incEdit: inc edit_sett
-    ljmp setupDisplay
+    ;ljmp setupDisplay
+    ret
 
 ; 0 - soak temp
 ; 1 - soak time
@@ -621,25 +623,25 @@ DONT_EDIT:
     cjne a, #0, elem1
     inc soak_temp
     ;lcall save_config					; save config to nvmem
-    lcall updateSoakScreen
+    ;lcall updateSoakScreen
     ret
     elem1: cjne a, #1, elem2
-    inc soak_temp
+    inc soak_time
     ;lcall save_config					; save config to nvmem
-    lcall updateSoakScreen
+    ;lcall updateSoakScreen
     ret
     elem2: cjne a, #2, elem3
     inc reflow_temp
-    lcall updateReflowScreen
+    ;lcall updateReflowScreen
     ;lcall save_config					; save config to nvmem
     ret
     elem3: cjne a, #3, elem4
     inc reflow_time
-    lcall updateReflowScreen
+    ;lcall updateReflowScreen
     ;lcall save_config					; save config to nvmem
     ret
     elem4: inc cool_temp
-    lcall updateCoolScreen
+    ;lcall updateCoolScreen
     ;lcall save_config					; save config to nvmem
     ret
     
@@ -652,26 +654,26 @@ DONT_INC:
     mov a, edit_sett
     cjne a, #0, delem1
     dec soak_temp
-    lcall updateSoakScreen
+    ;lcall updateSoakScreen
     ;lcall save_config					; save config to nvmem
     ret
     delem1: cjne a, #1, delem2
     dec soak_time
-    lcall updateSoakScreen
+    ;lcall updateSoakScreen
     ;lcall save_config					; save config to nvmem
     ret
     delem2: cjne a, #2, delem3
     dec reflow_temp
-    lcall updateReflowScreen
+    ;lcall updateReflowScreen
     ;lcall save_config					; save config to nvmem
     ret
     delem3: cjne a, #3, delem4
     dec reflow_time
-    lcall updateReflowScreen
+    ;lcall updateReflowScreen
     ;lcall save_config					; save config to nvmem
     ret
     delem4: dec cool_temp
-    lcall updateCoolScreen
+    ;lcall updateCoolScreen
     ;lcall save_config					; save config to nvmem
     ret
 
