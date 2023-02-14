@@ -343,7 +343,7 @@ InitButton:
 	setb DECR            
 	setb INCR            
 	setb EDIT					
-	setbSTART_STOP 				
+	setb START_STOP 				
 	setb RST				
 	ret
 ; -------------------------------------------------- MAIN PROGRAM LOOP ----------------------------------------------
