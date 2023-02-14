@@ -165,7 +165,7 @@ Timer2_Init:
 ;---------------------------------;
 Timer2_ISR:
 	clr TF2  ; Timer 2 doesn't clear TF2 automatically. Do it in ISR
-	cpl P1.0 ; To check the interrupt rate with oscilloscope. It must be precisely a 1 ms pulse.
+	;cpl P1.0 ; To check the interrupt rate with oscilloscope. It must be precisely a 1 ms pulse.
 	
 	; The two registers used in the ISR must be saved in the stack
 	push acc
@@ -623,7 +623,8 @@ DONT_INC:
     lcall save_config					; save config to nvmem
     ljmp generateDisplay
 
-DONT_DEC: ret
+DONT_DEC: 
+    ret
 
 ;---------------------------------------------------------------------------------------
 
@@ -634,7 +635,8 @@ reset:
 	jnb RST, $
 	mov a, #5						; reset to state 5 when reset for safety
 	mov state, a
-DONT_RESET: ret	
+DONT_RESET: 
+    ret	
 
 start_or_not:
 	jb START_STOP, DONT_START 		; if 'RESET' is pressed, wait for rebouce
@@ -642,7 +644,8 @@ start_or_not:
 	jb START_STOP, DONT_START 		; if the 'RESET' button is not pressed skip
 	jnb START_STOP, $
 	cpl start_flag
-DONT_START: ret	
+DONT_START: 
+    ret	
 
 PWM_OUTPUT:
 	mov a, pwm

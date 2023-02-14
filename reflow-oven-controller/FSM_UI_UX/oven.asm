@@ -86,9 +86,9 @@ soak_temp: 			ds 1
 soak_time: 			ds 1
 reflow_temp: 		ds 1
 reflow_time: 		ds 1
+cool_temp:			ds 1
 pwm: 				ds 1
 sec: 				ds 1
-cool_temp:			ds 1
 temp:				ds 1
 ;---------------------------------------------------
 
@@ -170,7 +170,7 @@ Timer2_Init:
 ;---------------------------------;
 Timer2_ISR:
 	clr TF2  ; Timer 2 doesn't clear TF2 automatically. Do it in ISR
-	cpl P1.0 ; To check the interrupt rate with oscilloscope. It must be precisely a 1 ms pulse.
+	;cpl P1.0 ; To check the interrupt rate with oscilloscope. It must be precisely a 1 ms pulse.
 	
 	; The two registers used in the ISR must be saved in the stack
 	push acc
@@ -271,27 +271,31 @@ MainProgram: ; setup()
     ;init clock
     mov secs_ctr, #0
     mov mins_ctr, #0
+    clr one_second_flag
     
     lcall Timer0_Init
+    ;lcall Timer1_Init                   ;uncomment for speaker config
+    lcall Timer2_Init
+
     setb EA   							; Enable Global interrupts
 
 forever: ;loop() please only place function calls into the loop!
     jnb one_second_flag, skipDisplay 	; this segment only executes once a second
     clr one_second_flag
     lcall generateDisplay
-    lcall readADC 						; reads ch0 and saves result to Result as 2 byte binary
-	;lcall Delay ; hardcoded 1s delay can change or use the Timer // COMMENTED SINCE WE ARE USING TIMER NOW
-    lcall Do_Something_With_Result ; convert to bcd and send to serial
-    lcall checkOverheat
+    ;lcall readADC 						; reads ch0 and saves result to Result as 2 byte binary
+    ;lcall Do_Something_With_Result ; convert to bcd and send to serial
+    ;lcall checkOverheat
     skipDisplay: 						; end segment
 
     jb start_flag, skipPoll
     lcall pollButtons 					; poll buttons for editing screen
+    
+    ljmp forever
     skipPoll: 
 
-    lcall reset 						; check if reset is pressed
-    ljmp FSM 							; finite state machine logic
-	lcall save_config					; save config to nvmem
+    ;lcall reset 						; check if reset is pressed
+    ;ljmp FSM 							; finite state machine logic
 	ljmp forever
 
 ; ---------------------------------------------------------------------------------------------------
@@ -354,15 +358,6 @@ Do_Something_With_Result:
 	REQ_LOW:
 	clr TR0
 	ret
-	
-Delay:
-	mov R2, #200
-    mov R1, #222
-    mov R0, #166
-    djnz R0, $   ; 3 cycles->3*45.21123ns*166=22.51519us
-    djnz R1, $-4 ; 22.51519us*222=4.998ms
-    djnz R2, $-4 ; 0.996 seconds
-    ret
 
 DO_SPI_G: 
 	push acc 
@@ -415,16 +410,8 @@ startDisplay:
     Send_Constant_String(#run2)
     
     Set_Cursor(1,6)
-    load_X(0)
-    mov x+0, temp
-    lcall hex2bcd
-    ; Display digit 3
-    mov a, bcd+1
-    anl a, #0fh
-    orl a, #'0'
-    mov r0, a
-    WriteData(r0)
-    Display_BCD(bcd+0) ;display digit 2 and 1
+    mov a, temp
+    lcall SendToLCD
 
     Set_Cursor(1,16)
     load_X(0)
@@ -473,28 +460,12 @@ soakScreen:
     Send_Constant_String(#setup2)
 
     Set_Cursor(2,5)
-    load_X(0)
-    mov x+0, soak_temp
-    lcall hex2bcd
-    ; Display digit 3
-    mov a, bcd+1
-    anl a, #0fh
-    orl a, #'0'
-    mov r0, a
-    WriteData(r0)
-    Display_BCD(bcd+0)
+    mov a, soak_temp
+    lcall SendToLCD
 
     Set_Cursor(2,14)
-    load_X(0)
-    mov x+0, soak_time
-    lcall hex2bcd
-    ; Display digit 3
-    mov a, bcd+1
-    anl a, #0fh
-    orl a, #'0'
-    mov r0, a
-    WriteData(r0)
-    Display_BCD(bcd+0)
+    mov a, soak_time
+    lcall SendToLCD
 
     mov a, edit_sett
     cjne a, #0, indic_soak_time
@@ -512,27 +483,13 @@ reflowScreen:
     Send_Constant_String(#setup2)
   
     Set_Cursor(2,5)
-    load_X(0)
-    mov x+0, reflow_temp
-    lcall hex2bcd
-    ; Display digit 3
-    mov a, bcd+1
-    anl a, #0fh
-    orl a, #'0'
-    mov r0, a
-    WriteData(r0)
-    Display_BCD(bcd+0)
+    mov a, reflow_temp
+    lcall SendToLCD
+    
     Set_Cursor(2,14)
-    load_X(0)
-    mov x+0, reflow_time
-    lcall hex2bcd
-    ; Display digit 3
-    mov a, bcd+1
-    anl a, #0fh
-    orl a, #'0'
-    mov r0, a
-    WriteData(r0)
-    Display_BCD(bcd+0)
+    mov a, reflow_time
+    lcall SendToLCD
+    
     mov a, edit_sett
     cjne a, #2, indic_refl_time
     Set_Cursor(1,6)
@@ -549,16 +506,8 @@ coolScreen:
     Send_Constant_String(#setup5)
 
     Set_Cursor(2,5)
-    load_X(0)
-    mov x+0, cool_temp
-    lcall hex2bcd
-    ; Display digit 3
-    mov a, bcd+1
-    anl a, #0fh
-    orl a, #'0'
-    mov r0, a
-    WriteData(r0)
-    Display_BCD(bcd+0)
+    mov a, cool_temp
+    lcall SendToLCD
     ret
 
 
@@ -589,21 +538,26 @@ DONT_EDIT:
     mov a, edit_sett
     cjne a, #0, elem1
     inc_setting(soak_temp)
+    lcall save_config					; save config to nvmem
     ljmp generateDisplay
     ret
     elem1: cjne a, #1, elem2
     inc_setting(soak_time)
+    lcall save_config					; save config to nvmem
     ljmp generateDisplay
     ret
     elem2: cjne a, #2, elem3
     inc_setting(reflow_temp)
+    lcall save_config					; save config to nvmem
     ljmp generateDisplay
     ret
     elem3: cjne a, #3, elem4
     inc_setting(reflow_time)
+    lcall save_config					; save config to nvmem
     ljmp generateDisplay
     ret
     elem4: inc_setting(cool_temp)
+    lcall save_config					; save config to nvmem
     ljmp generateDisplay
     ret
     
@@ -616,25 +570,46 @@ DONT_INC:
     mov a, edit_sett
     cjne a, #0, delem1
     dec_setting(soak_temp)
+    lcall save_config					; save config to nvmem
     ljmp generateDisplay
     ret
     delem1: cjne a, #1, delem2
     dec_setting(soak_time)
+    lcall save_config					; save config to nvmem
     ljmp generateDisplay
     ret
     delem2: cjne a, #2, delem3
     dec_setting(reflow_temp)
+    lcall save_config					; save config to nvmem
     ljmp generateDisplay
     ret
     delem3: cjne a, #3, delem4
     dec_setting(reflow_time)
+    lcall save_config					; save config to nvmem
     ljmp generateDisplay
     ret
     delem4: dec_setting(cool_temp)
+    lcall save_config					; save config to nvmem
     ljmp generateDisplay
     ret
 
-DONT_DEC: ret
+DONT_DEC: 
+    ret
+
+SendToLCD: ;check slides from prof jesus
+    mov b, #100
+    div ab
+    orl a, #0x30 ; Convert hundreds to ASCII
+    lcall ?WriteData ; Send to LCD
+    mov a, b ; Remainder is in register b
+    mov b, #10
+    div ab
+    orl a, #0x30 ; Convert tens to ASCII
+    lcall ?WriteData; Send to LCD
+    mov a, b
+    orl a, #0x30 ; Convert units to ASCII
+    lcall ?WriteData; Send to LCD
+    ret
 ;-------------------------------------------------------------------------------
 
 ;-----------------------------------FSM & PWM----------------------------------------
@@ -646,7 +621,8 @@ reset:
 	jnb RST, $
 	mov a, #5						; reset to state 5 when reset for safety
 	mov state, a
-DONT_RESET: ret	
+DONT_RESET: 
+    ret	
 
 start_or_not:
 	jb START_STOP, DONT_START 		; if 'RESET' is pressed, wait for rebouce
@@ -654,7 +630,8 @@ start_or_not:
 	jb START_STOP, DONT_START 		; if the 'RESET' button is not pressed skip
 	jnb START_STOP, $
 	cpl start_flag
-	DONT_START: ret	
+DONT_START: 
+    ret	
 
 PWM_OUTPUT:
 	mov a, pwm
