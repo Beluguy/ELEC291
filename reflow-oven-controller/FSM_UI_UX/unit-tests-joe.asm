@@ -51,9 +51,9 @@ soak_temp: 			ds 1
 soak_time: 			ds 1
 reflow_temp: 		ds 1
 reflow_time: 		ds 1
+cool_temp:			ds 1
 pwm: 				ds 1
 sec: 				ds 1
-cool_temp:			ds 1
 temp:				ds 1
 ;---------------------------------------------------
 
@@ -251,10 +251,14 @@ MainProgram: ; setup()
     mov SP, #7FH 						; Set the stack pointer to the begining of idata
     
 	clr OUTPUT							; pwm is set to low by default
-	lcall Load_Configuration ; initialize settings
     lcall InitSerialPort
     lcall INIT_SPI
     lcall LCD_4BIT
+
+    lcall Timer0_Init
+    lcall Timer2_Init
+
+    lcall Load_Configuration ; initialize settings
 
     ;initialize flags
     mov start_flag, #0
@@ -266,9 +270,8 @@ MainProgram: ; setup()
     ;init clock
     mov secs_ctr, #0
     mov mins_ctr, #0
+    clr one_second_flag
     
-    lcall Timer0_Init
-    lcall Timer2_Init
     setb EA   							; Enable Global interrupts
 
 forever: ;loop() please only place function calls into the loop!
@@ -548,7 +551,11 @@ coolScreen:
     Display_BCD(bcd+0)
     ret
 
-
+; 0 - soak temp
+; 1 - soak time
+; 2 - reflow temp
+; 3 - reflow time
+; 4 - cool temp  
 pollButtons:
     jb EDIT, DONT_EDIT 		
 	Wait_Milli_Seconds(#50)		
@@ -561,12 +568,7 @@ pollButtons:
     ljmp generateDisplay
     incEdit: inc_setting(edit_sett)
     ljmp generateDisplay
-
-; 0 - soak temp
-; 1 - soak time
-; 2 - reflow temp
-; 3 - reflow time
-; 4 - cool temp   
+ 
 DONT_EDIT:
     jb INCR, DONT_INC	
 	Wait_Milli_Seconds(#50)		
@@ -578,26 +580,21 @@ DONT_EDIT:
     inc_setting(soak_temp)
     lcall save_config					; save config to nvmem
     ljmp generateDisplay
-    ret
     elem1: cjne a, #1, elem2
     inc_setting(soak_time)
     lcall save_config					; save config to nvmem
     ljmp generateDisplay
-    ret
     elem2: cjne a, #2, elem3
     inc_setting(reflow_temp)
     lcall save_config					; save config to nvmem
     ljmp generateDisplay
-    ret
     elem3: cjne a, #3, elem4
     inc_setting(reflow_time)
     lcall save_config					; save config to nvmem
     ljmp generateDisplay
-    ret
     elem4: inc_setting(cool_temp)
     lcall save_config					; save config to nvmem
     ljmp generateDisplay
-    ret
     
 DONT_INC:
     jb DECR, DONT_DEC
@@ -610,26 +607,21 @@ DONT_INC:
     dec_setting(soak_temp)
     lcall save_config					; save config to nvmem
     ljmp generateDisplay
-    ret
     delem1: cjne a, #1, delem2
     dec_setting(soak_time)
     lcall save_config					; save config to nvmem
     ljmp generateDisplay
-    ret
     delem2: cjne a, #2, delem3
     dec_setting(reflow_temp)
     lcall save_config					; save config to nvmem
     ljmp generateDisplay
-    ret
     delem3: cjne a, #3, delem4
     dec_setting(reflow_time)
     lcall save_config					; save config to nvmem
     ljmp generateDisplay
-    ret
     delem4: dec_setting(cool_temp)
     lcall save_config					; save config to nvmem
     ljmp generateDisplay
-    ret
 
 DONT_DEC: ret
 
@@ -650,7 +642,7 @@ start_or_not:
 	jb START_STOP, DONT_START 		; if the 'RESET' button is not pressed skip
 	jnb START_STOP, $
 	cpl start_flag
-	DONT_START: ret	
+DONT_START: ret	
 
 PWM_OUTPUT:
 	mov a, pwm
