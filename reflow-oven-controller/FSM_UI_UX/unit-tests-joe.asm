@@ -268,25 +268,25 @@ MainProgram: ; setup()
     mov mins_ctr, #0
     
     lcall Timer0_Init
+    lcall Timer2_Init
     setb EA   							; Enable Global interrupts
 
 forever: ;loop() please only place function calls into the loop!
     jnb one_second_flag, skipDisplay 	; this segment only executes once a second
     clr one_second_flag
     lcall generateDisplay
-    lcall readADC 						; reads ch0 and saves result to Result as 2 byte binary
-	;lcall Delay ; hardcoded 1s delay can change or use the Timer // COMMENTED SINCE WE ARE USING TIMER NOW
-    lcall Do_Something_With_Result ; convert to bcd and send to serial
-    lcall checkOverheat
+    ;lcall readADC 						; reads ch0 and saves result to Result as 2 byte binary
+    ;lcall Do_Something_With_Result ; convert to bcd and send to serial
+    ;lcall checkOverheat
     skipDisplay: 						; end segment
 
     jb start_flag, skipPoll
     lcall pollButtons 					; poll buttons for editing screen
+    ljmp forever
     skipPoll: 
 
-    lcall reset 						; check if reset is pressed
-    ljmp FSM 							; finite state machine logic
-	lcall save_config					; save config to nvmem
+    ;lcall reset 						; check if reset is pressed
+    ;ljmp FSM 							; finite state machine logic
 	ljmp forever
 
 ; ---------------------------------------------------------------------------------------------------
@@ -351,15 +351,6 @@ Do_Something_With_Result:
 	clr TR0
 	ret
 	
-Delay:
-	mov R2, #200
-    mov R1, #222
-    mov R0, #166
-    djnz R0, $   ; 3 cycles->3*45.21123ns*166=22.51519us
-    djnz R1, $-4 ; 22.51519us*222=4.998ms
-    djnz R2, $-4 ; 0.996 seconds
-    ret
-
 DO_SPI_G: 
 	push acc 
 	mov R1, #0 ; Received byte stored in R1
@@ -585,21 +576,26 @@ DONT_EDIT:
     mov a, edit_sett
     cjne a, #0, elem1
     inc_setting(soak_temp)
+    lcall save_config					; save config to nvmem
     ljmp generateDisplay
     ret
     elem1: cjne a, #1, elem2
     inc_setting(soak_time)
+    lcall save_config					; save config to nvmem
     ljmp generateDisplay
     ret
     elem2: cjne a, #2, elem3
     inc_setting(reflow_temp)
+    lcall save_config					; save config to nvmem
     ljmp generateDisplay
     ret
     elem3: cjne a, #3, elem4
     inc_setting(reflow_time)
+    lcall save_config					; save config to nvmem
     ljmp generateDisplay
     ret
     elem4: inc_setting(cool_temp)
+    lcall save_config					; save config to nvmem
     ljmp generateDisplay
     ret
     
@@ -612,21 +608,26 @@ DONT_INC:
     mov a, edit_sett
     cjne a, #0, delem1
     dec_setting(soak_temp)
+    lcall save_config					; save config to nvmem
     ljmp generateDisplay
     ret
     delem1: cjne a, #1, delem2
     dec_setting(soak_time)
+    lcall save_config					; save config to nvmem
     ljmp generateDisplay
     ret
     delem2: cjne a, #2, delem3
     dec_setting(reflow_temp)
+    lcall save_config					; save config to nvmem
     ljmp generateDisplay
     ret
     delem3: cjne a, #3, delem4
     dec_setting(reflow_time)
+    lcall save_config					; save config to nvmem
     ljmp generateDisplay
     ret
     delem4: dec_setting(cool_temp)
+    lcall save_config					; save config to nvmem
     ljmp generateDisplay
     ret
 
@@ -673,11 +674,11 @@ PWM_OUTPUT:
 Not_yet: ret
 
 Load_Defaults: ; Load defaults if 'keys' are incorrect
-	mov soak_temp, 35				; 150
-	mov soak_time, #10				; 45
-	mov reflow_temp, #50			; 225
-	mov reflow_time, #5				; 30
-    mov cool_temp, #30				;50
+	mov soak_temp, #150
+	mov soak_time, #45
+	mov reflow_temp, #225
+	mov reflow_time, #30
+    mov cool_temp, #50
 	ret
 
 ;-------------------------------------FSM time!!---------------------------------------
