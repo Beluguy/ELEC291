@@ -19,7 +19,7 @@ BRG_VAL 			EQU (0x100-(CLK/(16*BAUD)))
 TIMER0_RATE   		EQU 1000    ; 1000Hz PWM output signal 
 TIMER0_RELOAD 		EQU ((65536-(CLK/TIMER0_RATE)))
 TIMER1_RATE    		EQU 22050   ; 22050Hz is the sampling rate of the wav file we are playing
-TIMER1_RELOAD  		EQU 0x10000-(SYSCLK/TIMER1_RATE)
+TIMER1_RELOAD  		EQU 0x10000-(CLK/TIMER1_RATE)
 TIMER2_RATE     	EQU 1000    ; 1000Hz, for a timer tick of 1ms
 TIMER2_RELOAD   	EQU ((65536-(CLK/TIMER2_RATE)))
 
@@ -164,7 +164,7 @@ Timer0_ISR:
 	reti
 
 ;-------------------------------------;
-; ISR for Timer 1.  Used to playback  ;
+; ISR for Timer 1. �Used to playback �;
 ; the WAV file stored in the SPI      ;
 ; flash memory.                       ;
 ;-------------------------------------;
@@ -350,6 +350,8 @@ InitButton:
 MainProgram: ; setup()
     mov SP, #7FH 						; Set the stack pointer to the begining of idata
     Wait_Milli_Seconds(#5)
+    mov P0M0,#0
+    mov P0M1,#0
 	clr OUTPUT							; pwm is set to low by default
 	lcall Load_Configuration 			; initialize settings
     lcall InitSerialPort
@@ -618,14 +620,13 @@ pollButtons:
 	Wait_Milli_Seconds(#50)		
 	jb EDIT, DONT_EDIT
 	jnb EDIT, $
-
     mov a, edit_sett
     cjne a, #4, incEdit
     mov edit_sett, #0
-    ;ljmp setupDisplay
+    ljmp setupDisplay
     ret
     incEdit: inc edit_sett
-    ;ljmp setupDisplay
+    ljmp setupDisplay
     ret
 
 ; 0 - soak temp
@@ -642,26 +643,26 @@ DONT_EDIT:
     mov a, edit_sett
     cjne a, #0, elem1
     inc soak_temp
+    lcall updateSoakScreen
     ;lcall save_config					; save config to nvmem
-    ;lcall updateSoakScreen
     ret
     elem1: cjne a, #1, elem2
     inc soak_time
+    lcall updateSoakScreen
     ;lcall save_config					; save config to nvmem
-    ;lcall updateSoakScreen
     ret
     elem2: cjne a, #2, elem3
     inc reflow_temp
-    ;lcall updateReflowScreen
+    lcall updateReflowScreen
     ;lcall save_config					; save config to nvmem
     ret
     elem3: cjne a, #3, elem4
     inc reflow_time
-    ;lcall updateReflowScreen
+    lcall updateReflowScreen
     ;lcall save_config					; save config to nvmem
     ret
     elem4: inc cool_temp
-    ;lcall updateCoolScreen
+    lcall updateCoolScreen
     ;lcall save_config					; save config to nvmem
     ret
     
@@ -674,26 +675,26 @@ DONT_INC:
     mov a, edit_sett
     cjne a, #0, delem1
     dec soak_temp
-    ;lcall updateSoakScreen
+    lcall updateSoakScreen
     ;lcall save_config					; save config to nvmem
     ret
     delem1: cjne a, #1, delem2
     dec soak_time
-    ;lcall updateSoakScreen
+    lcall updateSoakScreen
     ;lcall save_config					; save config to nvmem
     ret
     delem2: cjne a, #2, delem3
     dec reflow_temp
-    ;lcall updateReflowScreen
+    lcall updateReflowScreen
     ;lcall save_config					; save config to nvmem
     ret
     delem3: cjne a, #3, delem4
     dec reflow_time
-    ;lcall updateReflowScreen
+    lcall updateReflowScreen
     ;lcall save_config					; save config to nvmem
     ret
     delem4: dec cool_temp
-    ;lcall updateCoolScreen
+    lcall updateCoolScreen
     ;lcall save_config					; save config to nvmem
     ret
 
