@@ -40,13 +40,13 @@ LCD_D7 			EQU P3.7
 CE_ADC 			EQU P2.0 
 MY_MOSI_ADC	    EQU P2.1 
 MY_MISO_ADC 	EQU P2.2 
-MY_SCLK_ADC 	EQU P2.3 
+MY_SCLK_ADC 	EQU P1.7 
 
 ; The pins used for SPI for flash memory 
-FLASH_CE  		EQU  P0.7		; Pin 1
-MY_MOSI   		EQU  P2.5 		; Pin 5
-MY_MISO   		EQU  P2.7		; Pin 2
-MY_SCLK   		EQU  P0.4 		; Pin 6
+FLASH_CE  		EQU P0.7		; Pin 1
+MY_MOSI   		EQU P2.5 		; Pin 5
+MY_MISO   		EQU P2.7		; Pin 2
+MY_SCLK   		EQU P0.4 		; Pin 6
 
 DECR            EQU P0.0   		; button to increment current selection
 INCR            EQU P0.3   		; button to increment current selection
