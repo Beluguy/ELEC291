@@ -6,6 +6,9 @@ org 0000H
 org 0x000B
 	ljmp Timer0_ISR
 
+org 0x001B ; Timer/Counter 1 overflow interrupt vector. Used in this code to replay the wave file.
+	ljmp Timer1_ISR
+
 ; Timer/Counter 2 overflow interrupt vector
 org 0x002B
 	ljmp Timer2_ISR
@@ -22,6 +25,19 @@ TIMER2_RELOAD   	EQU ((65536-(CLK/TIMER2_RATE)))
 
 HOLD_PWM			EQU 20		; 20% pwm for holding the temp constant 
 PWM_HOLD_RATE		EQU (TIMER0_RATE-(HOLD_PWM*10))
+
+; Commands supported by the SPI flash memory according to the datasheet
+WRITE_ENABLE     EQU 0x06  ; Address:0 Dummy:0 Num:0
+WRITE_DISABLE    EQU 0x04  ; Address:0 Dummy:0 Num:0
+READ_STATUS      EQU 0x05  ; Address:0 Dummy:0 Num:1 to infinite
+READ_BYTES       EQU 0x03  ; Address:3 Dummy:0 Num:1 to infinite
+READ_SILICON_ID  EQU 0xab  ; Address:0 Dummy:3 Num:1 to infinite
+FAST_READ        EQU 0x0b  ; Address:3 Dummy:1 Num:1 to infinite
+WRITE_STATUS     EQU 0x01  ; Address:0 Dummy:0 Num:1
+WRITE_BYTES      EQU 0x02  ; Address:3 Dummy:0 Num:1 to 256
+ERASE_ALL        EQU 0xc7  ; Address:0 Dummy:0 Num:0
+ERASE_BLOCK      EQU 0xd8  ; Address:3 Dummy:0 Num:0
+READ_DEVICE_ID   EQU 0x9f  ; Address:0 Dummy:2 Num:1 to infinite
 
 ;----------------------------------Ports!----------------------------------------
 SPEAKER  		EQU P2.4 		; Used with a MOSFET to turn off speaker when not in use
@@ -42,12 +58,13 @@ MY_MOSI_ADC	    EQU P2.1
 MY_MISO_ADC 	EQU P2.2 
 MY_SCLK_ADC 	EQU P1.7 
 
-; The pins used for SPI for flash memory 
+; Pins used for SPI for flash memory 
 FLASH_CE  		EQU P0.7		; Pin 1
 MY_MOSI   		EQU P2.5 		; Pin 5
 MY_MISO   		EQU P2.7		; Pin 2
 MY_SCLK   		EQU P0.4 		; Pin 6
 
+; UI buttons pin
 DECR            EQU P0.0   		; button to increment current selection
 INCR            EQU P0.3   		; button to increment current selection
 EDIT			EQU P0.6		; button for changing what to edit
@@ -62,6 +79,7 @@ x:   				ds 4
 y:   				ds 4
 bcd: 				ds 5
 Result: 			ds 2
+w:  		 		ds 3 ; 24-bit play counter.  Decremented in Timer 1 ISR.
 
 ;--------------------for clock----------------------
 Count1ms:       	ds 2 ; Used to determine when one second has passed
@@ -144,6 +162,50 @@ Timer0_ISR:
 	mov RH0, #high(TIMER0_RELOAD)
 	mov RL0, #low(TIMER0_RELOAD)
 	reti
+
+;-------------------------------------;
+; ISR for Timer 1.  Used to playback  ;
+; the WAV file stored in the SPI      ;
+; flash memory.                       ;
+;-------------------------------------;
+Timer1_ISR:
+    ; The registers used in the ISR must be saved in the stack
+    push acc
+    push psw
+
+    ; Check if the play counter is zero.  If so, stop playing sound.
+    mov a, w+0
+    orl a, w+1
+    orl a, w+2
+    jz stop_playing
+
+    ; Decrement play counter 'w'.  In this implementation 'w' is a 24-bit counter.
+    mov a, #0xff
+    dec w+0
+    cjne a, w+0, keep_playing
+    dec w+1
+    cjne a, w+1, keep_playing
+    dec w+2
+
+keep_playing:
+    setb SPEAKER
+    lcall Send_SPI ; Read the next byte from the SPI Flash...
+    add a, #0x80
+    mov DADH, a ; Output to DAC. DAC output is pin P2.3
+    orl DADC, #0b_0100_0000 ; Start DAC by setting GO/BSY=1
+    sjmp Timer1_ISR_Done
+
+stop_playing:
+    clr TR1 ; Stop timer 1
+    setb FLASH_CE ; Disable SPI Flash
+    clr SPEAKER ; Turn off speaker.  Removes hissing noise when not playing sound.
+    mov DADH, #0x80 ; middle of range
+   orl DADC, #0b_0100_0000 ; Start DAC by setting GO/BSY=1
+
+Timer1_ISR_Done:
+    pop psw
+    pop acc
+    reti
 
 ;---------------------------------;
 ; Routine to initialize the ISR   ;
@@ -250,6 +312,21 @@ INIT_SPI:
 	clr MY_SCLK_ADC ; For mode (0,0) SCLK is zero
 	ret
 
+;---------------------------------;
+; Sends AND receives a byte via   ;
+; SPI.                            ;
+;---------------------------------;
+Send_SPI:
+	SPIBIT(7)
+	SPIBIT(6)
+	SPIBIT(5)
+	SPIBIT(4)
+	SPIBIT(3)
+	SPIBIT(2)
+	SPIBIT(1)
+	SPIBIT(0)
+
+	ret
 ; -------------------------------------------------- MAIN PROGRAM LOOP ----------------------------------------------
 
 MainProgram: ; setup()
@@ -262,7 +339,7 @@ MainProgram: ; setup()
     lcall LCD_4BIT
 
     ;initialize flags
-    mov start_flag, #0
+    clr start_flag
     mov safety_overheat, #0
 
     ;initialize fsm
