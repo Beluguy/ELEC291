@@ -51,9 +51,9 @@ MY_SCLK   		EQU  P0.4 		; Pin 6
 DECR            EQU P0.0   		; button to increment current selection
 INCR            EQU P0.3   		; button to increment current selection
 EDIT			EQU P0.6		; button for changing what to edit
-START_STOP 		EQU P4.4 		; button to start/stop reflow
+START_STOP 		EQU P4.5 		; button to start/stop reflow
 RST				EQU	P2.6		; button to reset
-; i have buttons on 2.6, 4.4, 0.6, 0.3, 0.0 (left to right)
+; i have buttons on 2.6, 4.5, 0.6, 0.3, 0.0 (left to right)
 ;--------------------------------------------------------------------------------
 
 ; These register definitions needed by 'math32.inc'
