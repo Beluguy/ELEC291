@@ -23,8 +23,6 @@ $NOLIST
 $MODLP51RC2
 $LIST
 
-
-
 SYSCLK         EQU 22118400  ; Microcontroller system clock frequency in Hz
 TIMER1_RATE    EQU 22050     ; 22050Hz is the sampling rate of the wav file we are playing
 TIMER1_RELOAD  EQU 0x10000-(SYSCLK/TIMER1_RATE)
@@ -58,10 +56,7 @@ dseg at 30H
 
 ; Interrupt vectors:
 cseg
-$NOLIST
-$include(LCD_4bit.inc)
-$include(math32.inc)
-$LIST
+
 
 
 org 0x0000 ; Reset vector
@@ -90,7 +85,9 @@ org 0x0063 ; ADC interrupt (vector must be present if debugger is used)
 	reti
    	
    	
-
+$NOLIST
+$include(WaitMilliSeconds.inc)
+$LIST
 
 
 ;AFTER MOVING NEEDED NUMBER
@@ -550,19 +547,19 @@ forever_loop:
 	;lcall Send_SPI
 	
 	; How many bytes to play? All of them!  Asume 4Mbytes memory: 0x3fffff
-	mov w+2, #0x3f
-	mov w+1, #0xff
-	mov w+0, #0xff
+	mov w+2, #0x00
+	mov w+1, #0x56
+	mov w+0, #0x22
 	
 	
 	
 	setb SPEAKER ; Turn on speaker.
 	setb TR1 ; Start playback by enabling Timer 1
-	Wait_Milli_Seconds(#250)
-	Wait_Milli_Seconds(#250)
-	Wait_Milli_Seconds(#250)
-	Wait_Milli_Seconds(#250)
-	lcall stop_playing
+	;Wait_Milli_Seconds(#250)
+	;Wait_Milli_Seconds(#250)
+	;Wait_Milli_Seconds(#250)
+	;Wait_Milli_Seconds(#250)
+	;lcall stop_playing
 	ljmp forever_loop
 	
 serial_get:
