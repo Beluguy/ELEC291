@@ -2,10 +2,6 @@ $MODLP51RC2
 org 0000H
    ljmp MainProgram
 
-; Timer/Counter 0 overflow interrupt vector
-org 0x000B
-	ljmp Timer0_ISR
-
 ; Timer/Counter 2 overflow interrupt vector
 org 0x002B
 	ljmp Timer2_ISR
@@ -15,11 +11,60 @@ BAUD 				EQU 115200
 BRG_VAL 			EQU (0x100-(CLK/(16*BAUD)))
 TIMER0_RATE   		EQU 1000    ; 1000Hz PWM output signal 
 TIMER0_RELOAD 		EQU ((65536-(CLK/TIMER0_RATE)))
-TIMER2_RATE     	EQU 1000     ; 1000Hz, for a timer tick of 1ms
+TIMER1_RATE    		EQU 22050   ; 22050Hz is the sampling rate of the wav file we are playing
+TIMER1_RELOAD  		EQU 0x10000-(SYSCLK/TIMER1_RATE)
+TIMER2_RATE     	EQU 1000    ; 1000Hz, for a timer tick of 1ms
 TIMER2_RELOAD   	EQU ((65536-(CLK/TIMER2_RATE)))
 
 HOLD_PWM			EQU 20		; 20% pwm for holding the temp constant 
-PWM_20				EQU (TIMER0_RATE-(HOLD_PWM*10))
+PWM_HOLD_RATE		EQU (TIMER0_RATE-(HOLD_PWM*10))
+
+; Commands supported by the SPI flash memory according to the datasheet
+WRITE_ENABLE     EQU 0x06  ; Address:0 Dummy:0 Num:0
+WRITE_DISABLE    EQU 0x04  ; Address:0 Dummy:0 Num:0
+READ_STATUS      EQU 0x05  ; Address:0 Dummy:0 Num:1 to infinite
+READ_BYTES       EQU 0x03  ; Address:3 Dummy:0 Num:1 to infinite
+READ_SILICON_ID  EQU 0xab  ; Address:0 Dummy:3 Num:1 to infinite
+FAST_READ        EQU 0x0b  ; Address:3 Dummy:1 Num:1 to infinite
+WRITE_STATUS     EQU 0x01  ; Address:0 Dummy:0 Num:1
+WRITE_BYTES      EQU 0x02  ; Address:3 Dummy:0 Num:1 to 256
+ERASE_ALL        EQU 0xc7  ; Address:0 Dummy:0 Num:0
+ERASE_BLOCK      EQU 0xd8  ; Address:3 Dummy:0 Num:0
+READ_DEVICE_ID   EQU 0x9f  ; Address:0 Dummy:2 Num:1 to infinite
+
+;----------------------------------Ports!----------------------------------------
+SPEAKER  		EQU P2.4 		; Used with a MOSFET to turn off speaker when not in use
+OUTPUT			EQU P0.2		; output signal to the relay box
+
+; These 'equ' must match the hardware wiring
+; They are used by 'LCD_4bit.inc'
+LCD_RS 			EQU P3.2
+; LCD_RW equ Px.x ; Always grounded
+LCD_E  			EQU P3.3
+LCD_D4 			EQU P3.4
+LCD_D5 			EQU P3.5
+LCD_D6 			EQU P3.6
+LCD_D7 			EQU P3.7
+; These ’EQU’ must match the wiring between the microcontroller and ADC 
+CE_ADC 			EQU P2.0 
+MY_MOSI_ADC	    EQU P2.1 
+MY_MISO_ADC 	EQU P2.2 
+MY_SCLK_ADC 	EQU P1.7 
+
+; Pins used for SPI for flash memory 
+FLASH_CE  		EQU P0.7		; Pin 1
+MY_MOSI   		EQU P2.5 		; Pin 5
+MY_MISO   		EQU P2.7		; Pin 2
+MY_SCLK   		EQU P0.4 		; Pin 6
+
+; UI buttons pin
+DECR            EQU P0.0   		; button to increment current selection
+INCR            EQU P0.3   		; button to increment current selection
+EDIT			EQU P0.6		; button for changing what to edit
+START_STOP 		EQU P4.5 		; button to start/stop reflow
+RST				EQU	P2.6		; button to reset
+; i have buttons on 2.6, 4.5, 0.6, 0.3, 0.0 (left to right)
+;--------------------------------------------------------------------------------
 
 ; These register definitions needed by 'math32.inc'
 DSEG at 30H
@@ -27,6 +72,7 @@ x:   				ds 4
 y:   				ds 4
 bcd: 				ds 5
 Result: 			ds 2
+w:  		 		ds 3 ; 24-bit play counter.  Decremented in Timer 1 ISR.
 
 ;--------------------for clock----------------------
 Count1ms:       	ds 2 ; Used to determine when one second has passed
@@ -51,9 +97,9 @@ soak_temp: 			ds 1
 soak_time: 			ds 1
 reflow_temp: 		ds 1
 reflow_time: 		ds 1
+cool_temp:			ds 1
 pwm: 				ds 1
 sec: 				ds 1
-cool_temp:			ds 1
 temp:				ds 1
 ;---------------------------------------------------
 
@@ -63,40 +109,10 @@ start_flag: 		dbit 1
 one_second_flag: 	dbit 1 ; Set to one in the ISR every time 1000 ms had passed
 safety_overheat:    dbit 1 ; for overheat safety feature
 
-
 CSEG
-
 $NOLIST
 $include(math32.inc)
 $include(macros.inc)
-$LIST
-
-; These 'equ' must match the hardware wiring
-; They are used by 'LCD_4bit.inc'
-LCD_RS 			EQU P3.2
-; LCD_RW equ Px.x ; Always grounded
-LCD_E  			EQU P3.3
-LCD_D4 			EQU P3.4
-LCD_D5 			EQU P3.5
-LCD_D6 			EQU P3.6
-LCD_D7 			EQU P3.7
-; These ’EQU’ must match the wiring between the microcontroller and ADC 
-CE_ADC 			EQU P2.0 
-MY_MOSI_ADC	    EQU P2.1 
-MY_MISO_ADC 	EQU P2.2 
-MY_SCLK_ADC 	EQU P2.3 
-
-SOUND_OUT     	EQU P1.1
-RST				EQU	P4.5	; button to reset
-EDIT			EQU P0.6	; button for changing what to edit
-INCR            EQU P0.3   ; button to increment current selection
-DECR            EQU P0.0   ; button to increment current selection
-START_STOP 		EQU P2.4 	; button to start/stop reflow
-OUTPUT			EQU P	; output signal to the relay box
-
-; i have buttons on 2.4, 4.5, 0.6, 0.3, 0.0 (left to right)
-
-$NOLIST
 $include(LCD_4bit.inc)
 $LIST
 
@@ -110,35 +126,6 @@ setup5:  db 'tmp:XXX         ', 0
 
 run1:    db 'temp:XXX state X', 0
 run2:    db 'elapsed XX:XX   ', 0
-
-Timer0_Init:
-	mov a, TMOD
-	anl a, #0xf0 ; 11110000 Clear the bits for timer 0
-	orl a, #0x01 ; 00000001 Configure timer 0 as 16-timer
-	mov TMOD, a
-	mov TH0, #high(TIMER0_RELOAD)
-	mov TL0, #low(TIMER0_RELOAD)
-	; Set autoreload value
-	mov RH0, #high(TIMER0_RELOAD)
-	mov RL0, #low(TIMER0_RELOAD)
-	; Enable the timer and interrupts
-    setb ET0  ; Enable timer 0 interrupt
-    ; setb TR0  ; Start timer 0
-	ret
-
-;---------------------------------;
-; ISR for timer 0.  Set to execute;
-; every 1/4096Hz to generate a    ;
-; 2048 Hz square wave at pin P1.1 ;
-;---------------------------------;
-Timer0_ISR:
-	;clr TF0  ; According to the data sheet this is done for us already.
-	mov TH0, #high(TIMER0_RELOAD)
-	mov TL0, #low(TIMER0_RELOAD)
-	; Set autoreload value
-	mov RH0, #high(TIMER0_RELOAD)
-	mov RL0, #low(TIMER0_RELOAD)
-	reti
 
 ;---------------------------------;
 ; Routine to initialize the ISR   ;
@@ -165,7 +152,7 @@ Timer2_Init:
 ;---------------------------------;
 Timer2_ISR:
 	clr TF2  ; Timer 2 doesn't clear TF2 automatically. Do it in ISR
-	cpl P1.0 ; To check the interrupt rate with oscilloscope. It must be precisely a 1 ms pulse.
+	;cpl P1.0 ; To check the interrupt rate with oscilloscope. It must be precisely a 1 ms pulse.
 	
 	; The two registers used in the ISR must be saved in the stack
 	push acc
@@ -224,40 +211,17 @@ Timer2_ISR_done:
 	pop acc
 	reti
 
-; Configure the serial port and baud rate
-InitSerialPort:
-    ; Since the reset button bounces, we need to wait a bit before
-    ; sending messages, otherwise we risk displaying gibberish!
-	mov R1, #222
-    mov R0, #166
-    djnz R0, $   ; 3 cycles->3*45.21123ns*166=22.51519us
-    djnz R1, $-4 ; 22.51519us*222=4.998ms
-    ; Now we can proceed with the configuration
-	orl	PCON,#0x80
-	mov	SCON,#0x52
-	mov	BDRCON,#0x00
-	mov	BRL,#BRG_VAL
-	mov	BDRCON,#0x1E ; BDRCON=BRR|TBCK|RBCK|SPD;
-    ret
-    
-INIT_SPI: 
-	setb MY_MISO_ADC ; Make MISO an input pin
-	clr MY_SCLK_ADC ; For mode (0,0) SCLK is zero
-	ret
-
 ; -------------------------------------------------- MAIN PROGRAM LOOP ----------------------------------------------
 
 MainProgram: ; setup()
     mov SP, #7FH 						; Set the stack pointer to the begining of idata
     
 	clr OUTPUT							; pwm is set to low by default
-	lcall Load_Configuration ; initialize settings
-    lcall InitSerialPort
-    lcall INIT_SPI
+	lcall Load_Defaults ; initialize settings
     lcall LCD_4BIT
 
     ;initialize flags
-    mov start_flag, #0
+    clr start_flag
     mov safety_overheat, #0
 
     ;initialize fsm
@@ -266,18 +230,26 @@ MainProgram: ; setup()
     ;init clock
     mov secs_ctr, #0
     mov mins_ctr, #0
+    clr one_second_flag
+
+    ;init settings
+    mov edit_sett, #0
     
-    lcall Timer0_Init
+    ;lcall Timer0_Init
+    ;lcall Timer1_Init                   ;uncomment for speaker config
     lcall Timer2_Init
+
     setb EA   							; Enable Global interrupts
 
 forever: ;loop() please only place function calls into the loop!
     jnb one_second_flag, skipDisplay 	; this segment only executes once a second
     clr one_second_flag
-    lcall generateDisplay
+    
     ;lcall readADC 						; reads ch0 and saves result to Result as 2 byte binary
     ;lcall Do_Something_With_Result ; convert to bcd and send to serial
     ;lcall checkOverheat
+    lcall generateDisplay
+    
     skipDisplay: 						; end segment
 
     jb start_flag, skipPoll
@@ -288,107 +260,6 @@ forever: ;loop() please only place function calls into the loop!
     ;lcall reset 						; check if reset is pressed
     ;ljmp FSM 							; finite state machine logic
 	ljmp forever
-
-; ---------------------------------------------------------------------------------------------------
-
-;----------------------------------safety-features---------------------------------------------------
-checkOverheat:
-    mov a, temp
-	clr c
-	subb a, #251				; if 251 > temp, c = 1
-	jc notOverheat				; return if notOverheating
-    jb safety_overheat, overheatReset ; check if flag is set, if set that means has been overheating for prolonged time
-	setb safety_overheat        ; set overheat flag for next time
-    ret
-notOverheat:
-    clr safety_overheat
-	ret
-overheatReset:
-    clr safety_overheat
-    mov a, #5						; reset to state 5 when reset for safety
-    ret
-;----------------------------------------------------------------------------------------------------
-
-readADC:
-    clr CE_ADC
-	mov R0, #00000001B ; Start bit:1
-	lcall DO_SPI_G
-	mov R0, #10000000B ; Single ended, read channel 0
-	lcall DO_SPI_G
-	mov a, R1 ; R1 contains bits 8 and 9
-	anl a, #00000011B ; We need only the two least significant bits
-	mov Result+1, a ; Save result high.
-	mov R0, #55H ; It doesn't matter what we transmit...
-	lcall DO_SPI_G
-	mov Result, R1 ; R1 contains bits 0 to 7. Save result low.
-	setb CE_ADC
-    ret
-
-Do_Something_With_Result:
-	mov x+0, result+0
-	mov x+1, result+1
-	mov x+2, #0
-	mov x+3, #0
-	
-	load_Y(410)
-	lcall mul32
-	
-	load_Y(1023)
-	lcall div32
-	
-	load_Y(273)
-	lcall sub32
-	
-	lcall hex2bcd
-	lcall Send_3_digit_BCD
-	
-	mov a, x
-	cjne a, #50, NOT_EQ
-	NOT_EQ: JC REQ_LOW
-	setb TR0
-	ret
-	REQ_LOW:
-	clr TR0
-	ret
-	
-DO_SPI_G: 
-	push acc 
-	mov R1, #0 ; Received byte stored in R1
-	mov R2, #8 ; Loop counter (8-bits)
-DO_SPI_G_LOOP: 
-	mov a, R0 ; Byte to write is in R0
-	rlc a ; Carry flag has bit to write
-	mov R0, a 
-	mov MY_MOSI_ADC, c 
-	setb MY_SCLK_ADC ; Transmit
-	mov c, MY_MISO_ADC ; Read received bit
-	mov a, R1 ; Save received bit in R1
-	rlc a 
-	mov R1, a 
-	clr MY_SCLK_ADC 
-	djnz R2, DO_SPI_G_LOOP 
- 	pop acc 
- 	ret
- 	
-Send_3_Digit_BCD: ;send 3 digits bcd in BCD var to putty
-    mov a, bcd+1
-    anl a, #0fh
-    orl a, #'0'
-    mov r0, a
-    lcall putchar
-	Send_BCD(bcd+0)
-	mov a, #'\r'
-	lcall putchar
-	mov a, #'\n'
-	lcall putchar
-	ret
-
-; Send a character using the serial port
-putchar:
-    jnb TI, putchar
-    clr TI
-    mov SBUF, a
-    ret
 
 ;----------------------------------UI CODE----------------------------------------------
 generateDisplay:
@@ -402,16 +273,8 @@ startDisplay:
     Send_Constant_String(#run2)
     
     Set_Cursor(1,6)
-    load_X(0)
-    mov x+0, temp
-    lcall hex2bcd
-    ; Display digit 3
-    mov a, bcd+1
-    anl a, #0fh
-    orl a, #'0'
-    mov r0, a
-    WriteData(r0)
-    Display_BCD(bcd+0) ;display digit 2 and 1
+    mov a, temp
+    lcall SendToLCD
 
     Set_Cursor(1,16)
     load_X(0)
@@ -459,29 +322,14 @@ soakScreen:
     Set_Cursor(2,1)
     Send_Constant_String(#setup2)
 
+updateSoakScreen:
     Set_Cursor(2,5)
-    load_X(0)
-    mov x+0, soak_temp
-    lcall hex2bcd
-    ; Display digit 3
-    mov a, bcd+1
-    anl a, #0fh
-    orl a, #'0'
-    mov r0, a
-    WriteData(r0)
-    Display_BCD(bcd+0)
+    mov a, soak_temp
+    lcall SendToLCD
 
     Set_Cursor(2,14)
-    load_X(0)
-    mov x+0, soak_time
-    lcall hex2bcd
-    ; Display digit 3
-    mov a, bcd+1
-    anl a, #0fh
-    orl a, #'0'
-    mov r0, a
-    WriteData(r0)
-    Display_BCD(bcd+0)
+    mov a, soak_time
+    lcall SendToLCD
 
     mov a, edit_sett
     cjne a, #0, indic_soak_time
@@ -497,29 +345,15 @@ reflowScreen:
     Send_Constant_String(#setup3)
     Set_Cursor(2,1)
     Send_Constant_String(#setup2)
-  
+updateReflowScreen:
     Set_Cursor(2,5)
-    load_X(0)
-    mov x+0, reflow_temp
-    lcall hex2bcd
-    ; Display digit 3
-    mov a, bcd+1
-    anl a, #0fh
-    orl a, #'0'
-    mov r0, a
-    WriteData(r0)
-    Display_BCD(bcd+0)
+    mov a, reflow_temp
+    lcall SendToLCD
+    
     Set_Cursor(2,14)
-    load_X(0)
-    mov x+0, reflow_time
-    lcall hex2bcd
-    ; Display digit 3
-    mov a, bcd+1
-    anl a, #0fh
-    orl a, #'0'
-    mov r0, a
-    WriteData(r0)
-    Display_BCD(bcd+0)
+    mov a, reflow_time
+    lcall SendToLCD
+    
     mov a, edit_sett
     cjne a, #2, indic_refl_time
     Set_Cursor(1,6)
@@ -534,18 +368,10 @@ coolScreen:
     Send_Constant_String(#setup4)
     Set_Cursor(2,1)
     Send_Constant_String(#setup5)
-
+updateCoolScreen:
     Set_Cursor(2,5)
-    load_X(0)
-    mov x+0, cool_temp
-    lcall hex2bcd
-    ; Display digit 3
-    mov a, bcd+1
-    anl a, #0fh
-    orl a, #'0'
-    mov r0, a
-    WriteData(r0)
-    Display_BCD(bcd+0)
+    mov a, cool_temp
+    lcall SendToLCD
     ret
 
 
@@ -558,9 +384,11 @@ pollButtons:
     mov a, edit_sett
     cjne a, #4, incEdit
     mov edit_sett, #0
-    ljmp generateDisplay
-    incEdit: inc_setting(edit_sett)
-    ljmp generateDisplay
+    ;ljmp setupDisplay
+    ret
+    incEdit: inc edit_sett
+    ;ljmp setupDisplay
+    ret
 
 ; 0 - soak temp
 ; 1 - soak time
@@ -575,28 +403,28 @@ DONT_EDIT:
     
     mov a, edit_sett
     cjne a, #0, elem1
-    inc_setting(soak_temp)
-    lcall save_config					; save config to nvmem
-    ljmp generateDisplay
+    inc soak_temp
+    ;lcall save_config					; save config to nvmem
+    ;lcall updateSoakScreen
     ret
     elem1: cjne a, #1, elem2
-    inc_setting(soak_time)
-    lcall save_config					; save config to nvmem
-    ljmp generateDisplay
+    inc soak_time
+    ;lcall save_config					; save config to nvmem
+    ;lcall updateSoakScreen
     ret
     elem2: cjne a, #2, elem3
-    inc_setting(reflow_temp)
-    lcall save_config					; save config to nvmem
-    ljmp generateDisplay
+    inc reflow_temp
+    ;lcall updateReflowScreen
+    ;lcall save_config					; save config to nvmem
     ret
     elem3: cjne a, #3, elem4
-    inc_setting(reflow_time)
-    lcall save_config					; save config to nvmem
-    ljmp generateDisplay
+    inc reflow_time
+    ;lcall updateReflowScreen
+    ;lcall save_config					; save config to nvmem
     ret
-    elem4: inc_setting(cool_temp)
-    lcall save_config					; save config to nvmem
-    ljmp generateDisplay
+    elem4: inc cool_temp
+    ;lcall updateCoolScreen
+    ;lcall save_config					; save config to nvmem
     ret
     
 DONT_INC:
@@ -607,33 +435,50 @@ DONT_INC:
 
     mov a, edit_sett
     cjne a, #0, delem1
-    dec_setting(soak_temp)
-    lcall save_config					; save config to nvmem
-    ljmp generateDisplay
+    dec soak_temp
+    ;lcall updateSoakScreen
+    ;lcall save_config					; save config to nvmem
     ret
     delem1: cjne a, #1, delem2
-    dec_setting(soak_time)
-    lcall save_config					; save config to nvmem
-    ljmp generateDisplay
+    dec soak_time
+    ;lcall updateSoakScreen
+    ;lcall save_config					; save config to nvmem
     ret
     delem2: cjne a, #2, delem3
-    dec_setting(reflow_temp)
-    lcall save_config					; save config to nvmem
-    ljmp generateDisplay
+    dec reflow_temp
+    ;lcall updateReflowScreen
+    ;lcall save_config					; save config to nvmem
     ret
     delem3: cjne a, #3, delem4
-    dec_setting(reflow_time)
-    lcall save_config					; save config to nvmem
-    ljmp generateDisplay
+    dec reflow_time
+    ;lcall updateReflowScreen
+    ;lcall save_config					; save config to nvmem
     ret
-    delem4: dec_setting(cool_temp)
-    lcall save_config					; save config to nvmem
-    ljmp generateDisplay
+    delem4: dec cool_temp
+    ;lcall updateCoolScreen
+    ;lcall save_config					; save config to nvmem
     ret
 
-DONT_DEC: ret
+DONT_DEC: 
+    ret
 
-;---------------------------------------------------------------------------------------
+SendToLCD: ;check slides from prof jesus
+    mov b, #100
+    div ab
+    orl a, #0x30 ; Convert hundreds to ASCII
+    lcall ?WriteData ; Send to LCD
+    mov a, b ; Remainder is in register b
+    mov b, #10
+    div ab
+    orl a, #0x30 ; Convert tens to ASCII
+    lcall ?WriteData; Send to LCD
+    mov a, b
+    orl a, #0x30 ; Convert units to ASCII
+    lcall ?WriteData; Send to LCD
+    ret
+;-------------------------------------------------------------------------------
+
+;-----------------------------------FSM & PWM----------------------------------------
 
 reset:
 	jb RST, DONT_RESET 				; if 'RESET' is pressed, wait for rebouce
@@ -642,7 +487,8 @@ reset:
 	jnb RST, $
 	mov a, #5						; reset to state 5 when reset for safety
 	mov state, a
-DONT_RESET: ret	
+DONT_RESET: 
+    ret	
 
 start_or_not:
 	jb START_STOP, DONT_START 		; if 'RESET' is pressed, wait for rebouce
@@ -650,7 +496,8 @@ start_or_not:
 	jb START_STOP, DONT_START 		; if the 'RESET' button is not pressed skip
 	jnb START_STOP, $
 	cpl start_flag
-	DONT_START: ret	
+DONT_START: 
+    ret	
 
 PWM_OUTPUT:
 	mov a, pwm
@@ -667,18 +514,18 @@ PWM_OUTPUT:
 	cjne a, #0 , Not_yet			; check whether it is time to turn on the pwm pin		 
 	clr OUTPUT						; clr OUTPUT if at the begining of the period
 	mov a, Count1ms+0
-	cjne a, #low(PWM_20), Not_yet 	; Warning: this instruction changes the carry flag!
+	cjne a, #low(PWM_HOLD_RATE), Not_yet 	; Warning: this instruction changes the carry flag!
 	mov a, Count1ms+1
-	cjne a, #high(PWM_20), Not_yet	; if Count1ms = PWM_20, set the OUTPUT to 1
+	cjne a, #high(PWM_HOLD_RATE), Not_yet	; if Count1ms = PWM_HOLD_RATE, set the OUTPUT to 1
 	setb OUTPUT
 Not_yet: ret
 
 Load_Defaults: ; Load defaults if 'keys' are incorrect
-	mov soak_temp, #150
-	mov soak_time, #45
-	mov reflow_temp, #225
-	mov reflow_time, #30
-    mov cool_temp, #50
+	mov soak_temp, #35				; 150
+	mov soak_time, #10				; 45
+	mov reflow_temp, #50			; 225
+	mov reflow_time, #5				; 30
+    mov cool_temp, #30				; 50
 	ret
 
 ;-------------------------------------FSM time!!---------------------------------------
@@ -753,11 +600,6 @@ state5_done:
 ;----------------------------------------------------------------------------------------
 
 ;---------------------------------save to nvmem-------------------------------
-loadbyte mac
-	mov a, %0
-	movx @dptr, a
-	inc dptr
-endmac
 save_config:
     push IE ; Save the current state of bit EA in the stack
     clr EA ; Disable interrupts
@@ -783,12 +625,6 @@ save_config:
 ;-----------------------------------------------------------------------------
 
 ;------------------------------read from nvmem--------------------------------
-getbyte mac
-    clr a
-    movc a, @a+dptr
-    mov %0, a
-    inc dptr
-Endmac
 Load_Configuration:
     mov dptr, #0x7f84 ; First key value location.
     getbyte(R0) ; 0x7f84 should contain 0x55
@@ -819,5 +655,12 @@ hot_junc:
 
 ret
 ;----------------------------------------------------------------------
+
+; Send a character using the serial port
+putchar:
+    jnb TI, putchar
+    clr TI
+    mov SBUF, a
+    ret
 
 END

@@ -19,7 +19,7 @@ BUTTON4       equ P0.0
 BUTTON3		  equ P0.3
 BUTTON2		  equ P0.6				  
 BUTTON1       equ P4.5
-BUTTON0       equ P2.4
+BUTTON0       equ P2.6
 
 ; Reset vector
 org 0x0000
