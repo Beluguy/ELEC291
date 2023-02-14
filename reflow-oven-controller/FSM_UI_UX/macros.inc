@@ -72,3 +72,14 @@ loadbyte mac
 	movx @dptr, a
 	inc dptr
 ENDMAC
+
+; Use for Send_SPI
+SPIBIT MAC
+	    ; Send/Receive bit %0
+		rlc a
+		mov MY_MOSI, c
+		setb MY_SCLK
+		mov c, MY_MISO
+		clr MY_SCLK
+		mov acc.0, c
+	ENDMAC
