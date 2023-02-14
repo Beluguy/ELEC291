@@ -170,8 +170,8 @@ Timer0_ISR:
 ; flash memory.                       ;
 ;-------------------------------------;
 
-Timer1_Init:
-	; Configure timer 1
+Timer1_Init: ; Configure timer 1
+	mov a, TMOD
 	anl	TMOD, #0x0F ; Clear the bits of timer 1 in TMOD
 	orl	TMOD, #0x10 ; Set timer 1 in 16-bit timer mode.  Don't change the bits of timer 0
 	mov TH1, #high(TIMER1_RELOAD)
@@ -179,7 +179,6 @@ Timer1_Init:
 	; Set autoreload value
 	mov RH1, #high(TIMER1_RELOAD)
 	mov RL1, #low(TIMER1_RELOAD)
-
 	; Enable the timer and interrupts
     setb ET1  ; Enable timer 1 interrupt
 	; setb TR1 ; Timer 1 is only enabled to play stored sound
@@ -347,6 +346,31 @@ InitButton:
 	setb START_STOP 				
 	setb RST				
 	ret
+
+InitSpeaker_flashMem:
+	; Configure MY_MOSI/P2.5 as open drain output
+	orl P2M0, #0b_0010_0000
+	orl P2M1, #0b_0010_0000
+
+	; Configure FLASH_CE/P0.7 and MY_SCLK/P0.4 as open drain outputs
+	orl P0M0, #0b_1001_0000
+	orl P0M1, #0b_1001_000
+
+	setb MY_MISO  ; Configured as input
+	setb FLASH_CE ; CS=1 for SPI flash memory
+	clr MY_SCLK   ; Rest state of SCLK=0
+	clr SPEAKER   ; Turn off speaker.
+
+	; Configure the DAC.  The DAC output we are using is P2.3, but P2.2 is also reserved.
+	mov DADI, #0b_1010_0000 ; ACON=1
+	mov DADC, #0b_0011_1010 ; Enabled, DAC mode, Left adjusted, CLK/4
+	mov DADH, #0x80 ; Middle of scale
+	mov DADL, #0
+	orl DADC, #0b_0100_0000 ; Start DAC by GO/BSY=1
+check_DAC_init:
+	mov a, DADC
+	jb acc.6, check_DAC_init ; Wait for DAC to finish
+	ret
 ; -------------------------------------------------- MAIN PROGRAM LOOP ----------------------------------------------
 MainProgram: ; setup()
     mov SP, #7FH 						; Set the stack pointer to the begining of idata
@@ -359,6 +383,7 @@ MainProgram: ; setup()
     lcall INIT_SPI
     lcall LCD_4BIT
 	lcall InitButton
+	lcall InitSpeaker_flashMem
 
     ;initialize flags
     clr start_flag
@@ -375,8 +400,7 @@ MainProgram: ; setup()
     ;init settings
     mov edit_sett, #0
     
-	;init  
-	
+	;init Timers
     lcall Timer0_Init
     lcall Timer1_Init                   
     lcall Timer2_Init
