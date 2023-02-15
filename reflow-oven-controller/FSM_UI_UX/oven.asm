@@ -356,7 +356,6 @@ MainProgram: ; setup()
     lcall LCD_4BIT
 	lcall InitButton
 	lcall InitSpeaker_flashMem
-	lcall generateDisplay
 
 	mov pwm_ratio+0, #low(1000)
 	mov pwm_ratio+1, #high(1000)
@@ -385,9 +384,11 @@ MainProgram: ; setup()
     setb EA   
 
 	;initialize pwm seconds counter
-	mov secs_ctr, #0
+	mov secs_ctr, #0  ; TODO you mean pwm_time??
+
+    lcall generateDisplay ; finally, generate initial display
 forever: ;loop() please only place function calls into the loop!
-    jnb one_second_flag, skipDisplay 	; this segment only executes once a second
+    jnb one_second_flag, skipDisplay 	; this segment only executes once a second (during runtime)
     clr one_second_flag
     
     lcall readADC 						; reads ch0 and saves result to Result as 2 byte binary
@@ -468,7 +469,7 @@ readADC:
 	lcall DO_SPI_G
 	mov Result_Hot, R1     ; R1 contains bits 0 to 7.  Save result low.
 	setb CE_ADC
-	Wait_Milli_Seconds(#100)
+	Wait_Milli_Seconds(#100) ; TODO this line may be a problem
 	
 	mov x+0, Result_Hot+0
 	mov x+1, Result_Hot+1
@@ -487,13 +488,6 @@ readADC:
 	lcall hex2bcd
 	lcall Send_3_digit_BCD
     
-	;mov a, x
-	;cjne a, #50, NOT_EQ
-	;NOT_EQ: JC REQ_LOW
-	;setb TR0
-	;ret
-	;REQ_LOW:
-	;clr TR0
 	ret
 
 DO_SPI_G: 
