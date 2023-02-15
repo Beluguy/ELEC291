@@ -1,4 +1,4 @@
-	$MODLP51RC2
+$MODLP51RC2
 org 0000H
    ljmp MainProgram
 
@@ -350,7 +350,7 @@ check_DAC_init:
 MainProgram: ; setup()
     mov SP, #7FH 						; Set the stack pointer to the begining of idata
     Wait_Milli_Seconds(#5)
-	lcall Load_Configuration 			; initialize settings
+	lcall Load_Config		 			; initialize settings
     lcall InitSerialPort
     lcall INIT_SPI
     lcall LCD_4BIT
@@ -890,11 +890,12 @@ save_config:
 	mov FCON, #0x00 ; Page Buffer Mapping Disabled (FPS = 0)
 	anl EECON, #0b10111111 ; Disable auto-erase
 	pop IE ; Restore the state of bit EA from the stack
+	setb EA	; enable interrupts
     ret
 ;-----------------------------------------------------------------------------
 
 ;------------------------------read from nvmem--------------------------------
-Load_Configuration:
+Load_Config:
     mov dptr, #0x7f84 		; First key value location.
     getbyte(R0) 			; 0x7f84 should contain 0x55
     cjne R0, #0x55, jumpToLoadDef
