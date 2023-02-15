@@ -391,7 +391,7 @@ forever: ;loop() please only place function calls into the loop!
     jnb one_second_flag, skipDisplay 	; this segment only executes once a second (during runtime)
     clr one_second_flag
     
-    lcall readADC 						; reads ch0 and saves result to Result as 2 byte binary
+    lcall readADC 						; reads temperature from thermocouple and cold junction and sends it to temp
     lcall checkOverheat
     lcall generateDisplay
     skipDisplay: 						; end segment
