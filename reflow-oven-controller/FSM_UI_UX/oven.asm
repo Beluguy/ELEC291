@@ -357,9 +357,6 @@ MainProgram: ; setup()
 	lcall InitButton
 	lcall InitSpeaker_flashMem
 
-	;mov pwm_ratio+0, #low(1000)
-	;mov pwm_ratio+1, #high(1000)
-
     ;initialize flags
     clr start_flag
     clr safety_overheat
@@ -382,9 +379,6 @@ MainProgram: ; setup()
 	mov P0M0,#0
     mov P0M1,#0
     setb EA   
-
-	;initialize pwm seconds counter
-	mov secs_ctr, #0  ; TODO you mean pwm_time??
 
     lcall generateDisplay ; finally, generate initial display
 forever: ;loop() please only place function calls into the loop!
@@ -764,6 +758,7 @@ reset:
 	Wait_Milli_Seconds(#50)			; Debounce delay.  This macro is also in 'LCD_4bit.inc'
 	jb RST, DONT_RESET 				; if the 'RESET' button is not pressed skip
 	jnb RST, $
+	lcall Load_Defaults
 	mov state, #5						; reset to state 5 when reset for safety
 DONT_RESET: 
     ret	
