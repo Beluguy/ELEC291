@@ -106,7 +106,7 @@ soak_time: 			ds 1
 reflow_temp: 		ds 1
 reflow_time: 		ds 1
 cool_temp:			ds 1
-pwm: 				ds 1
+pwm: 				ds 2
 sec: 				ds 1
 temp:				ds 1
 ;---------------------------------------------------
@@ -843,7 +843,8 @@ state1_done:
 
 state2:							; soak/preheat
 	cjne a, #2, state3
-	mov pwm, #HOLD_PWM
+	mov pwm+0, #low(HOLD_PWM)
+	mov pwm+1, #high(HOLD_PWM)
 	mov a, soak_time
 	clr c
 	subb a, sec					; if sec > soak time, c = 1
