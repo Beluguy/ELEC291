@@ -48,10 +48,10 @@ LCD_D5 			EQU P3.5
 LCD_D6 			EQU P3.6
 LCD_D7 			EQU P3.7
 ; These ’EQU’ must match the wiring between the microcontroller and ADC 
-CE_ADC 			EQU P2.0 
-MY_MOSI_ADC	    EQU P2.1 
-MY_MISO_ADC 	EQU P2.2 
-MY_SCLK_ADC 	EQU P1.7 
+CE_ADC 			EQU P2.0
+MY_MOSI_ADC	    EQU P2.1
+MY_MISO_ADC 	EQU P2.2
+MY_SCLK_ADC 	EQU P1.7
 
 ; Pins used for SPI for flash memory 
 FLASH_CE  		EQU P0.7		; Pin 1
@@ -439,7 +439,6 @@ readADC:
 	lcall DO_SPI_G
 	mov Result_Cold, R1 ; R1 contains bits 0 to 7. Save result low.
 	setb CE_ADC
-	Wait_Milli_Seconds(#100)
 
 	mov x+0, Result_Cold+0
 	mov x+1, Result_Cold+1
@@ -471,7 +470,6 @@ readADC:
 	lcall DO_SPI_G
 	mov Result_Hot, R1     ; R1 contains bits 0 to 7.  Save result low.
 	setb CE_ADC
-	Wait_Milli_Seconds(#100) ; TODO this line may be a problem b/c blocking cpu
 	
 	mov x+0, Result_Hot+0
 	mov x+1, Result_Hot+1
@@ -486,7 +484,7 @@ readADC:
 	
 	mov temp+0, x+0
     mov temp+1, x+1
-	
+
 	lcall hex2bcd
 	lcall Send_3_digit_BCD
     
@@ -537,27 +535,6 @@ generateDisplay:
     ljmp setupDisplay
 
 startDisplay:
-    Set_Cursor(2, 7)
-	Display_BCD(bcd+4)
-	Display_BCD(bcd+3)
-	Display_BCD(bcd+2)
-	Display_BCD(bcd+1)
-	Display_BCD(bcd+0)
-	; Replace all the zeros to the left with blanks
-	Set_Cursor(2, 7)
-	Left_blank(bcd+4, skip_blank)
-	Left_blank(bcd+3, skip_blank)
-	Left_blank(bcd+2, skip_blank)
-	Left_blank(bcd+1, skip_blank)
-	
-	mov a, bcd+0
-	anl a, #0f0h
-	swap a
-	jnz skip_blank
-	Display_char(#' ')
-skip_blank:
-    ret
-    
     push acc
     Set_Cursor(1,1)
     Send_Constant_String(#run1)
