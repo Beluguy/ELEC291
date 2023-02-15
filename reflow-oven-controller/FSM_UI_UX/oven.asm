@@ -478,7 +478,7 @@ readADC:
 	mov x+3, #0
 
     lcall hex2bcd
-	lcall Send_3_digit_BCD
+	lcall Send_3_Digit_BCD
 	
 	mov y+0, Result_Cold+0
 	mov y+1, Result_Cold+1
@@ -490,12 +490,11 @@ readADC:
     mov temp+1, x+1
 
 	lcall hex2bcd
-	lcall Send_3_digit_BCD
+	lcall Send_3_Digit_BCD
     
 	ret
 
 DO_SPI_G: 
-	push acc 
 	mov R1, #0 ; Received byte stored in R1
 	mov R2, #8 ; Loop counter (8-bits)
 DO_SPI_G_LOOP: 
@@ -510,7 +509,6 @@ DO_SPI_G_LOOP:
 	mov R1, a 
 	clr MY_SCLK_ADC 
 	djnz R2, DO_SPI_G_LOOP 
- 	pop acc 
  	ret
  	
 Send_3_Digit_BCD: ;send 3 digits bcd in BCD var to putty
