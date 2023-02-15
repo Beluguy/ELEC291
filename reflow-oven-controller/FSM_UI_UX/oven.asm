@@ -456,6 +456,9 @@ readADC:
 	
 	mov Result_Cold+0, x+0
 	mov Result_Cold+1, x+1
+
+    lcall hex2bcd
+    lcall Send_3_Digit_BCD
 	
 	;=============ADC Thermocouple Manipulation and Calculation
 	clr CE_ADC
@@ -475,6 +478,9 @@ readADC:
 	mov x+1, Result_Hot+1
 	mov x+2, #0
 	mov x+3, #0
+
+    lcall hex2bcd
+	lcall Send_3_digit_BCD
 	
 	mov y+0, Result_Cold+0
 	mov y+1, Result_Cold+1
@@ -510,6 +516,16 @@ DO_SPI_G_LOOP:
  	ret
  	
 Send_3_Digit_BCD: ;send 3 digits bcd in BCD var to putty
+	Send_BCD(bcd+4)
+	Send_BCD(bcd+3)
+	Send_BCD(bcd+2)
+    	Send_BCD(bcd+1)
+	Send_BCD(bcd+0)
+	mov a, #'\r'
+	lcall putchar
+	mov a, #'\n'
+	lcall putchar
+ret
     mov a, bcd+1
     anl a, #0fh
     orl a, #'0'
