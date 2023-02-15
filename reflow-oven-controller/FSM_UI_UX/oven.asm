@@ -469,7 +469,7 @@ readADC:
 	lcall DO_SPI_G
 	mov Result_Hot, R1     ; R1 contains bits 0 to 7.  Save result low.
 	setb CE_ADC
-	Wait_Milli_Seconds(#100) ; TODO this line may be a problem
+	Wait_Milli_Seconds(#100) ; TODO this line may be a problem b/c blocking cpu
 	
 	mov x+0, Result_Hot+0
 	mov x+1, Result_Hot+1
