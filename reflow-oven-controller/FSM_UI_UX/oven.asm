@@ -357,8 +357,8 @@ MainProgram: ; setup()
 	lcall InitButton
 	lcall InitSpeaker_flashMem
 
-	mov pwm_ratio+0, #low(1000)
-	mov pwm_ratio+1, #high(1000)
+	;mov pwm_ratio+0, #low(1000)
+	;mov pwm_ratio+1, #high(1000)
 
     ;initialize flags
     clr start_flag
@@ -388,7 +388,8 @@ MainProgram: ; setup()
 
     lcall generateDisplay ; finally, generate initial display
 forever: ;loop() please only place function calls into the loop!
-    jnb one_second_flag, skipDisplay 	; this segment only executes once a second (during runtime)
+    lcall reset
+	jnb one_second_flag, skipDisplay 	; this segment only executes once a second (during runtime)
     clr one_second_flag
     
     lcall readADC 						; reads temperature from thermocouple and cold junction and sends it to temp
@@ -400,7 +401,7 @@ forever: ;loop() please only place function calls into the loop!
     lcall pollButtons 					; poll buttons for editing screen
 
     jnb start_flag, skipPoll ; code runs if start flag is set
-    lcall reset 						; check if reset is pressed
+     						; check if reset is pressed
 
     skipPoll: ; code runs always    
     ljmp FSM 							; finite state machine logic
@@ -421,8 +422,8 @@ notOverheat:
 	ret
 overheatReset:
     clr safety_overheat
-    mov a, #5						; reset to state 5 when reset for safety
-    ret
+    mov state, #5						; reset to state 5 when reset for safety
+	ret
 ;----------------------------------------------------------------------------------------------------
 readADC:
 	;=========T-Cold Manipulation and Calculation
@@ -749,7 +750,6 @@ DONT_INC:
     lcall updateCoolScreen
     lcall save_config					; save config to nvmem
     ret
-
 DONT_DEC: 
     ret
 
@@ -775,8 +775,7 @@ reset:
 	Wait_Milli_Seconds(#50)			; Debounce delay.  This macro is also in 'LCD_4bit.inc'
 	jb RST, DONT_RESET 				; if the 'RESET' button is not pressed skip
 	jnb RST, $
-	mov a, #5						; reset to state 5 when reset for safety
-	mov state, a
+	mov state, #5						; reset to state 5 when reset for safety
 DONT_RESET: 
     ret	
 
@@ -790,15 +789,13 @@ start_or_not:
 DONT_START: 
     ret	
 
-
 Load_Defaults: ; Load defaults if 'keys' are incorrect
-	mov soak_temp, #35				; 150
-	mov soak_time, #10				; 45
-	mov reflow_temp, #50			; 225
-	mov reflow_time, #5				; 30
-    mov cool_temp, #30				; 50
+	mov soak_temp, 		#35			; 150
+	mov soak_time, 		#10			; 45
+	mov reflow_temp,	#50			; 225
+	mov reflow_time, 	#5			; 30
+    mov cool_temp, 		#30			; 50
 	ret
-	
 ;-------------------------------------FSM time!!---------------------------------------
 FSM:							 
 	mov a, state
@@ -865,6 +862,8 @@ state4_done:
 state5:							; cooling state
 	cjne a, #5, state0
 	mov pwm_ratio, #0
+	;mov pwm_ratio+0, #low(10)
+	;mov pwm_ratio+1, #high(0)
 	mov a, temp
 	clr c
 	subb a, cool_temp			; if cool_temp > temp, c = 1
@@ -876,6 +875,7 @@ state5_done:
 
 FSM_audio:
 
+ret
 ;----------------------------------------------------------------------------------------
 
 ;---------------------------------save to nvmem-------------------------------
