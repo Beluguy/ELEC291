@@ -1,5 +1,5 @@
 @echo off
 C:
-cd "\Users\youss\Desktop\FILES_USED\ELEC_291\ELEC291GIT\Elec-291\reflow-oven-controller\thermocoupletest\"
-"C:\CrossIDE\Call51\Bin\a51.exe" -l "C:\Users\youss\Desktop\FILES_USED\ELEC_291\ELEC291GIT\Elec-291\reflow-oven-controller\thermocoupletest\lab3.asm"
-echo Crosside_Action Set_Hex_File C:\Users\youss\Desktop\FILES_USED\ELEC_291\ELEC291GIT\Elec-291\reflow-oven-controller\thermocoupletest\lab3.HEX
+cd "\ELEC291\Elec-291\reflow-oven-controller\thermocoupletest\"
+"C:\CrossIDE\Call51\Bin\a51.exe" -l "C:\ELEC291\Elec-291\reflow-oven-controller\thermocoupletest\thermo_reading.asm"
+echo Crosside_Action Set_Hex_File C:\ELEC291\Elec-291\reflow-oven-controller\thermocoupletest\thermo_reading.HEX
