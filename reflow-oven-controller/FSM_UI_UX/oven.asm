@@ -1,4 +1,4 @@
-	$MODLP51RC2
+$MODLP51RC2
 org 0000H
    ljmp MainProgram
 
@@ -294,9 +294,25 @@ InitSerialPort:
 	mov	BDRCON,#0x1E ; BDRCON=BRR|TBCK|RBCK|SPD;
     ret
     
-INIT_SPI: 
+INIT_SPI:
 	setb MY_MISO_ADC ; Make MISO an input pin
-	clr MY_SCLK_ADC ; For mode (0,0) SCLK is zero
+	clr MY_SCLK           ; Mode 0,0 default
+	ret
+DO_SPI_G:
+	mov R1, #0 ; Received byte stored in R1
+	mov R2, #8            ; Loop counter (8-bits)
+DO_SPI_G_LOOP:
+	mov a, R0             ; Byte to write is in R0
+	rlc a                 ; Carry flag has bit to write
+	mov R0, a
+	mov MY_MOSI_ADC, c
+	setb MY_SCLK_ADC         ; Transmit
+	mov c, MY_MISO_ADC      ; Read received bit
+	mov a, R1             ; Save received bit in R1
+	rlc a
+	mov R1, a
+	clr MY_SCLK
+	djnz R2, DO_SPI_G_LOOP
 	ret
 
 ;---------------------------------;
@@ -350,9 +366,9 @@ check_DAC_init:
 MainProgram: ; setup()
     mov SP, #7FH 						; Set the stack pointer to the begining of idata
     Wait_Milli_Seconds(#5)
-	lcall Load_Configuration 			; initialize settings
-    lcall InitSerialPort
     lcall INIT_SPI
+	lcall Load_Config 			; initialize settings
+    lcall InitSerialPort   
     lcall LCD_4BIT
 	lcall InitButton
 	lcall InitSpeaker_flashMem
@@ -487,23 +503,6 @@ readADC:
 	lcall Send_3_Digit_BCD
     
 	ret
-
-DO_SPI_G: 
-	mov R1, #0 ; Received byte stored in R1
-	mov R2, #8 ; Loop counter (8-bits)
-DO_SPI_G_LOOP: 
-	mov a, R0 ; Byte to write is in R0
-	rlc a ; Carry flag has bit to write
-	mov R0, a 
-	mov MY_MOSI_ADC, c 
-	setb MY_SCLK_ADC ; Transmit
-	mov c, MY_MISO_ADC ; Read received bit
-	mov a, R1 ; Save received bit in R1
-	rlc a 
-	mov R1, a 
-	clr MY_SCLK_ADC 
-	djnz R2, DO_SPI_G_LOOP 
- 	ret
  	
 Send_3_Digit_BCD: ;send 3 digits bcd in BCD var to putty
 	Send_BCD(bcd+4)
@@ -890,11 +889,12 @@ save_config:
 	mov FCON, #0x00 ; Page Buffer Mapping Disabled (FPS = 0)
 	anl EECON, #0b10111111 ; Disable auto-erase
 	pop IE ; Restore the state of bit EA from the stack
+	setb EA	; enable interrupts
     ret
 ;-----------------------------------------------------------------------------
 
 ;------------------------------read from nvmem--------------------------------
-Load_Configuration:
+Load_Config:
     mov dptr, #0x7f84 		; First key value location.
     getbyte(R0) 			; 0x7f84 should contain 0x55
     cjne R0, #0x55, jumpToLoadDef
