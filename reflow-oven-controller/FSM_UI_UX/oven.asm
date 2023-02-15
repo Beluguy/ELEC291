@@ -557,7 +557,7 @@ startDisplay:
 skip_blank:
     ret
     
-
+    push acc
     Set_Cursor(1,1)
     Send_Constant_String(#run1)
     Set_Cursor(2,1)
@@ -582,6 +582,7 @@ skip_blank:
     Display_BCD(mins_ctr)
     Set_Cursor(2,12)
     Display_BCD(secs_ctr)
+    pop acc
     ret
 
 ;             1234567890123456
