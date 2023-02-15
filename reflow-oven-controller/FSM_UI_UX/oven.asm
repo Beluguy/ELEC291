@@ -16,7 +16,7 @@ org 0x002B
 CLK  				EQU 22118400
 BAUD 				EQU 115200
 BRG_VAL 			EQU (0x100-(CLK/(16*BAUD)))
-TIMER0_RATE   		EQU 1000    ; 1000Hz PWM output signal 
+TIMER0_RATE   		EQU 1000    ; 1000Hz PWM PWM_OUTPUT signal 
 TIMER0_RELOAD 		EQU ((65536-(CLK/TIMER0_RATE)))
 TIMER1_RATE    		EQU 22050   ; 22050Hz is the sampling rate of the wav file we are playing
 TIMER1_RELOAD  		EQU 0x10000-(CLK/TIMER1_RATE)
@@ -41,7 +41,7 @@ READ_DEVICE_ID   EQU 0x9f  ; Address:0 Dummy:2 Num:1 to infinite
 
 ;----------------------------------Ports!----------------------------------------
 SPEAKER  		EQU P2.4 		; Used with a MOSFET to turn off speaker when not in use
-OUTPUT			EQU P1.6		; output signal to MOSFET then to the ground port of relay box
+PWM_OUTPUT			EQU P1.6		; PWM_OUTPUT signal to the relay box
 
 ; These 'equ' must match the hardware wiring
 ; They are used by 'LCD_4bit.inc'
@@ -86,7 +86,7 @@ w:  		 		ds 3 ; 24-bit play counter.  Decremented in Timer 1 ISR.
 Count1ms:       	ds 2 ; Used to determine when one second has passed
 secs_ctr:       	ds 1
 mins_ctr:       	ds 1
-pwm_time: 			ds 1 ; Used to check whether it is time to turn on the pwm output
+pwm_time: 			ds 1 ; Used to check whether it is time to turn on the pwm PWM_OUTPUT
 ;---------------------------------------------------
 
 ;--------------------for settings-------------------
@@ -96,6 +96,7 @@ edit_sett:	        ds 1 ; which segment are we editing
 ; 2 - reflow temp
 ; 3 - reflow time
 ; 4 - cool temp
+
 ;---------------------------------------------------
 
 ;--------------------for FSM------------------------
@@ -105,7 +106,7 @@ soak_time: 			ds 1
 reflow_temp: 		ds 1
 reflow_time: 		ds 1
 cool_temp:			ds 1
-pwm: 				ds 2
+pwm_ratio: 				ds 2
 sec: 				ds 1
 temp:				ds 1
 ;---------------------------------------------------
@@ -134,20 +135,21 @@ setup5:  db 'tmp:XXX         ', 0
 run1:    db 'temp:XXX state X', 0
 run2:    db 'elapsed XX:XX   ', 0
 
-Timer0_Init:		; Timer for PWM output
+Timer0_Init:
 	mov a, TMOD
-	anl a, #0xf0 	; 11110000 Clear the bits for timer 0
-	orl a, #0x01 	; 00000001 Configure timer 0 as 16-timer
+	anl a, #0xf0 ; 11110000 Clear the bits for timer 0
+	orl a, #0x01 ; 00000001 Configure timer 0 as 16-timer
 	mov TMOD, a
 	mov TH0, #high(TIMER0_RELOAD)
 	mov TL0, #low(TIMER0_RELOAD)
 	; Set autoreload value
 	mov RH0, #high(TIMER0_RELOAD)
 	mov RL0, #low(TIMER0_RELOAD)
-    setb ET0  		; Enable timer 0 interrupt
-    setb TR0  		; Start timer 0
+    setb ET0  ; Enable timer 0 interrupt
+    ; setb TR0  ; Start timer 0
 	ret
 Timer0_ISR:
+	;clr TF0  ; According to the data sheet this is done for us already.
 	mov TH0, #high(TIMER0_RELOAD)
 	mov TL0, #low(TIMER0_RELOAD)
 	; Set autoreload value
@@ -160,7 +162,8 @@ Timer0_ISR:
 ; the WAV file stored in the SPI      ;
 ; flash memory.                       ;
 ;-------------------------------------;
-Timer1_Init: 		; Timer for playing the WAV file stored in the SPI flash memory
+
+Timer1_Init: ; Configure timer 1
 	mov a, TMOD
 	anl	TMOD, #0x0F ; Clear the bits of timer 1 in TMOD
 	orl	TMOD, #0x10 ; Set timer 1 in 16-bit timer mode.  Don't change the bits of timer 0
@@ -170,8 +173,8 @@ Timer1_Init: 		; Timer for playing the WAV file stored in the SPI flash memory
 	mov RH1, #high(TIMER1_RELOAD)
 	mov RL1, #low(TIMER1_RELOAD)
 	; Enable the timer and interrupts
-    setb ET1 	 	; Enable timer 1 interrupt
-	; setb TR1 		; Timer 1 is only enabled to play stored sound
+    setb ET1  ; Enable timer 1 interrupt
+	; setb TR1 ; Timer 1 is only enabled to play stored sound
 	ret
 Timer1_ISR:
     ; The registers used in the ISR must be saved in the stack
@@ -195,7 +198,7 @@ keep_playing:
     setb SPEAKER
     lcall Send_SPI ; Read the next byte from the SPI Flash...
     add a, #0x80
-    mov DADH, a ; Output to DAC. DAC output is pin P2.3
+    mov DADH, a ; PWM_OUTPUT to DAC. DAC PWM_OUTPUT is pin P2.3
     orl DADC, #0b_0100_0000 ; Start DAC by setting GO/BSY=1
     sjmp Timer1_ISR_Done
 stop_playing:
@@ -213,7 +216,7 @@ Timer1_ISR_Done:
 ; Routine to initialize the ISR   ;
 ; for timer 2                     ;
 ;---------------------------------;
-Timer2_Init: ; 
+Timer2_Init:
 	mov T2CON, #0 ; Stop timer/counter.  Autoreload mode.
 	mov TH2, #high(TIMER2_RELOAD)
 	mov TL2, #low(TIMER2_RELOAD)
@@ -224,8 +227,9 @@ Timer2_Init: ;
 	clr a
 	mov Count1ms+0, a
 	mov Count1ms+1, a
+	; Enable the timer and interrupts
     setb ET2  ; Enable timer 2 interrupt
-   	clr TR2  ; disable timer 2 by default
+    setb TR2  ; Enable timer 2
 	ret
 
 ;---------------------------------;
@@ -243,13 +247,25 @@ Timer2_ISR:
 	mov a, Count1ms+0 ; If the low 8-bits overflow, then increment high 8-bits
 	jnz Inc_Done
 	inc Count1ms+1
+
 Inc_Done:
+	; Do the PWM thing
+	; Check if Count1ms > pwm_ratio (this is a 16-bit compare)
+	clr c
+	mov a, pwm_ratio+0
+	subb a, Count1ms+0
+	mov a, pwm_ratio+1
+	subb a, Count1ms+1
+	; if Count1ms > pwm_ratio  the carry is set.  Just copy the carry to the pwm output pin:
+	mov PWM_OUTPUT, c
+	
 	; Check if second has passed
 	mov a, Count1ms+0
 	cjne a, #low(1000), Timer2_ISR_done ; Warning: this instruction changes the carry flag!
 	mov a, Count1ms+1
 	cjne a, #high(1000), Timer2_ISR_done
 	
+	; 1000 milliseconds have passed.  Set a flag so the main program knows
 	setb one_second_flag ; Let the main program know second had passed
 		
 	; Reset to zero the milli-seconds counter, it is a 16-bit variable
@@ -334,11 +350,11 @@ InitButton:
 	ret
 
 InitSpeaker_flashMem:
-	; Configure MY_MOSI/P2.5 as open drain output
+	; Configure MY_MOSI/P2.5 as open drain PWM_OUTPUT
 	orl P2M0, #0b_0010_0000
 	orl P2M1, #0b_0010_0000
 
-	; Configure FLASH_CE/P0.7 and MY_SCLK/P0.4 as open drain outputs
+	; Configure FLASH_CE/P0.7 and MY_SCLK/P0.4 as open drain PWM_OUTPUTs
 	orl P0M0, #0b_1001_0000
 	orl P0M1, #0b_1001_000
 
@@ -347,7 +363,7 @@ InitSpeaker_flashMem:
 	clr MY_SCLK   ; Rest state of SCLK=0
 	clr SPEAKER   ; Turn off speaker.
 
-	; Configure the DAC.  The DAC output we are using is P2.3, but P2.2 is also reserved.
+	; Configure the DAC.  The DAC PWM_OUTPUT we are using is P2.3, but P2.2 is also reserved.
 	mov DADI, #0b_1010_0000 ; ACON=1
 	mov DADC, #0b_0011_1010 ; Enabled, DAC mode, Left adjusted, CLK/4
 	mov DADH, #0x80 ; Middle of scale
@@ -360,9 +376,8 @@ check_DAC_init:
 ; -------------------------------------------------- MAIN PROGRAM LOOP ----------------------------------------------
 MainProgram: ; setup()
     mov SP, #7FH 						; Set the stack pointer to the begining of idata
-    mov P0M0,#0
-    mov P0M1,#0
-	clr OUTPUT							; pwm is set to low by default
+    Wait_Milli_Seconds(#5)
+	clr PWM_OUTPUT							; pwm is set to low by default
 	lcall Load_Configuration 			; initialize settings
     lcall InitSerialPort
     lcall INIT_SPI
@@ -371,8 +386,8 @@ MainProgram: ; setup()
 	lcall InitSpeaker_flashMem
 
 	;init Timers
-    lcall Timer1_Init                   
-    lcall Timer2_Init
+                
+
 
     ;initialize flags
     clr start_flag
@@ -390,8 +405,22 @@ MainProgram: ; setup()
     ;init settings
     mov edit_sett, #0
     
+	;init Timers
+    lcall Timer0_Init
+    lcall Timer1_Init                   
+    lcall Timer2_Init
+
+	mov P0M0,#0
+    mov P0M1,#0
+    setb EA   
 	
-    setb EA   							; Enable Global interrupts
+	; default pwm duty cycle of 20					; Enable Global interrupts
+
+	mov pwm_ratio+0, #low(200)
+	mov pwm_ratio+1, #high(200)
+	;initialize pwm seconds counter
+	mov secs_ctr, #0
+
 forever: ;loop() please only place function calls into the loop!
     jnb one_second_flag, skipDisplay 	; this segment only executes once a second
     clr one_second_flag
@@ -401,7 +430,7 @@ forever: ;loop() please only place function calls into the loop!
     lcall generateDisplay
     skipDisplay: 						; end segment
 
-    jb start_flag, skipPoll 			; code runs if start flag is unset
+    jb start_flag, skipPoll ; code runs if start flag is unset
     lcall pollButtons 					; poll buttons for editing screen
 
     skipPoll: ; code runs always
@@ -409,6 +438,7 @@ forever: ;loop() please only place function calls into the loop!
     
     ljmp FSM 							; finite state machine logic
     ljmp forever                        ; just in case
+
 ; ---------------------------------------------------------------------------------------------------
 
 ;----------------------------------safety-features---------------------------------------------------
@@ -493,6 +523,7 @@ readADC:
 	lcall hex2bcd
 	lcall Send_3_digit_BCD
     
+	
 	;mov a, x
 	;cjne a, #50, NOT_EQ
 	;NOT_EQ: JC REQ_LOW
@@ -737,6 +768,7 @@ DONT_INC:
     lcall updateCoolScreen
     lcall save_config					; save config to nvmem
     ret
+
 DONT_DEC: 
     ret
 
@@ -778,25 +810,26 @@ start_or_not:
 DONT_START: 
     ret	
 
-PWM_OUTPUT:
-	mov a, pwm
-	cjne a, #100, holding_temp		; if pwm is 100, then OUTPUT = 1 all 
-	setb OUTPUT						; the time
-	ret
-
-	cjne a, #0, holding_temp		; if pwm is 0, then OUTPUT = 0 all
-	clr OUTPUT						; the time
-	ret
-
-	holding_temp:	
-	mov a, Count1ms
-	cjne a, #0 , Not_yet			; check whether it is time to turn on the pwm pin		 
-	clr OUTPUT						; clr OUTPUT if at the begining of the period
-	mov a, Count1ms+0
-	cjne a, #low(PWM_HOLD_RATE), Not_yet 	; Warning: this instruction changes the carry flag!
-	mov a, Count1ms+1
-	cjne a, #high(PWM_HOLD_RATE), Not_yet	; if Count1ms = PWM_HOLD_RATE, set the OUTPUT to 1
-	setb OUTPUT
+;PWM_PWM_OUTPUT:
+;	mov a, pwm_ratio
+;	cjne a, #100, holding_temp		; if pwm is 100, then PWM_OUTPUT = 1 all 
+;	setb PWM_OUTPUT						; the time
+;	ret
+;
+;	cjne a, #0, holding_temp		; if pwm is 0, then PWM_OUTPUT = 0 all
+	clr PWM_OUTPUT						; the time
+;	ret
+;
+;	holding_temp:	
+;	mov a, Count1ms
+;	cjne a, #0 , Not_yet			; check whether it is time to turn on the pwm pin		 
+;	clr PWM_OUTPUT						; clr PWM_OUTPUT if at the begining of the period
+;	mov a, Count1ms+0
+;	cjne a, #low(PWM_HOLD_RATE), Not_yet 	; Warning: this instruction changes the carry flag!
+;	mov a, Count1ms+1
+;	cjne a, #high(PWM_HOLD_RATE), Not_yet	; if Count1ms = PWM_HOLD_RATE, set the PWM_OUTPUT to 1
+;	setb PWM_OUTPUT
+;	ret
 Not_yet: ret
 
 Load_Defaults: ; Load defaults if 'keys' are incorrect
@@ -812,7 +845,7 @@ FSM:
 	mov a, state
 state0:							; default state
 	cjne a, #0, state1			; if not state 0, then go to next branch
-	mov pwm, #0					; at state 0, pwm is 0%
+	mov pwm_ratio, #0					; at state 0, pwm is 0%
 	lcall start_or_not
 	jnb start_flag, state0_done	; if start key is not press, the go to state0_done
 	mov state, #1
@@ -821,7 +854,7 @@ state0_done:
 	ljmp forever
 state1:							; ramp to soak
 	cjne a, #1, state2
-	mov pwm, #100
+	mov pwm_ratio, #100
 	mov sec, #0
 	mov a, soak_temp
 	clr c
@@ -834,9 +867,9 @@ state1_done:
 
 state2:							; soak/preheat
 	cjne a, #2, state3
-	mov pwm+0, #low(HOLD_PWM)
-	mov pwm+1, #high(HOLD_PWM)
 	mov a, soak_time
+	mov pwm_ratio+0, #low(200)
+	mov pwm_ratio+1, #high(200)
 	clr c
 	subb a, sec					; if sec > soak time, c = 1
 	jnc state2_done				; if sec is not at soak time, then go to state2_done 
@@ -846,7 +879,7 @@ state2_done:
 
 state3:							; ramp to peak, prepare to reflow
 	cjne a, #3, state4
-	mov pwm, #100
+	mov pwm_ratio, #100
 	mov sec, #0
 	mov a, reflow_temp
 	clr c
@@ -858,7 +891,7 @@ state3_done:
 
 state4:							; ramp to peak, prepare to reflow
 	cjne a, #4, state5
-	mov pwm, #HOLD_PWM
+	mov pwm_ratio, #HOLD_PWM
 	mov a, reflow_time
 	clr c
 	subb a, sec					; if sec > reflow_temp, c = 1
@@ -869,7 +902,7 @@ state4_done:
 
 state5:							; cooling state
 	cjne a, #5, state0
-	mov pwm, #0
+	mov pwm_ratio, #0
 	mov a, temp
 	clr c
 	subb a, cool_temp			; if cool_temp > temp, c = 1
