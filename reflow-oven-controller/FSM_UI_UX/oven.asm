@@ -906,7 +906,7 @@ Load_Config:
     getbyte(soak_time) 		; 0x7f81
     getbyte(reflow_temp) 	; 0x7f82
     getbyte(reflow_time) 	; 0x7f83
-    getbyte(cool_temp)
+    ;getbyte(cool_temp)
     ret
 jumpToLoadDef:
 	ljmp Load_Defaults
