@@ -19,11 +19,18 @@
 ;
 ; WARNING: Pins P2.2 and P2.3 are the DAC outputs and can not be used for anything else
 
+org 0000H ; Reset vector
+    ljmp MainProgram
+
+org 0x001B ; Timer/Counter 1 overflow interrupt vector. Used in this code to replay the wave file.
+	ljmp Timer1_ISR
+
+org 0x0063 ; ADC interrupt (vector must be present if debugger is used)
+	reti
+
 $NOLIST
 $MODLP51RC2
 $LIST
-
-
 
 SYSCLK         EQU 22118400  ; Microcontroller system clock frequency in Hz
 TIMER1_RATE    EQU 22050     ; 22050Hz is the sampling rate of the wav file we are playing
@@ -64,38 +71,8 @@ $include(math32.inc)
 $LIST
 
 
-org 0x0000 ; Reset vector
-    ljmp MainProgram
-    
-
-org 0x0003 ; External interrupt 0 vector (not used in this code)
-	reti
-
-org 0x000B ; Timer/Counter 0 overflow interrupt vector (not used in this code)
-	reti
-
-org 0x0013 ; External interrupt 1 vector. (not used in this code)
-	reti
-
-org 0x001B ; Timer/Counter 1 overflow interrupt vector. Used in this code to replay the wave file.
-	ljmp Timer1_ISR
-
-org 0x0023 ; Serial port receive/transmit interrupt vector (not used in this code)
-	reti
-
-org 0x005b ; Timer 2 interrupt vector. (not used in this code)
-	reti
-
-org 0x0063 ; ADC interrupt (vector must be present if debugger is used)
-	reti
-   	
-   	
-
-
-
 ;AFTER MOVING NEEDED NUMBER
 ;PLAYAUDIO
-
 
 ;-------------------------------------;
 ; ISR for Timer 1.  Used to playback  ;

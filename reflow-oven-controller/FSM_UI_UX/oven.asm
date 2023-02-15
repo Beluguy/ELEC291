@@ -41,7 +41,7 @@ READ_DEVICE_ID   EQU 0x9f  ; Address:0 Dummy:2 Num:1 to infinite
 
 ;----------------------------------Ports!----------------------------------------
 SPEAKER  		EQU P2.4 		; Used with a MOSFET to turn off speaker when not in use
-OUTPUT			EQU P0.2		; output signal to the relay box
+OUTPUT			EQU P1.6		; output signal to the relay box
 
 ; These 'equ' must match the hardware wiring
 ; They are used by 'LCD_4bit.inc'
@@ -145,16 +145,9 @@ Timer0_Init:
 	; Set autoreload value
 	mov RH0, #high(TIMER0_RELOAD)
 	mov RL0, #low(TIMER0_RELOAD)
-	; Enable the timer and interrupts
     setb ET0  ; Enable timer 0 interrupt
     ; setb TR0  ; Start timer 0
 	ret
-
-;---------------------------------;
-; ISR for timer 0.  Set to execute;
-; every 1/4096Hz to generate a    ;
-; 2048 Hz square wave at pin P1.1 ;
-;---------------------------------;
 Timer0_ISR:
 	;clr TF0  ; According to the data sheet this is done for us already.
 	mov TH0, #high(TIMER0_RELOAD)
@@ -165,7 +158,7 @@ Timer0_ISR:
 	reti
 
 ;-------------------------------------;
-; ISR for Timer 1. �Used to playback �;
+; ISR for Timer 1. Used to playback   ;
 ; the WAV file stored in the SPI      ;
 ; flash memory.                       ;
 ;-------------------------------------;
