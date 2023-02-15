@@ -367,7 +367,7 @@ MainProgram: ; setup()
     mov SP, #7FH 						; Set the stack pointer to the begining of idata
     Wait_Milli_Seconds(#5)
     lcall INIT_SPI
-	lcall Load_Configuration 			; initialize settings
+	lcall Load_Config 			; initialize settings
     lcall InitSerialPort   
     lcall LCD_4BIT
 	lcall InitButton
