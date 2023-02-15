@@ -399,9 +399,10 @@ forever: ;loop() please only place function calls into the loop!
     jb start_flag, skipPoll ; code runs if start flag is unset
     lcall pollButtons 					; poll buttons for editing screen
 
-    skipPoll: ; code runs always
+    jnb start_flag, skipPoll ; code runs if start flag is set
     lcall reset 						; check if reset is pressed
-    
+
+    skipPoll: ; code runs always    
     ljmp FSM 							; finite state machine logic
     ljmp forever                        ; just in case
 ; ---------------------------------------------------------------------------------------------------
