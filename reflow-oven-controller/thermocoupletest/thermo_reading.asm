@@ -5,7 +5,7 @@ $LIST
 CE_ADC    EQU  P2.0
 MY_MOSI   EQU  P2.1 
 MY_MISO   EQU  P2.2
-MY_SCLK   EQU  P2.3
+MY_SCLK   EQU  P1.7
 
 org 0000H
    ljmp MyProgram

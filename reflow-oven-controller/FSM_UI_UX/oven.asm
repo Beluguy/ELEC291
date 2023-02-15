@@ -536,6 +536,28 @@ generateDisplay:
     ljmp setupDisplay
 
 startDisplay:
+    Set_Cursor(2, 7)
+	Display_BCD(bcd+4)
+	Display_BCD(bcd+3)
+	Display_BCD(bcd+2)
+	Display_BCD(bcd+1)
+	Display_BCD(bcd+0)
+	; Replace all the zeros to the left with blanks
+	Set_Cursor(2, 7)
+	Left_blank(bcd+4, skip_blank)
+	Left_blank(bcd+3, skip_blank)
+	Left_blank(bcd+2, skip_blank)
+	Left_blank(bcd+1, skip_blank)
+	
+	mov a, bcd+0
+	anl a, #0f0h
+	swap a
+	jnz skip_blank
+	Display_char(#' ')
+skip_blank:
+    ret
+    
+
     Set_Cursor(1,1)
     Send_Constant_String(#run1)
     Set_Cursor(2,1)
@@ -673,26 +695,26 @@ DONT_EDIT:
     cjne a, #0, elem1
     inc soak_temp
     lcall updateSoakScreen
-    ;lcall save_config					; save config to nvmem
+    lcall save_config					; save config to nvmem
     ret
     elem1: cjne a, #1, elem2
     inc soak_time
     lcall updateSoakScreen
-    ;lcall save_config					; save config to nvmem
+    lcall save_config					; save config to nvmem
     ret
     elem2: cjne a, #2, elem3
     inc reflow_temp
     lcall updateReflowScreen
-    ;lcall save_config					; save config to nvmem
+    lcall save_config					; save config to nvmem
     ret
     elem3: cjne a, #3, elem4
     inc reflow_time
     lcall updateReflowScreen
-    ;lcall save_config					; save config to nvmem
+    lcall save_config					; save config to nvmem
     ret
     elem4: inc cool_temp
     lcall updateCoolScreen
-    ;lcall save_config					; save config to nvmem
+    lcall save_config					; save config to nvmem
     ret
     
 DONT_INC:
