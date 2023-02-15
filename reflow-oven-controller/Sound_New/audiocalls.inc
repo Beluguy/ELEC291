@@ -1,13 +1,14 @@
 cseg
 
+
 main_player_1sec:
 
     push acc
     push psw
 
-    clr
+    ;mov dptr, #0
 
-    mov dptr, #sound_index+6
+    ;mov dptr, #sound_index+6
 
 
     lcall playnum
@@ -112,76 +113,96 @@ findones:
     check9:
     cjne a, #9, check8
     lcall nine
+    ljmp done
 
     check8:
     cjne a, #8, check7
     lcall eight
+    ljmp done
 
     check7:
     cjne a, #7, check6
     lcall seven
+    ljmp done
 
     check6:
     cjne a, #6, check5
     lcall six
+    ljmp done
 
     check5:
     cjne a, #5, check4
     lcall five
+    ljmp done
 
     check4:
     cjne a, #4, check3
     lcall four
+    ljmp done
 
     check3:
     cjne a, #3, check2
     lcall three
+    ljmp done
 
     check2:
     cjne a, #2, check1
     lcall two
+    ljmp done
 
     check1:
+    cjne a, #1, done
     lcall one
+    
 
+    done:
  ret
     
 findtens:
     check90:
     cjne a, #9, check80
     lcall ninety
+    ljmp done2
 
     check80:
     cjne a, #8, check70
     lcall eighty
+    ljmp done2
 
     check70:
     cjne a, #7, check60
     lcall seventy
+    ljmp done2
 
     check60:
     cjne a, #6, check50
     lcall sixty
+    ljmp done2
 
     check50:
     cjne a, #5, check40
     lcall fifty
+    ljmp done2
 
     check40:
-    cjne a, #8, check30
+    cjne a, #4, check30
     lcall fourty
+    ljmp done2
 
     check30:
-    cjne a, #8, check20
+    cjne a, #3, check20
     lcall thirty
+    ljmp done2
 
     check20:
     cjne a, #2, check10
     lcall twenty
+    ljmp done2
 
     check10:
     lcall ten
 
+    done2:
 ret
 
 ;play x
@@ -200,6 +221,7 @@ playnum:
         div ab
         jz checktens
         lcall findones
+        Wait_Milli_Seconds(#250)
         lcall hundred    
 
     checktens: 
@@ -207,16 +229,19 @@ playnum:
         mov a, b
         mov b, #10
         div ab
-        jz findtens
+        jz checkones
         lcall findtens
+        Wait_Milli_Seconds(#250)
+        mov a, b
+        cjne a, #0, checkones
+        ljmp donefinal
 
     checkones: 
-
-        mov a, b
         lcall findones
 
     ;pop psw
     ;pop acc
+    donefinal:
 ret
 
 
@@ -226,58 +251,106 @@ one:
     ret
 
 two:
-    mov dptr, #sound_index+1
+    mov dptr, #sound_index+3
     ret
 
 three:
+    mov dptr, #sound_index+6
     ret
     
 four:
+    mov dptr, #sound_index+9
     ret
 
 five:
+    mov dptr, #sound_index+12
     ret
 
 six:
+    mov dptr, #sound_index+15
     ret
 
 seven:
+    mov dptr, #sound_index+21
     ret
 
 eight:
+    mov dptr, #sound_index+24
     ret
 
 nine:
+    mov dptr, #sound_index+27
     ret
 
 ten:
+    mov dptr, #sound_index+30
     ret
 
 twenty:
+    mov dptr, #sound_index+33
     ret
 
 thirty:
+    mov dptr, #sound_index+36
     ret
 
 fourty:
+    mov dptr, #sound_index+39
     ret
 
 fifty:
+    mov dptr, #sound_index+42
     ret
 
 sixty:
+    mov dptr, #sound_index+48
     ret 
 
 seventy:
+    mov dptr, #sound_index+54
     ret
 
 eighty:
+    mov dptr, #sound_index+57
     ret
 
 ninety:
+    mov dptr, #sound_index+60
     ret
 
 hundred:
+    mov dptr, #sound_index+63
     ret
 
+degree_celsius:
+    mov dptr, #sound_index+66
+    ret
+
+current_state:
+    mov dptr, #sound_index+72
+    ret
+
+ramp_to_soak:
+    mov dptr, #sound_index+75
+    ret
+
+soak:
+    mov dptr, #sound_index+81
+    ret
+
+ramp_to_peak:
+    mov dptr, #sound_index+87
+    ret
+
+reflow:
+    mov dptr, #sound_index+99
+    ret
+
+cooling:
+    mov dptr, #sound_index+105
+    ret
+
+safe_temp:
+    mov dptr, #sound_index+108
+    ret
 

@@ -54,6 +54,7 @@ READ_DEVICE_ID   EQU 0x9f  ; Address:0 Dummy:2 Num:1 to infinite
 dseg at 30H
 	w:   ds 3 ; 24-bit play counter.  Decremented in Timer 1 ISR.
 	x:	 ds 3
+	n:	 ds 3
 
 ; Interrupt vectors:
 cseg
@@ -510,10 +511,8 @@ forever_loop:
 	;mov b, #3
 	;mul ab
 	
-	Load_X(2)
+	load_X(15)
 	lcall main_player_1sec
-	
-	
 	
 		
 	setb SPEAKER ; Turn on speaker.
