@@ -811,7 +811,7 @@ state2:							; soaking
 	cjne a, #2, state3
 	mov a, soak_time
 	mov pwm_ratio+0, #low(200)
-	mov pwm_ratio+1, #high(200)
+	mov pwm_ratio+1, #high(PWM_HOLD_RATE)
 	clr c
 	subb a, sec					; if sec > soak time, c = 1
 	jnc state2_done				; if sec is not at soak time, then go to state2_done 
