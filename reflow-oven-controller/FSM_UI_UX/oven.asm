@@ -23,8 +23,8 @@ TIMER1_RELOAD  		EQU 0x10000-(CLK/TIMER1_RATE)
 TIMER2_RATE     	EQU 1000    ; 1000Hz, for a timer tick of 1ms
 TIMER2_RELOAD   	EQU ((65536-(CLK/TIMER2_RATE)))
 
-HOLD_PWM			EQU 20		; 20% pwm for holding the temp constant 
-PWM_HOLD_RATE		EQU (TIMER0_RATE-(HOLD_PWM*10))
+;HOLD_PWM			EQU 20		; 20% pwm for holding the temp constant 
+;PWM_HOLD_RATE		EQU (TIMER0_RATE-(HOLD_PWM*10))
 
 ; Commands supported by the SPI flash memory according to the datasheet
 WRITE_ENABLE     EQU 0x06  ; Address:0 Dummy:0 Num:0
