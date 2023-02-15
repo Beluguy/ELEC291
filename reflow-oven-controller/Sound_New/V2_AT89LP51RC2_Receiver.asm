@@ -510,10 +510,13 @@ forever_loop:
 	;add a, #-1
 	;mov b, #3
 	;mul ab
-	
-	load_X(15)
+
+	load_X(5)
 	lcall main_player_1sec
-	
+	;Wait_Milli_Seconds(#250)
+	;load_X(5)
+	;lcall main_player_1sec
+	;Wait_Milli_Seconds(#250)
 		
 	setb SPEAKER ; Turn on speaker.
 	setb TR1 ; Start playback by enabling Timer 1

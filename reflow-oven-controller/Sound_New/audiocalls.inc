@@ -222,7 +222,8 @@ playnum:
         jz checktens
         lcall findones
         Wait_Milli_Seconds(#250)
-        lcall hundred    
+        lcall hundred 
+        Wait_Milli_Seconds(#250)
 
     checktens: 
 
@@ -238,6 +239,7 @@ playnum:
 
     checkones: 
         lcall findones
+        Wait_Milli_Seconds(#250)
 
     ;pop psw
     ;pop acc
