@@ -5,9 +5,9 @@ main_player_1sec:
     push acc
     push psw
 
-    mov dptr, #0
+    clr
 
-    ;mov dptr, #sound_index+6
+    mov dptr, #sound_index+6
 
 
     lcall playnum
