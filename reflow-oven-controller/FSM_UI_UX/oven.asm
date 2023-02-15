@@ -1,10 +1,6 @@
-$MODLP51RC2
+	$MODLP51RC2
 org 0000H
    ljmp MainProgram
-
-; Timer/Counter 0 overflow interrupt vector
-org 0x000B
-	ljmp Timer0_ISR
 
 org 0x001B ; Timer/Counter 1 overflow interrupt vector. Used in this code to replay the wave file.
 	ljmp Timer1_ISR
@@ -16,15 +12,14 @@ org 0x002B
 CLK  				EQU 22118400
 BAUD 				EQU 115200
 BRG_VAL 			EQU (0x100-(CLK/(16*BAUD)))
-TIMER0_RATE   		EQU 1000    ; 1000Hz PWM PWM_OUTPUT signal 
-TIMER0_RELOAD 		EQU ((65536-(CLK/TIMER0_RATE)))
+
 TIMER1_RATE    		EQU 22050   ; 22050Hz is the sampling rate of the wav file we are playing
 TIMER1_RELOAD  		EQU 0x10000-(CLK/TIMER1_RATE)
 TIMER2_RATE     	EQU 1000    ; 1000Hz, for a timer tick of 1ms
 TIMER2_RELOAD   	EQU ((65536-(CLK/TIMER2_RATE)))
 
-;HOLD_PWM			EQU 20		; 20% pwm for holding the temp constant 
-;PWM_HOLD_RATE		EQU (TIMER0_RATE-(HOLD_PWM*10))
+DUTY_CYCLE			EQU 20		; 20% pwm for holding the temp constant 
+PWM_HOLD_RATE		EQU (DUTY_CYCLE*10)
 
 ; Commands supported by the SPI flash memory according to the datasheet
 WRITE_ENABLE     EQU 0x06  ; Address:0 Dummy:0 Num:0
@@ -41,7 +36,7 @@ READ_DEVICE_ID   EQU 0x9f  ; Address:0 Dummy:2 Num:1 to infinite
 
 ;----------------------------------Ports!----------------------------------------
 SPEAKER  		EQU P2.4 		; Used with a MOSFET to turn off speaker when not in use
-PWM_OUTPUT			EQU P1.6		; PWM_OUTPUT signal to the relay box
+PWM_OUTPUT		EQU P1.6		; PWM_OUTPUT signal to the relay box
 
 ; These 'equ' must match the hardware wiring
 ; They are used by 'LCD_4bit.inc'
@@ -70,7 +65,7 @@ INCR            EQU P0.3   		; button to increment current selection
 EDIT			EQU P0.6		; button for changing what to edit
 START_STOP 		EQU P4.5 		; button to start/stop reflow
 RST				EQU	P2.6		; button to reset
-; i have buttons on 2.6, 4.5, 0.6, 0.3, 0.0 (left to right)
+; I have buttons on 2.6, 4.5, 0.6, 0.3, 0.0 (left to right)
 ;--------------------------------------------------------------------------------
 
 ; These register definitions needed by 'math32.inc'
@@ -106,7 +101,7 @@ soak_time: 			ds 1
 reflow_temp: 		ds 1
 reflow_time: 		ds 1
 cool_temp:			ds 1
-pwm_ratio: 				ds 2
+pwm_ratio: 			ds 2
 sec: 				ds 1
 temp:				ds 1
 ;---------------------------------------------------
@@ -134,35 +129,13 @@ setup5:  db 'tmp:XXX         ', 0
 
 run1:    db 'temp:XXX state X', 0
 run2:    db 'elapsed XX:XX   ', 0
-
-Timer0_Init:
-	mov a, TMOD
-	anl a, #0xf0 ; 11110000 Clear the bits for timer 0
-	orl a, #0x01 ; 00000001 Configure timer 0 as 16-timer
-	mov TMOD, a
-	mov TH0, #high(TIMER0_RELOAD)
-	mov TL0, #low(TIMER0_RELOAD)
-	; Set autoreload value
-	mov RH0, #high(TIMER0_RELOAD)
-	mov RL0, #low(TIMER0_RELOAD)
-    setb ET0  ; Enable timer 0 interrupt
-    ; setb TR0  ; Start timer 0
-	ret
-Timer0_ISR:
-	;clr TF0  ; According to the data sheet this is done for us already.
-	mov TH0, #high(TIMER0_RELOAD)
-	mov TL0, #low(TIMER0_RELOAD)
-	; Set autoreload value
-	mov RH0, #high(TIMER0_RELOAD)
-	mov RL0, #low(TIMER0_RELOAD)
-	reti
+;-------------------------------------------------
 
 ;-------------------------------------;
 ; ISR for Timer 1. Used to playback   ;
 ; the WAV file stored in the SPI      ;
 ; flash memory.                       ;
 ;-------------------------------------;
-
 Timer1_Init: ; Configure timer 1
 	mov a, TMOD
 	anl	TMOD, #0x0F ; Clear the bits of timer 1 in TMOD
@@ -229,7 +202,7 @@ Timer2_Init:
 	mov Count1ms+1, a
 	; Enable the timer and interrupts
     setb ET2  ; Enable timer 2 interrupt
-    setb TR2  ; Enable timer 2
+    ;setb TR2  ; Enable timer 2
 	ret
 
 ;---------------------------------;
@@ -377,23 +350,21 @@ check_DAC_init:
 MainProgram: ; setup()
     mov SP, #7FH 						; Set the stack pointer to the begining of idata
     Wait_Milli_Seconds(#5)
-	clr PWM_OUTPUT							; pwm is set to low by default
 	lcall Load_Configuration 			; initialize settings
     lcall InitSerialPort
     lcall INIT_SPI
     lcall LCD_4BIT
 	lcall InitButton
 	lcall InitSpeaker_flashMem
+	lcall generateDisplay
 
-	;init Timers
-                
-
+	mov pwm_ratio+0, #low(1000)
+	mov pwm_ratio+1, #high(1000)
 
     ;initialize flags
     clr start_flag
     clr safety_overheat
 
-	lcall generateDisplay
     ;initialize fsm
     mov state, #0
 
@@ -406,21 +377,15 @@ MainProgram: ; setup()
     mov edit_sett, #0
     
 	;init Timers
-    lcall Timer0_Init
     lcall Timer1_Init                   
     lcall Timer2_Init
 
 	mov P0M0,#0
     mov P0M1,#0
     setb EA   
-	
-	; default pwm duty cycle of 20					; Enable Global interrupts
 
-	mov pwm_ratio+0, #low(200)
-	mov pwm_ratio+1, #high(200)
 	;initialize pwm seconds counter
 	mov secs_ctr, #0
-
 forever: ;loop() please only place function calls into the loop!
     jnb one_second_flag, skipDisplay 	; this segment only executes once a second
     clr one_second_flag
@@ -438,7 +403,6 @@ forever: ;loop() please only place function calls into the loop!
     
     ljmp FSM 							; finite state machine logic
     ljmp forever                        ; just in case
-
 ; ---------------------------------------------------------------------------------------------------
 
 ;----------------------------------safety-features---------------------------------------------------
@@ -523,7 +487,6 @@ readADC:
 	lcall hex2bcd
 	lcall Send_3_digit_BCD
     
-	
 	;mov a, x
 	;cjne a, #50, NOT_EQ
 	;NOT_EQ: JC REQ_LOW
@@ -789,7 +752,6 @@ SendToLCD: ;check slides from prof jesus
 ;-------------------------------------------------------------------------------
 
 ;-----------------------------------FSM & PWM----------------------------------------
-
 reset:
 	jb RST, DONT_RESET 				; if 'RESET' is pressed, wait for rebouce
 	Wait_Milli_Seconds(#50)			; Debounce delay.  This macro is also in 'LCD_4bit.inc'
@@ -810,27 +772,6 @@ start_or_not:
 DONT_START: 
     ret	
 
-;PWM_PWM_OUTPUT:
-;	mov a, pwm_ratio
-;	cjne a, #100, holding_temp		; if pwm is 100, then PWM_OUTPUT = 1 all 
-;	setb PWM_OUTPUT						; the time
-;	ret
-;
-;	cjne a, #0, holding_temp		; if pwm is 0, then PWM_OUTPUT = 0 all
-	clr PWM_OUTPUT						; the time
-;	ret
-;
-;	holding_temp:	
-;	mov a, Count1ms
-;	cjne a, #0 , Not_yet			; check whether it is time to turn on the pwm pin		 
-;	clr PWM_OUTPUT						; clr PWM_OUTPUT if at the begining of the period
-;	mov a, Count1ms+0
-;	cjne a, #low(PWM_HOLD_RATE), Not_yet 	; Warning: this instruction changes the carry flag!
-;	mov a, Count1ms+1
-;	cjne a, #high(PWM_HOLD_RATE), Not_yet	; if Count1ms = PWM_HOLD_RATE, set the PWM_OUTPUT to 1
-;	setb PWM_OUTPUT
-;	ret
-Not_yet: ret
 
 Load_Defaults: ; Load defaults if 'keys' are incorrect
 	mov soak_temp, #35				; 150
@@ -845,7 +786,7 @@ FSM:
 	mov a, state
 state0:							; default state
 	cjne a, #0, state1			; if not state 0, then go to next branch
-	mov pwm_ratio, #0					; at state 0, pwm is 0%
+	mov pwm_ratio, #0			; at state 0, pwm is 0%
 	lcall start_or_not
 	jnb start_flag, state0_done	; if start key is not press, the go to state0_done
 	mov state, #1
@@ -854,7 +795,8 @@ state0_done:
 	ljmp forever
 state1:							; ramp to soak
 	cjne a, #1, state2
-	mov pwm_ratio, #100
+	mov pwm_ratio+0, #low(1000)
+	mov pwm_ratio+1, #high(1000)	
 	mov sec, #0
 	mov a, soak_temp
 	clr c
@@ -865,7 +807,7 @@ state1:							; ramp to soak
 state1_done:
 	ljmp forever
 
-state2:							; soak/preheat
+state2:							; soaking
 	cjne a, #2, state3
 	mov a, soak_time
 	mov pwm_ratio+0, #low(200)
@@ -879,7 +821,8 @@ state2_done:
 
 state3:							; ramp to peak, prepare to reflow
 	cjne a, #3, state4
-	mov pwm_ratio, #100
+	mov pwm_ratio+0, #low(1000)
+	mov pwm_ratio+1, #high(1000)
 	mov sec, #0
 	mov a, reflow_temp
 	clr c
@@ -889,9 +832,10 @@ state3:							; ramp to peak, prepare to reflow
 state3_done:
 	ljmp forever
 
-state4:							; ramp to peak, prepare to reflow
+state4:							;  prepare to reflow
 	cjne a, #4, state5
-	mov pwm_ratio, #HOLD_PWM
+	mov pwm_ratio+0, #low(PWM_HOLD_RATE)
+	mov pwm_ratio+1, #high(PWM_HOLD_RATE)	
 	mov a, reflow_time
 	clr c
 	subb a, sec					; if sec > reflow_temp, c = 1
