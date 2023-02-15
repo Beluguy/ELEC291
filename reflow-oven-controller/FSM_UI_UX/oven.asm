@@ -388,10 +388,8 @@ MainProgram: ; setup()
 
     lcall generateDisplay ; finally, generate initial display
 forever: ;loop() please only place function calls into the loop!
-    lcall reset
 	jnb one_second_flag, skipDisplay 	; this segment only executes once a second (during runtime)
-    clr one_second_flag
-    
+    clr one_second_flag 
     lcall readADC 						; reads temperature from thermocouple and cold junction and sends it to temp
     lcall checkOverheat
     lcall generateDisplay
@@ -399,12 +397,12 @@ forever: ;loop() please only place function calls into the loop!
 
     jb start_flag, skipPoll ; code runs if start flag is unset
     lcall pollButtons 					; poll buttons for editing screen
-
-    jnb start_flag, skipPoll ; code runs if start flag is set
-     						; check if reset is pressed
-
-    skipPoll: ; code runs always    
-    ljmp FSM 							; finite state machine logic
+	
+    skipPoll: ; code runs always
+	jnb start_flag, skipReset   
+	lcall reset 
+	skipReset:
+	ljmp FSM 							; finite state machine logic
     ljmp forever                        ; just in case
 ; ---------------------------------------------------------------------------------------------------
 
@@ -778,6 +776,9 @@ start_or_not:
 	jb START_STOP, DONT_START 		; if the 'RESET' button is not pressed skip
 	jnb START_STOP, $
 	cpl start_flag
+	lcall generateDisplay
+	mov secs_ctr, #0
+	mov mins_ctr, #0
 	setb TR2						; enable timer 2 when start_flag is on
 DONT_START: 
     ret	
@@ -812,6 +813,7 @@ state1:							; ramp to soak
 	jnc state1_done				; if temp is not at soak temp, then go to state1_done
 	mov state, #2
 	setb start_flag
+	lcall generateDisplay
 state1_done:
 	ljmp forever
 
@@ -824,6 +826,7 @@ state2:							; soaking
 	subb a, sec					; if sec > soak time, c = 1
 	jnc state2_done				; if sec is not at soak time, then go to state2_done 
 	mov state, #3	
+	lcall generateDisplay
 state2_done:
 	ljmp forever
 
@@ -837,6 +840,7 @@ state3:							; ramp to peak, prepare to reflow
 	subb a, temp				; if temp > reflow_temp, c = 1
 	jnc state3_done				; if temp is not at reflow_temp, then go to state3_done 
 	mov state, #4	
+	lcall generateDisplay
 state3_done:
 	ljmp forever
 
@@ -849,19 +853,19 @@ state4:							;  prepare to reflow
 	subb a, sec					; if sec > reflow_temp, c = 1
 	jnc state4_done				; if sec is not at reflow time, then go to state4_done 
 	mov state, #5	
+	lcall generateDisplay
 state4_done:
 	ljmp forever
 
 state5:							; cooling state
-	cjne a, #5, state0
+	cjne a, #5, state5_done
 	mov pwm_ratio, #0
-	;mov pwm_ratio+0, #low(10)
-	;mov pwm_ratio+1, #high(0)
 	mov a, temp
 	clr c
 	subb a, cool_temp			; if cool_temp > temp, c = 1
 	jnc state5_done				; if temp is not at cool_temp, then go to state5_done 
 	mov state, #0	
+	lcall generateDisplay
 state5_done:
 	ljmp forever 
 
@@ -898,17 +902,17 @@ save_config:
 
 ;------------------------------read from nvmem--------------------------------
 Load_Configuration:
-    mov dptr, #0x7f84 ; First key value location.
-    getbyte(R0) ; 0x7f84 should contain 0x55
+    mov dptr, #0x7f84 		; First key value location.
+    getbyte(R0) 			; 0x7f84 should contain 0x55
     cjne R0, #0x55, jumpToLoadDef
-    getbyte(R0) ; 0x7f85 should contain 0xAA
+    getbyte(R0) 			; 0x7f85 should contain 0xAA
     cjne R0, #0xAA, jumpToLoadDef
 ; Keys are good. Get stored values.
     mov dptr, #0x7f80
-    getbyte(soak_temp) ; 0x7f80
-    getbyte(soak_time) ; 0x7f81
-    getbyte(reflow_temp) ; 0x7f82
-    getbyte(reflow_time) ; 0x7f83
+    getbyte(soak_temp) 		; 0x7f80
+    getbyte(soak_time) 		; 0x7f81
+    getbyte(reflow_temp) 	; 0x7f82
+    getbyte(reflow_time) 	; 0x7f83
     getbyte(cool_temp)
     ret
 jumpToLoadDef:
