@@ -41,7 +41,7 @@ READ_DEVICE_ID   EQU 0x9f  ; Address:0 Dummy:2 Num:1 to infinite
 
 ;----------------------------------Ports!----------------------------------------
 SPEAKER  		EQU P2.4 		; Used with a MOSFET to turn off speaker when not in use
-OUTPUT			EQU P1.6		; output signal to the relay box
+OUTPUT			EQU P1.6		; output signal to MOSFET then to the ground port of relay box
 
 ; These 'equ' must match the hardware wiring
 ; They are used by 'LCD_4bit.inc'
@@ -96,7 +96,6 @@ edit_sett:	        ds 1 ; which segment are we editing
 ; 2 - reflow temp
 ; 3 - reflow time
 ; 4 - cool temp
-
 ;---------------------------------------------------
 
 ;--------------------for FSM------------------------
@@ -135,21 +134,20 @@ setup5:  db 'tmp:XXX         ', 0
 run1:    db 'temp:XXX state X', 0
 run2:    db 'elapsed XX:XX   ', 0
 
-Timer0_Init:
+Timer0_Init:		; Timer for PWM output
 	mov a, TMOD
-	anl a, #0xf0 ; 11110000 Clear the bits for timer 0
-	orl a, #0x01 ; 00000001 Configure timer 0 as 16-timer
+	anl a, #0xf0 	; 11110000 Clear the bits for timer 0
+	orl a, #0x01 	; 00000001 Configure timer 0 as 16-timer
 	mov TMOD, a
 	mov TH0, #high(TIMER0_RELOAD)
 	mov TL0, #low(TIMER0_RELOAD)
 	; Set autoreload value
 	mov RH0, #high(TIMER0_RELOAD)
 	mov RL0, #low(TIMER0_RELOAD)
-    setb ET0  ; Enable timer 0 interrupt
-    ; setb TR0  ; Start timer 0
+    setb ET0  		; Enable timer 0 interrupt
+    setb TR0  		; Start timer 0
 	ret
 Timer0_ISR:
-	;clr TF0  ; According to the data sheet this is done for us already.
 	mov TH0, #high(TIMER0_RELOAD)
 	mov TL0, #low(TIMER0_RELOAD)
 	; Set autoreload value
@@ -162,8 +160,7 @@ Timer0_ISR:
 ; the WAV file stored in the SPI      ;
 ; flash memory.                       ;
 ;-------------------------------------;
-
-Timer1_Init: ; Configure timer 1
+Timer1_Init: 		; Timer for playing the WAV file stored in the SPI flash memory
 	mov a, TMOD
 	anl	TMOD, #0x0F ; Clear the bits of timer 1 in TMOD
 	orl	TMOD, #0x10 ; Set timer 1 in 16-bit timer mode.  Don't change the bits of timer 0
@@ -173,8 +170,8 @@ Timer1_Init: ; Configure timer 1
 	mov RH1, #high(TIMER1_RELOAD)
 	mov RL1, #low(TIMER1_RELOAD)
 	; Enable the timer and interrupts
-    setb ET1  ; Enable timer 1 interrupt
-	; setb TR1 ; Timer 1 is only enabled to play stored sound
+    setb ET1 	 	; Enable timer 1 interrupt
+	; setb TR1 		; Timer 1 is only enabled to play stored sound
 	ret
 Timer1_ISR:
     ; The registers used in the ISR must be saved in the stack
@@ -216,7 +213,7 @@ Timer1_ISR_Done:
 ; Routine to initialize the ISR   ;
 ; for timer 2                     ;
 ;---------------------------------;
-Timer2_Init:
+Timer2_Init: ; 
 	mov T2CON, #0 ; Stop timer/counter.  Autoreload mode.
 	mov TH2, #high(TIMER2_RELOAD)
 	mov TL2, #low(TIMER2_RELOAD)
@@ -227,9 +224,8 @@ Timer2_Init:
 	clr a
 	mov Count1ms+0, a
 	mov Count1ms+1, a
-	; Enable the timer and interrupts
     setb ET2  ; Enable timer 2 interrupt
-    setb TR2  ; Enable timer 2
+   	clr TR2  ; disable timer 2 by default
 	ret
 
 ;---------------------------------;
@@ -237,7 +233,6 @@ Timer2_Init:
 ;---------------------------------;
 Timer2_ISR:
 	clr TF2  ; Timer 2 doesn't clear TF2 automatically. Do it in ISR
-	;cpl P1.0 ; To check the interrupt rate with oscilloscope. It must be precisely a 1 ms pulse.
 	
 	; The two registers used in the ISR must be saved in the stack
 	push acc
@@ -248,7 +243,6 @@ Timer2_ISR:
 	mov a, Count1ms+0 ; If the low 8-bits overflow, then increment high 8-bits
 	jnz Inc_Done
 	inc Count1ms+1
-
 Inc_Done:
 	; Check if second has passed
 	mov a, Count1ms+0
@@ -256,7 +250,6 @@ Inc_Done:
 	mov a, Count1ms+1
 	cjne a, #high(1000), Timer2_ISR_done
 	
-	; 1000 milliseconds have passed.  Set a flag so the main program knows
 	setb one_second_flag ; Let the main program know second had passed
 		
 	; Reset to zero the milli-seconds counter, it is a 16-bit variable
@@ -367,7 +360,6 @@ check_DAC_init:
 ; -------------------------------------------------- MAIN PROGRAM LOOP ----------------------------------------------
 MainProgram: ; setup()
     mov SP, #7FH 						; Set the stack pointer to the begining of idata
-    Wait_Milli_Seconds(#5)
     mov P0M0,#0
     mov P0M1,#0
 	clr OUTPUT							; pwm is set to low by default
@@ -378,10 +370,15 @@ MainProgram: ; setup()
 	lcall InitButton
 	lcall InitSpeaker_flashMem
 
+	;init Timers
+    lcall Timer1_Init                   
+    lcall Timer2_Init
+
     ;initialize flags
     clr start_flag
-    mov safety_overheat, #0
+    clr safety_overheat
 
+	lcall generateDisplay
     ;initialize fsm
     mov state, #0
 
@@ -393,12 +390,8 @@ MainProgram: ; setup()
     ;init settings
     mov edit_sett, #0
     
-	;init Timers
-    lcall Timer0_Init
-    lcall Timer1_Init                   
-    lcall Timer2_Init
+	
     setb EA   							; Enable Global interrupts
-
 forever: ;loop() please only place function calls into the loop!
     jnb one_second_flag, skipDisplay 	; this segment only executes once a second
     clr one_second_flag
@@ -408,7 +401,7 @@ forever: ;loop() please only place function calls into the loop!
     lcall generateDisplay
     skipDisplay: 						; end segment
 
-    jb start_flag, skipPoll ; code runs if start flag is unset
+    jb start_flag, skipPoll 			; code runs if start flag is unset
     lcall pollButtons 					; poll buttons for editing screen
 
     skipPoll: ; code runs always
@@ -416,7 +409,6 @@ forever: ;loop() please only place function calls into the loop!
     
     ljmp FSM 							; finite state machine logic
     ljmp forever                        ; just in case
-
 ; ---------------------------------------------------------------------------------------------------
 
 ;----------------------------------safety-features---------------------------------------------------
@@ -501,7 +493,6 @@ readADC:
 	lcall hex2bcd
 	lcall Send_3_digit_BCD
     
-	
 	;mov a, x
 	;cjne a, #50, NOT_EQ
 	;NOT_EQ: JC REQ_LOW
@@ -746,7 +737,6 @@ DONT_INC:
     lcall updateCoolScreen
     lcall save_config					; save config to nvmem
     ret
-
 DONT_DEC: 
     ret
 
@@ -784,6 +774,7 @@ start_or_not:
 	jb START_STOP, DONT_START 		; if the 'RESET' button is not pressed skip
 	jnb START_STOP, $
 	cpl start_flag
+	setb TR2						; enable timer 2 when start_flag is on
 DONT_START: 
     ret	
 
