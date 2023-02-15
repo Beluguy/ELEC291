@@ -797,7 +797,7 @@ Load_Defaults: ; Load defaults if 'keys' are incorrect
 	mov reflow_time, #5				; 30
     mov cool_temp, #30				; 50
 	ret
-
+	
 ;-------------------------------------FSM time!!---------------------------------------
 FSM:							 
 	mov a, state
@@ -827,8 +827,8 @@ state1_done:
 state2:							; soaking
 	cjne a, #2, state3
 	mov a, soak_time
-	mov pwm_ratio+0, #low(200)
-	mov pwm_ratio+1, #high(200)
+	mov pwm_ratio+0, #low(PWM_HOLD_RATE)
+	mov pwm_ratio+1, #high(PWM_HOLD_RATE)
 	clr c
 	subb a, sec					; if sec > soak time, c = 1
 	jnc state2_done				; if sec is not at soak time, then go to state2_done 
