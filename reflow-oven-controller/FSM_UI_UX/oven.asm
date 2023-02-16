@@ -145,7 +145,6 @@ Timer1_Init: ; Configure timer 1
 	; Set autoreload value
 	mov RH1, #high(TIMER1_RELOAD)
 	mov RL1, #low(TIMER1_RELOAD)
-	; Enable the timer and interrupts
     setb ET1  ; Enable timer 1 interrupt
 	; setb TR1 ; Timer 1 is only enabled to play stored sound
 	ret
@@ -294,9 +293,9 @@ InitSerialPort:
 	mov	BDRCON,#0x1E ; BDRCON=BRR|TBCK|RBCK|SPD;
     ret
     
-INIT_SPI:
+INI_SPI:
 	setb MY_MISO_ADC ; Make MISO an input pin
-	clr MY_SCLK           ; Mode 0,0 default
+	clr MY_SCLK_ADC           ; Mode 0,0 default
 	ret
 DO_SPI_G:
 	mov R1, #0 ; Received byte stored in R1
@@ -306,12 +305,12 @@ DO_SPI_G_LOOP:
 	rlc a                 ; Carry flag has bit to write
 	mov R0, a
 	mov MY_MOSI_ADC, c
-	setb MY_SCLK_ADC         ; Transmit
-	mov c, MY_MISO_ADC      ; Read received bit
+	setb MY_SCLK_ADC          ; Transmit
+	mov c, MY_MISO_ADC        ; Read received bit
 	mov a, R1             ; Save received bit in R1
 	rlc a
 	mov R1, a
-	clr MY_SCLK
+	clr MY_SCLK_ADC
 	djnz R2, DO_SPI_G_LOOP
 	ret
 
@@ -354,7 +353,7 @@ InitSpeaker_flashMem:
 
 	; Configure the DAC.  The DAC PWM_OUTPUT we are using is P2.3, but P2.2 is also reserved.
 	mov DADI, #0b_1010_0000 ; ACON=1
-	mov DADC, #0b_0011_1010 ; Enabled, DAC mode, Left adjusted, CLK/4
+	;mov DADC, #0b_0011_1010 ; Enabled, DAC mode, Left adjusted, CLK/4
 	mov DADH, #0x80 ; Middle of scale
 	mov DADL, #0
 	orl DADC, #0b_0100_0000 ; Start DAC by GO/BSY=1
@@ -362,11 +361,11 @@ check_DAC_init:
 	mov a, DADC
 	jb acc.6, check_DAC_init ; Wait for DAC to finish
 	ret
-; -------------------------------------------------- MAIN `ROGRAM LOOP ----------------------------------------------
+; -------------------------------------------------- MAIN ROGRAM LOOP ----------------------------------------------
 MainProgram: ; setup()
     mov SP, #7FH 						; Set the stack pointer to the begining of idata
     Wait_Milli_Seconds(#5)
-    lcall INIT_SPI
+    lcall INI_SPI
 	lcall Load_Config 			; initialize settings
     lcall InitSerialPort   
     lcall LCD_4BIT
@@ -395,14 +394,13 @@ MainProgram: ; setup()
 	mov P0M0,#0
     mov P0M1,#0
     setb EA   
-
     lcall generateDisplay ; finally, generate initial display
 forever: ;loop() please only place function calls into the loop!
 	jnb one_second_flag, skipDisplay 	; this segment only executes once a second (during runtime)
     clr one_second_flag 
     lcall readADC 						; reads temperature from thermocouple and cold junction and sends it to temp
-    lcall checkOverheat
-    lcall generateDisplay
+   	lcall checkOverheat
+   	lcall generateDisplay
     skipDisplay: 						; end segment
 
     jb start_flag, skipPoll ; code runs if start flag is unset
@@ -776,9 +774,9 @@ DONT_START:
     ret	
 
 Load_Defaults: ; Load defaults if 'keys' are incorrect
-	mov soak_temp, 		#35			; 150
+	mov soak_temp, 		#50			; 150
 	mov soak_time, 		#10			; 45
-	mov reflow_temp,	#50			; 225
+	mov reflow_temp,	#55			; 225
 	mov reflow_time, 	#5			; 30
     mov cool_temp, 		#30			; 50
 	ret
