@@ -853,7 +853,7 @@ state3:							; ramp to peak, prepare to reflow
 state3_done:
 	ljmp forever
 
-state4:							;  prepare to reflow
+state4:							;  reflow
 	cjne a, #4, state5
 	mov pwm_ratio+0, #low(100)
 	mov pwm_ratio+1, #high(100)	
@@ -893,9 +893,9 @@ state5_done:
 FSM_audio:
 
 ret
-;----------------------------------------------------------------------------------------
+;--------------------------------------------------------------------------------------
 
-;---------------------------------save to nvmem-------------------------------
+;----------------------------save to nvmem for profile 1-------------------------------
 save_config:
     push IE ; Save the current state of bit EA in the stack
     clr EA ; Disable interrupts
@@ -919,9 +919,9 @@ save_config:
 	pop IE ; Restore the state of bit EA from the stack
 	setb EA	; enable interrupts
     ret
-;-----------------------------------------------------------------------------
+;-----------------------------------------------------------------------------------
 
-;------------------------------read from nvmem--------------------------------
+;---------------------------read from nvmem for profile 1-----------------------------
 Load_Config:
     mov dptr, #0x7f85 		; First key value location.
     getbyte(R0) 			; 0x7f84 should contain 0x55
@@ -938,6 +938,53 @@ Load_Config:
     ret
 jumpToLoadDef:
 	ljmp Load_Defaults
+;-------------------------------------------------------------------------------------
+
+;------------------------------save to nvmem for profile 2----------------------------
+save_config:
+    push IE ; Save the current state of bit EA in the stack
+    clr EA ; Disable interrupts
+	mov FCON, #0x08 ; Page Buffer Mapping Enabled (FPS = 1)
+	mov dptr, #0x7f70 ; 2nd Last page of flash memory
+	; Save variables
+	loadbyte(soak_temp) ; @0x7f70
+	loadbyte(soak_time) ; @0x7f71
+	loadbyte(reflow_temp) ; @0x7f72
+	loadbyte(reflow_time) ; @0x7f73
+    loadbyte(cool_temp) ; @0x7f74
+	loadbyte(#0x55) ; First key value @0x7f75
+	loadbyte(#0xAA) ; Second key value @0x7f76
+	mov FCON, #0x00 ; Page Buffer Mapping Disabled (FPS = 0)
+	orl EECON, #0b01000000 ; Enable auto-erase on next write sequence
+	mov FCON, #0x50 ; Write trigger first byte
+	mov FCON, #0xA0 ; Write trigger second byte
+	; CPU idles until writing of flash completes.
+	mov FCON, #0x00 ; Page Buffer Mapping Disabled (FPS = 0)
+	anl EECON, #0b10111111 ; Disable auto-erase
+	pop IE ; Restore the state of bit EA from the stack
+	setb EA	; enable interrupts
+    ret
+;-----------------------------------------------------------------------------
+
+;------------------------------read from nvmem for profile 2--------------------------------
+Load_Config:
+    mov dptr, #0x7f75 		; First key value location.
+    getbyte(R0) 			; 0x7f84 should contain 0x55
+    cjne R0, #0x55, jumpToLoadDef
+    getbyte(R0) 			; 0x7f85 should contain 0xAA
+    cjne R0, #0xAA, jumpToLoadDef
+; Keys are good. Get stored values.
+    mov dptr, #0x7f80
+    getbyte(soak_temp) 		; 0x7f70
+    getbyte(soak_time) 		; 0x7f71
+    getbyte(reflow_temp) 	; 0x7f72
+    getbyte(reflow_time) 	; 0x7f73
+    getbyte(cool_temp)
+    ret
+jumpToLoadDef:
+	ljmp Load_Defaults
 ;----------------------------------------------------------------------------
+
+
 
 END
