@@ -362,7 +362,7 @@ check_DAC_init:
 	mov a, DADC
 	jb acc.6, check_DAC_init ; Wait for DAC to finish
 	ret
-; -------------------------------------------------- MAIN PROGRAM LOOP ----------------------------------------------
+; -------------------------------------------------- MAIN `ROGRAM LOOP ----------------------------------------------
 MainProgram: ; setup()
     mov SP, #7FH 						; Set the stack pointer to the begining of idata
     Wait_Milli_Seconds(#5)
@@ -896,7 +896,7 @@ save_config:
 ;------------------------------read from nvmem--------------------------------
 Load_Config:
     mov dptr, #0x7f85 		; First key value location.
-    getbyte(R0) 			; 0x7f85 should contain 0x55
+    getbyte(R0) 			; 0x7f84 should contain 0x55
     cjne R0, #0x55, jumpToLoadDef
     getbyte(R0) 			; 0x7f85 should contain 0xAA
     cjne R0, #0xAA, jumpToLoadDef
