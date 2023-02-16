@@ -378,6 +378,7 @@ MainProgram: ; setup()
 
     ;initialize fsm
     mov state, #0
+	mov temp, #0
 
     ;init clock
     mov secs_ctr, #0
@@ -463,9 +464,6 @@ readADC:
 	mov Result_Cold+0, x+0
 	mov Result_Cold+1, x+1
 
-    lcall hex2bcd			; t-cold temp
-    lcall Send_3_Digit_BCD
-	
 	;=============ADC Thermocouple Manipulation and Calculation
 	clr CE_ADC
 	mov R0, #00000001B ; Start bit:1
@@ -484,9 +482,6 @@ readADC:
 	mov x+1, Result_Hot+1
 	mov x+2, #0
 	mov x+3, #0
-
-    lcall hex2bcd			; h-cold temp
-	lcall Send_3_Digit_BCD
 	
 	mov y+0, Result_Cold+0
 	mov y+1, Result_Cold+1
@@ -499,20 +494,9 @@ readADC:
 
 	lcall hex2bcd			; combine temp
 	lcall Send_3_Digit_BCD
-    
 	ret
  	
 Send_3_Digit_BCD: ;send 3 digits bcd in BCD var to putty
-	Send_BCD(bcd+4)
-	Send_BCD(bcd+3)
-	Send_BCD(bcd+2)
-    Send_BCD(bcd+1)
-	Send_BCD(bcd+0)
-	mov a, #'\r'
-	lcall putchar
-	mov a, #'\n'
-	lcall putchar
-	ret
     mov a, bcd+1
     anl a, #0fh
     orl a, #'0'
@@ -776,8 +760,8 @@ DONT_START:
 Load_Defaults: ; Load defaults if 'keys' are incorrect
 	mov soak_temp, 		#50			; 150
 	mov soak_time, 		#10			; 45
-	mov reflow_temp,	#55			; 225
-	mov reflow_time, 	#5			; 30
+	mov reflow_temp,	#60			; 225
+	mov reflow_time, 	#6			; 30
     mov cool_temp, 		#30			; 50
 	ret
 ;-------------------------------------FSM time!!---------------------------------------
@@ -789,9 +773,9 @@ state0:							; default state
 	lcall start_or_not
 	jnb start_flag, state0_done	; if start key is not press, the go to state0_done
 	mov state, #1
-	clr start_flag
 state0_done:
 	ljmp forever
+	
 state1:							; ramp to soak
 	cjne a, #1, state2
 	mov pwm_ratio+0, #low(1000)
