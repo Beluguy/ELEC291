@@ -790,9 +790,9 @@ DONT_START:
 
 Load_Defaults: ; Load defaults if 'keys' are incorrect
 	mov soak_temp, 		#150		; 150
-	mov soak_time, 		#10			; 45
+	mov soak_time, 		#45			; 45
 	mov reflow_temp,	#225		; 225
-	mov reflow_time, 	#15			; 30
+	mov reflow_time, 	#30			; 30
     mov cool_temp, 		#45			; 50
 	ret
 ;-------------------------------------FSM time!!---------------------------------------
@@ -875,6 +875,16 @@ state5:							; cooling state
 	jnc state5_done				; if temp is not at cool_temp, then go to state5_done 
 	mov state, #0
 	clr start_flag	
+
+	mov a, #'-' ; send -1 to serial when cooldown
+    lcall putchar
+    mov a, #'1'
+    lcall putchar
+    mov a, #'\r'
+	lcall putchar
+	mov a, #'\n'
+	lcall putchar
+
 	lcall generateDisplay
 state5_done:
 	ljmp forever 
