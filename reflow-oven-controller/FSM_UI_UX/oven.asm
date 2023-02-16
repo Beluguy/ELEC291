@@ -508,7 +508,7 @@ Send_3_Digit_BCD: ;send 3 digits bcd in BCD var to putty
 	Send_BCD(bcd+4)
 	Send_BCD(bcd+3)
 	Send_BCD(bcd+2)
-    	Send_BCD(bcd+1)
+    Send_BCD(bcd+1)
 	Send_BCD(bcd+0)
 	mov a, #'\r'
 	lcall putchar
