@@ -18,7 +18,7 @@ TIMER1_RELOAD  		EQU 0x10000-(CLK/TIMER1_RATE)
 TIMER2_RATE     	EQU 1000    ; 1000Hz, for a timer tick of 1ms
 TIMER2_RELOAD   	EQU ((65536-(CLK/TIMER2_RATE)))
 
-DUTY_CYCLE			EQU 20		; 20% pwm for holding the temp constant 
+DUTY_CYCLE			EQU 5		; 5% pwm for holding the temp constant 
 PWM_HOLD_RATE		EQU (DUTY_CYCLE*10)
 
 ; Commands supported by the SPI flash memory according to the datasheet
@@ -81,7 +81,6 @@ w:  		 		ds 3 ; 24-bit play counter.  Decremented in Timer 1 ISR.
 Count1ms:       	ds 2 ; Used to determine when one second has passed
 secs_ctr:       	ds 1
 mins_ctr:       	ds 1
-pwm_time: 			ds 1 ; Used to check whether it is time to turn on the pwm PWM_OUTPUT
 ;---------------------------------------------------
 
 ;--------------------for settings-------------------
@@ -104,6 +103,7 @@ cool_temp:			ds 1
 pwm_ratio: 			ds 2
 sec: 				ds 1
 temp:				ds 1
+HighTemp:			ds 1
 ;---------------------------------------------------
 
 BSEG
@@ -244,7 +244,8 @@ Inc_Done:
 	clr a
 	mov Count1ms+0, a
 	mov Count1ms+1, a
-	
+	inc sec				; second counter for reflow fsm
+
 	; reset secs_ctr if hits 60, increment 1 to minutes
 	; Increment the seconds counter
 	mov a, secs_ctr
@@ -363,7 +364,7 @@ check_DAC_init:
 	ret
 ; -------------------------------------------------- MAIN PROGRAM LOOP ----------------------------------------------
 MainProgram: ; setup()
-    mov SP, #7FH 						; Set the stack pointer to the begining of idata
+    mov SP, #7FH 				; Set the stack pointer to the begining of idata
     Wait_Milli_Seconds(#5)
     lcall INI_SPI
 	lcall Load_Config 			; initialize settings
@@ -394,12 +395,29 @@ MainProgram: ; setup()
 
 	mov P0M0,#0
     mov P0M1,#0
+	mov P1M0,#0
+    mov P1M1,#0
+	mov P2M0,#0
+    mov P2M1,#0
+	mov P3M0,#0
+    mov P3M1,#0
+	mov P4M0,#0
+    mov P4M1,#0
     setb EA   
     lcall generateDisplay ; finally, generate initial display
+	;mov pwm_ratio+0, #low(PWM_HOLD_RATE)
+	;mov pwm_ratio+1, #high(PWM_HOLD_RATE)
 forever: ;loop() please only place function calls into the loop!
 	jnb one_second_flag, skipDisplay 	; this segment only executes once a second (during runtime)
     clr one_second_flag 
-    lcall readADC 						; reads temperature from thermocouple and cold junction and sends it to temp
+    ;mov a, reflow_temp			; the high temp is 15 higher then the reflow temp
+	;add a, #15
+	;mov HighTemp, a
+	;mov x+0, a
+	;lcall hex2bcd
+	;lcall Send_3_Digit_BCD
+
+	lcall readADC 						; reads temperature from thermocouple and cold junction and sends it to temp
    	lcall checkOverheat
    	lcall generateDisplay
     skipDisplay: 						; end segment
@@ -420,9 +438,9 @@ checkOverheat:
     mov a, temp
 	clr c
 	subb a, #251				; if 251 > temp, c = 1
-	jc notOverheat				; return if notOverheating
+	jc notOverheat					; return if notOverheating
     jb safety_overheat, overheatReset ; check if flag is set, if set that means has been overheating for prolonged time
-	setb safety_overheat        ; set overheat flag for next time
+	setb safety_overheat        	; set overheat flag for next time
     ret
 notOverheat:
     clr safety_overheat
@@ -758,11 +776,11 @@ DONT_START:
     ret	
 
 Load_Defaults: ; Load defaults if 'keys' are incorrect
-	mov soak_temp, 		#50			; 150
+	mov soak_temp, 		#150		; 150
 	mov soak_time, 		#10			; 45
-	mov reflow_temp,	#60			; 225
-	mov reflow_time, 	#6			; 30
-    mov cool_temp, 		#30			; 50
+	mov reflow_temp,	#225		; 225
+	mov reflow_time, 	#15			; 30
+    mov cool_temp, 		#45			; 50
 	ret
 ;-------------------------------------FSM time!!---------------------------------------
 FSM:							 
@@ -775,11 +793,12 @@ state0:							; default state
 	mov state, #1
 state0_done:
 	ljmp forever
-	
+
 state1:							; ramp to soak
 	cjne a, #1, state2
 	mov pwm_ratio+0, #low(1000)
-	mov pwm_ratio+1, #high(1000)	
+	mov pwm_ratio+1, #high(1000)
+	;setb PWM_OUTPUT	
 	mov sec, #0
 	mov a, soak_temp
 	clr c
@@ -788,14 +807,15 @@ state1:							; ramp to soak
 	mov state, #2
 	setb start_flag
 	lcall generateDisplay
+	mov sec, #0
 state1_done:
 	ljmp forever
 
 state2:							; soaking
 	cjne a, #2, state3
-	mov a, soak_time
 	mov pwm_ratio+0, #low(PWM_HOLD_RATE)
 	mov pwm_ratio+1, #high(PWM_HOLD_RATE)
+	mov a, soak_time
 	clr c
 	subb a, sec					; if sec > soak time, c = 1
 	jnc state2_done				; if sec is not at soak time, then go to state2_done 
@@ -806,6 +826,7 @@ state2_done:
 
 state3:							; ramp to peak, prepare to reflow
 	cjne a, #3, state4
+	;setb PWM_OUTPUT	
 	mov pwm_ratio+0, #low(1000)
 	mov pwm_ratio+1, #high(1000)
 	mov sec, #0
@@ -815,13 +836,14 @@ state3:							; ramp to peak, prepare to reflow
 	jnc state3_done				; if temp is not at reflow_temp, then go to state3_done 
 	mov state, #4	
 	lcall generateDisplay
+	mov sec, #0
 state3_done:
 	ljmp forever
 
 state4:							;  prepare to reflow
 	cjne a, #4, state5
-	mov pwm_ratio+0, #low(PWM_HOLD_RATE)
-	mov pwm_ratio+1, #high(PWM_HOLD_RATE)	
+	mov pwm_ratio+0, #low(100)
+	mov pwm_ratio+1, #high(100)	
 	mov a, reflow_time
 	clr c
 	subb a, sec					; if sec > reflow_temp, c = 1
@@ -838,7 +860,8 @@ state5:							; cooling state
 	clr c
 	subb a, cool_temp			; if cool_temp > temp, c = 1
 	jnc state5_done				; if temp is not at cool_temp, then go to state5_done 
-	mov state, #0	
+	mov state, #0
+	clr start_flag	
 	lcall generateDisplay
 state5_done:
 	ljmp forever 
