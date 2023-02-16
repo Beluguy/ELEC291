@@ -2,10 +2,10 @@ $NOLIST
 $MODLP51RC2
 $LIST
 
-CE_ADC    EQU  P2.0
-MY_MOSI_ADC   EQU  P2.1 
-MY_MISO_ADC   EQU  P2.2
-MY_SCLK_ADC   EQU  P1.7
+CE_ADC    		EQU  P2.0
+MY_MOSI_ADC   	EQU  P2.1 
+MY_MISO_ADC   	EQU  P2.2
+MY_SCLK_ADC   	EQU  P1.7
 
 org 0000H
    ljmp MyProgram
@@ -291,7 +291,7 @@ Send_3_Digit_BCD: ;send 3 digits bcd in BCD var to putty
 	Send_BCD(bcd+4)
 	Send_BCD(bcd+3)
 	Send_BCD(bcd+2)
-    	Send_BCD(bcd+1)
+    Send_BCD(bcd+1)
 	Send_BCD(bcd+0)
 	mov a, #'\r'
 	lcall putchar

@@ -436,18 +436,18 @@ overheatReset:
 readADC:
 	;=========T-Cold Manipulation and Calculation
     clr CE_ADC
-	mov R0, #00000001B ; Start bit:1
+	mov R0, #00000001B 		; Start bit:1
 	lcall DO_SPI_G
-	mov R0, #10000000B ; Single ended, read channel 0
+	mov R0, #10000000B 		; Single ended, read channel 0
 	lcall DO_SPI_G
-	mov a, R1 ; R1 contains bits 8 and 9
+	mov a, R1 				; R1 contains bits 8 and 9
 	anl a, #00000011B ; We need only the two least significant bits
 	mov Result_Cold+1, a ; Save result high.
-	mov R0, #55H ; It doesn't matter what we transmit...
+	mov R0, #55H 			; It doesn't matter what we transmit...
 	lcall DO_SPI_G
-	mov Result_Cold, R1 ; R1 contains bits 0 to 7. Save result low.
+	mov Result_Cold, R1 	; R1 contains bits 0 to 7. Save result low.
 	setb CE_ADC
-
+	
 	mov x+0, Result_Cold+0
 	mov x+1, Result_Cold+1
 	mov x+2, #0
@@ -465,7 +465,7 @@ readADC:
 	mov Result_Cold+0, x+0
 	mov Result_Cold+1, x+1
 
-    lcall hex2bcd
+    lcall hex2bcd			; t-cold temp
     lcall Send_3_Digit_BCD
 	
 	;=============ADC Thermocouple Manipulation and Calculation
@@ -487,7 +487,7 @@ readADC:
 	mov x+2, #0
 	mov x+3, #0
 
-    lcall hex2bcd
+    lcall hex2bcd			; h-cold temp
 	lcall Send_3_Digit_BCD
 	
 	mov y+0, Result_Cold+0
@@ -499,7 +499,7 @@ readADC:
 	mov temp+0, x+0
     mov temp+1, x+1
 
-	lcall hex2bcd
+	lcall hex2bcd			; combine temp
 	lcall Send_3_Digit_BCD
     
 	ret
@@ -514,7 +514,7 @@ Send_3_Digit_BCD: ;send 3 digits bcd in BCD var to putty
 	lcall putchar
 	mov a, #'\n'
 	lcall putchar
-ret
+	ret
     mov a, bcd+1
     anl a, #0fh
     orl a, #'0'
