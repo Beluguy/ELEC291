@@ -895,7 +895,7 @@ save_config:
 
 ;------------------------------read from nvmem--------------------------------
 Load_Config:
-    mov dptr, #0x7f85 		; First key value location.
+    mov dptr, #0x7f84 		; First key value location.
     getbyte(R0) 			; 0x7f84 should contain 0x55
     cjne R0, #0x55, jumpToLoadDef
     getbyte(R0) 			; 0x7f85 should contain 0xAA
@@ -906,7 +906,7 @@ Load_Config:
     getbyte(soak_time) 		; 0x7f81
     getbyte(reflow_temp) 	; 0x7f82
     getbyte(reflow_time) 	; 0x7f83
-    ;getbyte(cool_temp)
+    getbyte(cool_temp)
     ret
 jumpToLoadDef:
 	ljmp Load_Defaults
