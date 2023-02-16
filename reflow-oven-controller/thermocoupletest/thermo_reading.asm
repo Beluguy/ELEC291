@@ -3,9 +3,9 @@ $MODLP51RC2
 $LIST
 
 CE_ADC    EQU  P2.0
-MY_MOSI   EQU  P2.1 
-MY_MISO   EQU  P2.2
-MY_SCLK   EQU  P1.7
+MY_MOSI_ADC   EQU  P2.1 
+MY_MISO_ADC   EQU  P2.2
+MY_SCLK_ADC   EQU  P1.7
 
 org 0000H
    ljmp MyProgram
@@ -150,8 +150,8 @@ wait_for_P4_5:
 Test_msg:  db 'Temperature Test', 0
 
 INI_SPI:
-	setb MY_MISO ; Make MISO an input pin
-	clr MY_SCLK           ; Mode 0,0 default
+	setb MY_MISO_ADC ; Make MISO an input pin
+	clr MY_SCLK_ADC           ; Mode 0,0 default
 	ret
 DO_SPI_G:
 	mov R1, #0 ; Received byte stored in R1
@@ -160,13 +160,13 @@ DO_SPI_G_LOOP:
 	mov a, R0             ; Byte to write is in R0
 	rlc a                 ; Carry flag has bit to write
 	mov R0, a
-	mov MY_MOSI, c
-	setb MY_SCLK          ; Transmit
-	mov c, MY_MISO        ; Read received bit
+	mov MY_MOSI_ADC, c
+	setb MY_SCLK_ADC          ; Transmit
+	mov c, MY_MISO_ADC        ; Read received bit
 	mov a, R1             ; Save received bit in R1
 	rlc a
 	mov R1, a
-	clr MY_SCLK
+	clr MY_SCLK_ADC
 	djnz R2, DO_SPI_G_LOOP
 	ret
 
