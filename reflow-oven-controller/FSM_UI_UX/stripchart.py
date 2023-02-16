@@ -81,7 +81,7 @@ fig = plt.figure()
 fig.canvas.mpl_connect('close_event', on_close_figure)
 ax = fig.add_subplot(111)
 line, = ax.plot([], [], lw=2)
-ax.set_ylim(0, 100)
+ax.set_ylim(0, 300)
 ax.set_xlim(0, xsize)
 ax.grid()
 xdata, ydata = [], []

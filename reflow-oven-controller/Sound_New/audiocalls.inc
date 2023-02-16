@@ -1,18 +1,12 @@
 cseg
 
-
 main_player_1sec:
 
     push acc
     push psw
-
-    ;mov dptr, #0
-
-    ;mov dptr, #sound_index+6
-
-
     lcall playnum
-
+    ;ret
+play:
 	; multiply R0 by 3 and add it to the dptr
 	mov a, R0
 	mov b, #3
@@ -45,18 +39,18 @@ main_player_1sec:
 	mov w+1, #0x56
 	mov w+0, #0x22
 
+    setb SPEAKER ; Turn on speaker.
+	setb TR1 ; Start playback by enabling Timer 1
+
     pop acc
     pop psw
 
 ret
 
-main_player_2sec:
+play_3sec:
 
     push acc
     push psw
-
-    lcall playnum
-
 	; multiply R0 by 3 and add it to the dptr
 	mov a, R0
 	mov b, #3
@@ -85,12 +79,53 @@ main_player_2sec:
 	;frequency: 22050
 	;frequency * time to play = bits to play-> convert decimal to hex
 	; How many bytes to play? All of them!  Asume 4Mbytes memory: 0x3fffff
+	mov w+2, #0x01
+	mov w+1, #0x02
+	mov w+0, #0x66
+
+    pop acc
+    pop psw
+
+ret
+
+play_state:
+
+    ;push acc
+    ;push psw
+	; multiply R0 by 3 and add it to the dptr
+	mov a, R0
+	mov b, #3
+	mul ab
+	add a, dpl
+	mov dpl, a
+	mov a, b
+	addc a, dph
+	mov dph, a
+	
+	; dptr is pointing to the MSB of the 24-bit flash memory address
+	clr a
+	movc a, @a+dptr
+	lcall Send_SPI
+	
+	inc dptr
+	clr a
+	movc a, @a+dptr
+	lcall Send_SPI
+	
+	inc dptr
+	clr a
+	movc a, @a+dptr
+	lcall Send_SPI
+	
+	;frequency: 22050
+	;frequency * time to play = bits to play-> convert decimal to hex
+	; How many bytes togt5 play? All of them!  Asume 4Mbytes memory: 0x3fffff
 	mov w+2, #0x00
 	mov w+1, #0xAC
 	mov w+0, #0x44
 
-    pop acc
-    pop psw
+    ;pop acc
+    ;pop psw
 
 ret
 
@@ -154,7 +189,6 @@ findones:
     cjne a, #1, done
     lcall one
     
-
     done:
  ret
     
@@ -200,19 +234,15 @@ findtens:
     ljmp done2
 
     check10:
+    cjne a, #1, done
     lcall ten
 
     done2:
 ret
 
-;play x
-
-;main
-
-
 playnum:
-    ;push acc
-    ;push psw
+    push acc
+    push psw
 
     checkhundreds:
 
@@ -221,138 +251,164 @@ playnum:
         div ab
         jz checktens
         lcall findones
-        Wait_Milli_Seconds(#250)
-        lcall hundred 
-        Wait_Milli_Seconds(#250)
+        lcall hundred    
 
     checktens: 
-
         mov a, b
         mov b, #10
         div ab
         jz checkones
         lcall findtens
-        Wait_Milli_Seconds(#250)
-        mov a, b
-        cjne a, #0, checkones
-        ljmp donefinal
+        mov dptr, #0
+        ;cjne a, #0, checkones
 
     checkones: 
+        mov a, b
         lcall findones
-        Wait_Milli_Seconds(#250)
 
-    ;pop psw
-    ;pop acc
+    pop psw
+    pop acc
+    
     donefinal:
+
 ret
-
-
 
 one:
     mov dptr, #sound_index+0
+    lcall play
     ret
 
 two:
     mov dptr, #sound_index+3
+    lcall play
     ret
 
 three:
     mov dptr, #sound_index+6
+    lcall play
     ret
     
 four:
     mov dptr, #sound_index+9
+    lcall play
     ret
 
 five:
     mov dptr, #sound_index+12
+    lcall play
     ret
 
 six:
     mov dptr, #sound_index+15
+    lcall play
     ret
 
 seven:
     mov dptr, #sound_index+21
+    lcall play
     ret
 
 eight:
     mov dptr, #sound_index+24
+    lcall play
     ret
 
 nine:
     mov dptr, #sound_index+27
+    lcall play
     ret
 
 ten:
     mov dptr, #sound_index+30
+    lcall play
     ret
 
 twenty:
     mov dptr, #sound_index+33
+    lcall play
     ret
 
 thirty:
     mov dptr, #sound_index+36
+    lcall play
     ret
 
 fourty:
     mov dptr, #sound_index+39
+    lcall play
     ret
 
 fifty:
     mov dptr, #sound_index+42
+    lcall play
     ret
 
 sixty:
     mov dptr, #sound_index+48
+    lcall play
     ret 
 
 seventy:
     mov dptr, #sound_index+54
+    lcall play
     ret
 
 eighty:
     mov dptr, #sound_index+57
+    lcall play
     ret
 
 ninety:
     mov dptr, #sound_index+60
+    lcall play
     ret
 
 hundred:
     mov dptr, #sound_index+63
+    lcall play
     ret
 
 degree_celsius:
     mov dptr, #sound_index+66
+    lcall play_state
     ret
 
 current_state:
     mov dptr, #sound_index+72
+    lcall play_state
     ret
 
 ramp_to_soak:
     mov dptr, #sound_index+75
+    lcall play_state
     ret
 
 soak:
     mov dptr, #sound_index+81
+    lcall play_state
     ret
 
 ramp_to_peak:
     mov dptr, #sound_index+87
+    lcall play_state
     ret
 
 reflow:
     mov dptr, #sound_index+99
+    lcall play_state
     ret
 
 cooling:
     mov dptr, #sound_index+105
+    lcall play_state
     ret
 
 safe_temp:
     mov dptr, #sound_index+108
+    lcall play_3sec
     ret
 
+pcb_hot:
+    mov dptr, #sound_index+120
+    lcall play_state
+    ret

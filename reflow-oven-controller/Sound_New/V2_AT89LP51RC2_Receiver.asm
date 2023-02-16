@@ -56,36 +56,21 @@ dseg at 30H
 	x:	 ds 3
 	n:	 ds 3
 
+bseg
+	coolingflag: dbit 1
+
 ; Interrupt vectors:
 cseg
 
-
-
 org 0x0000 ; Reset vector
     ljmp MainProgram
-    
-
-org 0x0003 ; External interrupt 0 vector (not used in this code)
-	reti
-
-org 0x000B ; Timer/Counter 0 overflow interrupt vector (not used in this code)
-	reti
-
-org 0x0013 ; External interrupt 1 vector. (not used in this code)
-	reti
 
 org 0x001B ; Timer/Counter 1 overflow interrupt vector. Used in this code to replay the wave file.
 	ljmp Timer1_ISR
 
-org 0x0023 ; Serial port receive/transmit interrupt vector (not used in this code)
-	reti
-
-org 0x005b ; Timer 2 interrupt vector. (not used in this code)
-	reti
 
 org 0x0063 ; ADC interrupt (vector must be present if debugger is used)
 	reti
-   	
    	
 $NOLIST
 $include(WaitMilliSeconds.inc)
@@ -488,12 +473,25 @@ MainProgram:
     ; In case you decide to use the pins of P0, configure the port in bidirectional mode:
     mov P0M0, #0
     mov P0M1, #0
+	setb coolingflag
+	clr coolingflag
     
 forever_loop:
-	Load_X(0)
+
+		
+
+	;saLoad_X(0)
 	jb RI, serial_get
+	
 	jb P4.5, forever_loop ; Check if push-button pressed
-	jnb P4.5, $ ; Wait for push-button release
+	Wait_Milli_Seconds(#50)	; Debounce delay.  This macro is also in 'LCD_4bit.inc'
+	jb p4.5, forever_loop  ; if the 'BOOT' button is not pressed skip
+	jnb p4.5, $ 
+	
+	
+	
+	
+	;jnb P4.5, $ ; Wait for push-button release
 	; Play the whole memory
 	clr TR1 ; Stop Timer 1 ISR from playing previous request
 	setb FLASH_CE
@@ -510,9 +508,23 @@ forever_loop:
 	;add a, #-1
 	;mov b, #3
 	;mul ab
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-	load_X(5)
+	jnb coolingflag, next
+	lcall cooling
+	
+next:
+	
+	load_X(100)
 	lcall main_player_1sec
+	
+	;lcall cooling
+	;lcall safe_temp
+	
+	;load_X(100)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	;Wait_Milli_Seconds(#250)
 	;load_X(5)
 	;lcall main_player_1sec
@@ -520,6 +532,7 @@ forever_loop:
 		
 	setb SPEAKER ; Turn on speaker.
 	setb TR1 ; Start playback by enabling Timer 1
+	
 	
 	ljmp forever_loop
 	
