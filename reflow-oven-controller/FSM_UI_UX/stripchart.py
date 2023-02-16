@@ -4,12 +4,22 @@ import matplotlib.animation as animation
 import sys, time, math
 import time 
 import serial 
+import pyttsx3
+
+# Initialize the pyttsx3 engine
+engine = pyttsx3.init()
+
+# Set the voice property of the engine
+voices = engine.getProperty('voices')
+engine.setProperty('voice', voices[0].id) # 0 represents the index of the voice in the list of available voices
+
 
 xsize=240
+sectimer = 0
 
 # configure the serial port 
 ser = serial.Serial( 
- port='COM4', 
+ port='COM7', 
  baudrate=115200, 
  parity=serial.PARITY_NONE, 
  stopbits=serial.STOPBITS_TWO, 
@@ -17,11 +27,38 @@ ser = serial.Serial(
 ) 
    
 def data_gen():
+    global sectimer
     t = data_gen.t
     while True:
-       t+=1
-       val=int(ser.readline())
-       yield t, val
+        t+=1
+        val=int(ser.readline())
+        yield t, val
+        state=int(ser.readline())
+        
+        sectimer=sectimer+1
+        if sectimer >= 5:
+            sectimer = 0
+            # Convert text to speech and play it
+            engine.say(str(val) + " degrees celsius")
+            engine.runAndWait()
+            engine.say("state: ")
+            engine.runAndWait()
+            match state:
+                case 1:
+                    engine.say("ramp to soak")
+                    engine.runAndWait()
+                case 2:
+                    engine.say("soak")
+                    engine.runAndWait()
+                case 3:
+                    engine.say("ramp to peak")
+                    engine.runAndWait()
+                case 4:
+                    engine.say("reflow")
+                    engine.runAndWait()
+                case 5:
+                    engine.say("cooling")
+                    engine.runAndWait()
 
 def run(data):
     # update the data

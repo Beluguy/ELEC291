@@ -512,6 +512,19 @@ readADC:
 
 	lcall hex2bcd			; combine temp
 	lcall Send_3_Digit_BCD
+
+    load_X(0)
+    mov x+0, state
+    lcall hex2bcd
+    mov a, bcd+0
+    anl a, #0fh
+    orl a, #'0'
+    mov r0, a
+    lcall putchar
+    mov a, #'\r'
+	lcall putchar
+	mov a, #'\n'
+	lcall putchar
 	ret
  	
 Send_3_Digit_BCD: ;send 3 digits bcd in BCD var to putty
