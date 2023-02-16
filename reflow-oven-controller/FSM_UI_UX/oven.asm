@@ -895,7 +895,7 @@ save_config:
 
 ;------------------------------read from nvmem--------------------------------
 Load_Config:
-    mov dptr, #0x7f84 		; First key value location.
+    mov dptr, #0x7f85 		; First key value location.
     getbyte(R0) 			; 0x7f84 should contain 0x55
     cjne R0, #0x55, jumpToLoadDef
     getbyte(R0) 			; 0x7f85 should contain 0xAA
