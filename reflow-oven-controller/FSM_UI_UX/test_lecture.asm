@@ -2,7 +2,7 @@ $NOLIST
 $MODLP51RC2
 $LIST
 
-SHIFT_BUTTON equ P2.5 ;all push button positions are variable up to us
+SHIFT_BUTTON equ P2.6 ;all push button positions are variable up to us
 TEMP_SOAK_PB equ P4.5
 TIME_SOAK_PB equ P0.6
 TEMP_REFL_PB equ P0.3

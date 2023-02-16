@@ -362,7 +362,7 @@ check_DAC_init:
 	mov a, DADC
 	jb acc.6, check_DAC_init ; Wait for DAC to finish
 	ret
-; -------------------------------------------------- MAIN PROGRAM LOOP ----------------------------------------------
+; -------------------------------------------------- MAIN `ROGRAM LOOP ----------------------------------------------
 MainProgram: ; setup()
     mov SP, #7FH 						; Set the stack pointer to the begining of idata
     Wait_Milli_Seconds(#5)
@@ -879,8 +879,8 @@ save_config:
 	loadbyte(reflow_temp) ; @0x7f82
 	loadbyte(reflow_time) ; @0x7f83
     loadbyte(cool_temp) ; @0x7f84
-	loadbyte(#0x55) ; First key value @0x7f84
-	loadbyte(#0xAA) ; Second key value @0x7f85
+	loadbyte(#0x55) ; First key value @0x7f85
+	loadbyte(#0xAA) ; Second key value @0x7f86
 	mov FCON, #0x00 ; Page Buffer Mapping Disabled (FPS = 0)
 	orl EECON, #0b01000000 ; Enable auto-erase on next write sequence
 	mov FCON, #0x50 ; Write trigger first byte
@@ -895,7 +895,7 @@ save_config:
 
 ;------------------------------read from nvmem--------------------------------
 Load_Config:
-    mov dptr, #0x7f84 		; First key value location.
+    mov dptr, #0x7f85 		; First key value location.
     getbyte(R0) 			; 0x7f84 should contain 0x55
     cjne R0, #0x55, jumpToLoadDef
     getbyte(R0) 			; 0x7f85 should contain 0xAA
