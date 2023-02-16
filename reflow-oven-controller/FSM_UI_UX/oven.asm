@@ -361,7 +361,7 @@ check_DAC_init:
 	mov a, DADC
 	jb acc.6, check_DAC_init ; Wait for DAC to finish
 	ret
-; -------------------------------------------------- MAIN ROGRAM LOOP ----------------------------------------------
+; -------------------------------------------------- MAIN PROGRAM LOOP ----------------------------------------------
 MainProgram: ; setup()
     mov SP, #7FH 						; Set the stack pointer to the begining of idata
     Wait_Milli_Seconds(#5)
