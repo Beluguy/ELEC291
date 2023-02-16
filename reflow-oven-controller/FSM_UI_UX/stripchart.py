@@ -5,7 +5,7 @@ import sys, time, math
 import time 
 import serial 
 
-xsize=100
+xsize=240
 
 # configure the serial port 
 ser = serial.Serial( 
