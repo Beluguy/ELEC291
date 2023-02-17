@@ -18,7 +18,7 @@ TIMER1_RELOAD  		EQU 0x10000-(CLK/TIMER1_RATE)
 TIMER2_RATE     	EQU 1000    ; 1000Hz, for a timer tick of 1ms
 TIMER2_RELOAD   	EQU ((65536-(CLK/TIMER2_RATE)))
 
-DUTY_CYCLE			EQU 5		; 5% pwm for holding the temp constant 
+DUTY_CYCLE			EQU 7		; 5% pwm for holding the temp constant 
 PWM_HOLD_RATE		EQU (DUTY_CYCLE*10)
 
 ; Commands supported by the SPI flash memory according to the datasheet
@@ -60,6 +60,7 @@ MY_MISO   		EQU P2.7		; Pin 2
 MY_SCLK   		EQU P0.4 		; Pin 6
 
 ; UI buttons pin
+PROFILE_BUTTON  EQU P0.1        ; button to switch profile
 DECR            EQU P0.0   		; button to increment current selection
 INCR            EQU P0.3   		; button to increment current selection
 EDIT			EQU P0.6		; button for changing what to edit
@@ -107,10 +108,11 @@ HighTemp:			ds 1
 ;---------------------------------------------------
 
 BSEG
-mf: 				dbit 1 ; flag for math32
+mf: 				dbit 1  ; flag for math32
 start_flag: 		dbit 1
-one_second_flag: 	dbit 1 ; Set to one in the ISR every time 1000 ms had passed
-safety_overheat:    dbit 1 ; for overheat safety feature
+one_second_flag: 	dbit 1  ; Set to one in the ISR every time 1000 ms had passed
+safety_overheat:    dbit 1  ; for overheat safety feature
+profile:            dbit 1  ; for determining which profile we are in right now 
 
 CSEG
 $NOLIST
@@ -376,6 +378,7 @@ MainProgram: ; setup()
     ;initialize flags
     clr start_flag
     clr safety_overheat
+    clr profile
 
     ;initialize fsm
     mov state, #0
@@ -409,7 +412,7 @@ MainProgram: ; setup()
 	;mov pwm_ratio+1, #high(PWM_HOLD_RATE)
 forever: ;loop() please only place function calls into the loop!
 	jnb one_second_flag, skipDisplay 	; this segment only executes once a second (during runtime)
-    clr one_second_flag 
+    clr one_second_flag
     ;mov a, reflow_temp			; the high temp is 15 higher then the reflow temp
 	;add a, #15
 	;mov HighTemp, a
@@ -417,6 +420,7 @@ forever: ;loop() please only place function calls into the loop!
 	;lcall hex2bcd
 	;lcall Send_3_Digit_BCD
 
+    lcall switch_profile
 	lcall readADC 						; reads temperature from thermocouple and cold junction and sends it to temp
    	lcall checkOverheat
    	lcall generateDisplay
@@ -692,25 +696,44 @@ DONT_EDIT:
     cjne a, #0, elem1
     inc soak_temp
     lcall updateSoakScreen
+    jnb profile, save_to2_1
+    lcall save_config2
+save_to2_1:
     lcall save_config					; save config to nvmem
     ret
+
     elem1: cjne a, #1, elem2
     inc soak_time
     lcall updateSoakScreen
+    jnb profile, save_to2_2
+    lcall save_config2
+save_to2_2:
     lcall save_config					; save config to nvmem
     ret
+
     elem2: cjne a, #2, elem3
     inc reflow_temp
     lcall updateReflowScreen
+    jnb profile, save_to2_3
+    lcall save_config2
+save_to2_3:
     lcall save_config					; save config to nvmem
     ret
+
     elem3: cjne a, #3, elem4
     inc reflow_time
     lcall updateReflowScreen
+    jnb profile, save_to2_4
+    lcall save_config2
+save_to2_4:
     lcall save_config					; save config to nvmem
     ret
+
     elem4: inc cool_temp
     lcall updateCoolScreen
+    jnb profile, save_to2_5
+    lcall save_config2
+save_to2_5:
     lcall save_config					; save config to nvmem
     ret
     
@@ -724,25 +747,44 @@ DONT_INC:
     cjne a, #0, delem1
     dec soak_temp
     lcall updateSoakScreen
+    jnb profile, save_to2_6
+    lcall save_config2
+save_to2_6:
     lcall save_config					; save config to nvmem
     ret
+
     delem1: cjne a, #1, delem2
     dec soak_time
     lcall updateSoakScreen
+    jnb profile, save_to2_7
+    lcall save_config2
+save_to2_7:
     lcall save_config					; save config to nvmem
     ret
+
     delem2: cjne a, #2, delem3
     dec reflow_temp
     lcall updateReflowScreen
+    jnb profile, save_to2_8
+    lcall save_config2
+save_to2_8:
     lcall save_config					; save config to nvmem
     ret
+
     delem3: cjne a, #3, delem4
     dec reflow_time
     lcall updateReflowScreen
+    jnb profile, save_to2_9
+    lcall save_config2
+save_to2_9:
     lcall save_config					; save config to nvmem
     ret
+
     delem4: dec cool_temp
     lcall updateCoolScreen
+    jnb profile, save_to2_10
+    lcall save_config2
+save_to2_10:
     lcall save_config					; save config to nvmem
     ret
 DONT_DEC: 
@@ -795,6 +837,16 @@ Load_Defaults: ; Load defaults if 'keys' are incorrect
 	mov reflow_time, 	#30			; 30
     mov cool_temp, 		#45			; 50
 	ret
+
+switch_profile:
+    jb PROFILE_BUTTON, Dont_switch 		; if 'RESET' is pressed, wait for rebouce
+	Wait_Milli_Seconds(#50)			; Debounce delay.  This macro is also in 'LCD_4bit.inc'
+	jb PROFILE_BUTTON, Dont_switch 		; if the 'RESET' button is not pressed skip
+	jnb PROFILE_BUTTON, $
+	cpl profile
+    lcall generateDisplay
+Dont_switch:
+    ret
 ;-------------------------------------FSM time!!---------------------------------------
 FSM:							 
 	mov a, state
@@ -889,10 +941,6 @@ state5:							; cooling state
 state5_done:
 	ljmp forever 
 
-
-FSM_audio:
-
-ret
 ;--------------------------------------------------------------------------------------
 
 ;----------------------------save to nvmem for profile 1-------------------------------
@@ -934,7 +982,7 @@ Load_Config:
     getbyte(soak_time) 		; 0x7f81
     getbyte(reflow_temp) 	; 0x7f82
     getbyte(reflow_time) 	; 0x7f83
-    getbyte(cool_temp)
+    getbyte(cool_temp)      ; 0x7f84
     ret
 jumpToLoadDef:
 	ljmp Load_Defaults
@@ -970,18 +1018,18 @@ save_config2:
 Load_Config2:
     mov dptr, #0x7f75 		; First key value location.
     getbyte(R0) 			; 0x7f84 should contain 0x55
-    cjne R0, #0x55, jumpToLoadDef
+    cjne R0, #0x55, jumpToLoadDef2
     getbyte(R0) 			; 0x7f85 should contain 0xAA
-    cjne R0, #0xAA, jumpToLoadDef
+    cjne R0, #0xAA, jumpToLoadDef2
 ; Keys are good. Get stored values.
     mov dptr, #0x7f80
     getbyte(soak_temp) 		; 0x7f70
     getbyte(soak_time) 		; 0x7f71
     getbyte(reflow_temp) 	; 0x7f72
     getbyte(reflow_time) 	; 0x7f73
-    getbyte(cool_temp)
+    getbyte(cool_temp)      ; 0x7f74
     ret
-jumpToLoadDef:
+jumpToLoadDef2:
 	ljmp Load_Defaults
 ;----------------------------------------------------------------------------
 END
