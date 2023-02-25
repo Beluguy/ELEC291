@@ -20,7 +20,7 @@ sectimer = 0
 
 # configure the serial port 
 ser = serial.Serial( 
- port='COM7', 
+ port='COM8', 
  baudrate=115200, 
  parity=serial.PARITY_NONE, 
  stopbits=serial.STOPBITS_TWO, 
@@ -68,7 +68,7 @@ def data_gen():
             elif state == 4:
                 engine.say("reflow")
                 engine.runAndWait()
-                line.set_color("yellow")
+                line.set_color("purple")
             elif state == 5:
                 engine.say("cooling")
                 engine.runAndWait()
