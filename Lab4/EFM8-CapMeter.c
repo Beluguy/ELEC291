@@ -11,6 +11,8 @@
 #define SYSCLK      72000000L  // SYSCLK frequency in Hz
 #define BAUDRATE      115200L  // Baud rate of UART in bps
 
+#define RESISTANCE      1666.7
+
 #define LCD_RS P2_6
 // #define LCD_RW Px_x // Not used in this code.  Connect to GND
 #define LCD_E  P2_5
@@ -199,9 +201,12 @@ void LCDprint(char * string, unsigned char line, bit clear)
 void main (void) 
 {
 	float period;
+    double capacitance;
 	
 	TIMER0_Init(); // 
     LCD_4BIT(); // init lcd
+
+    LCDprint("C measured [nF]:", 1, 1);
 
 	waitms(500); // Give PuTTY a chance to start.
 	printf("\x1b[2J"); // Clear screen using ANSI escape sequence.
@@ -242,6 +247,9 @@ void main (void)
 		period=(overflow_count*65536.0+TH0*256.0+TL0)*(12.0/SYSCLK);
 		// Send the period to the serial port
 		printf( "\rT=%f ms    ", period*1000.0);
+        capacitance = 1000000000.0 * period / (0.693 * RESISTANCE * 3.0)
+        printf( "\rC=%lf nF    ", capacitance);
+        LCDprint(capacitance, 2, 1)
     }
 	
 }
