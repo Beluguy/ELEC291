@@ -257,8 +257,8 @@ void main(void)
                     conversion_factor = 1000000.0;
                     cap_old = cap_old / 1000.0;
                 }
+                waitms(500);
             }
-            waitms(100);
         }           // wait for boot to be pressed for next read
         waitms(50); // make sure switch doesn't bounce
 
