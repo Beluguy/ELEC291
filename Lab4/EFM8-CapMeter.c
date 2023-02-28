@@ -250,15 +250,22 @@ void main(void)
                     LCDprint("C measured [nF]:", 1, 1);
                     conversion_factor = 1000000000.0;
                     cap_old = cap_old * 1000.0;
+                    capacitance = capacitance * 1000.0;
+                    sprintf(buff, "%.1f %.1f", capacitance, cap_old);
+                    LCDprint(buff, 2, 1);
                 }
                 else
                 {
                     LCDprint("C measured [uF]:", 1, 1);
                     conversion_factor = 1000000.0;
                     cap_old = cap_old / 1000.0;
+                    capacitance = capacitance / 1000.0;
+                    sprintf(buff, "%.3f %.3f", capacitance, cap_old);
+                    LCDprint(buff, 2, 1);
                 }
                 waitms(500);
             }
+            waitms(50);
         }           // wait for boot to be pressed for next read
         waitms(50); // make sure switch doesn't bounce
 
