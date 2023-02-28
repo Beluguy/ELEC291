@@ -201,7 +201,10 @@ void LCDprint(char * string, unsigned char line, bit clear)
 void main (void) 
 {
 	float period;
-    double capacitance;
+    double capacitance = 0.0;
+    char buff[17];
+    double cap_old = 0.0;
+    P3_7 = 1;
 	
 	TIMER0_Init(); // 
     LCD_4BIT(); // init lcd
@@ -223,6 +226,9 @@ void main (void)
 		TH0=0;
 		TF0=0;
 		overflow_count=0;
+
+        while(P3_7!=0); // wait for boot to be pressed for next read
+        waitms(50); // make sure switch doesn't bounce
 		
 		while(P0_1!=0); // Wait for the signal to be zero
 		while(P0_1!=1); // Wait for the signal to be one
@@ -246,10 +252,13 @@ void main (void)
 		TR0=0; // Stop timer 0, the 24-bit number [overflow_count-TH0-TL0] has the period!
 		period=(overflow_count*65536.0+TH0*256.0+TL0)*(12.0/SYSCLK);
 		// Send the period to the serial port
-		printf( "\rT=%f ms    ", period*1000.0);
-        capacitance = 1000000000.0 * period / (0.693 * RESISTANCE * 3.0)
-        printf( "\rC=%lf nF    ", capacitance);
-        LCDprint(capacitance, 2, 1)
+		printf( "T=%f ms    \n", period*1000.0);
+        cap_old = capacitance;
+        capacitance = 1000000000.0 * period / (0.693 * RESISTANCE * 3.0);
+        printf( "C=%f nF    \n", capacitance);
+        sprintf(buff, "%.1f %.1f", capacitance, cap_old);
+        LCDprint(buff, 2, 1);
+        waitms(1000);
     }
 	
 }
