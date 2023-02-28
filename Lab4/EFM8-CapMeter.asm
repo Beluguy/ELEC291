@@ -1,7 +1,7 @@
 ;--------------------------------------------------------
 ; File Created by C51
 ; Version 1.0.0 #1170 (Feb 16 2022) (MSVC)
-; This file was generated Mon Feb 27 14:40:18 2023
+; This file was generated Tue Feb 28 14:03:55 2023
 ;--------------------------------------------------------
 $name EFM8_CapMeter
 $optc51 --model-small
@@ -490,10 +490,18 @@ _overflow_count:
 	ds 1
 _LCDprint_PARM_2:
 	ds 1
+_main_period_1_46:
+	ds 4
 _main_capacitance_1_46:
 	ds 4
 _main_buff_1_46:
 	ds 17
+_main_units_1_46:
+	ds 2
+_main_conversion_factor_1_46:
+	ds 4
+_main_sloc0_1_0:
+	ds 4
 ;--------------------------------------------------------
 ; overlayable items in internal ram 
 ;--------------------------------------------------------
@@ -555,7 +563,7 @@ _LCDprint_PARM_3:
 ;Allocation info for local variables in function '_c51_external_startup'
 ;------------------------------------------------------------
 ;------------------------------------------------------------
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:27: char _c51_external_startup (void)
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:27: char _c51_external_startup(void)
 ;	-----------------------------------------
 ;	 function _c51_external_startup
 ;	-----------------------------------------
@@ -563,9 +571,9 @@ __c51_external_startup:
 	using	0
 ;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:30: SFRPAGE = 0x00;
 	mov	_SFRPAGE,#0x00
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:31: WDTCN = 0xDE; //First key
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:31: WDTCN = 0xDE; // First key
 	mov	_WDTCN,#0xDE
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:32: WDTCN = 0xAD; //Second key
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:32: WDTCN = 0xAD; // Second key
 	mov	_WDTCN,#0xAD
 ;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:34: VDM0CN |= 0x80;
 	orl	_VDM0CN,#0x80
@@ -573,51 +581,51 @@ __c51_external_startup:
 	mov	_RSTSRC,#0x02
 ;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:42: SFRPAGE = 0x10;
 	mov	_SFRPAGE,#0x10
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:43: PFE0CN  = 0x20; // SYSCLK < 75 MHz.
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:43: PFE0CN = 0x20; // SYSCLK < 75 MHz.
 	mov	_PFE0CN,#0x20
 ;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:44: SFRPAGE = 0x00;
 	mov	_SFRPAGE,#0x00
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:65: CLKSEL = 0x00;
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:69: CLKSEL = 0x00;
 	mov	_CLKSEL,#0x00
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:66: CLKSEL = 0x00;
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:70: CLKSEL = 0x00;
 	mov	_CLKSEL,#0x00
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:67: while ((CLKSEL & 0x80) == 0);
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:71: while ((CLKSEL & 0x80) == 0)
 L002001?:
 	mov	a,_CLKSEL
 	jnb	acc.7,L002001?
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:68: CLKSEL = 0x03;
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:73: CLKSEL = 0x03;
 	mov	_CLKSEL,#0x03
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:69: CLKSEL = 0x03;
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:74: CLKSEL = 0x03;
 	mov	_CLKSEL,#0x03
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:70: while ((CLKSEL & 0x80) == 0);
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:75: while ((CLKSEL & 0x80) == 0)
 L002004?:
 	mov	a,_CLKSEL
 	jnb	acc.7,L002004?
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:75: P0MDOUT |= 0x10; // Enable UART0 TX as push-pull output
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:81: P0MDOUT |= 0x10; // Enable UART0 TX as push-pull output
 	orl	_P0MDOUT,#0x10
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:76: XBR0     = 0x01; // Enable UART0 on P0.4(TX) and P0.5(RX)                     
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:82: XBR0 = 0x01;     // Enable UART0 on P0.4(TX) and P0.5(RX)
 	mov	_XBR0,#0x01
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:77: XBR1     = 0X00;
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:83: XBR1 = 0X00;
 	mov	_XBR1,#0x00
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:78: XBR2     = 0x40; // Enable crossbar and weak pull-ups
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:84: XBR2 = 0x40; // Enable crossbar and weak pull-ups
 	mov	_XBR2,#0x40
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:84: SCON0 = 0x10;
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:90: SCON0 = 0x10;
 	mov	_SCON0,#0x10
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:85: CKCON0 |= 0b_0000_0000 ; // Timer 1 uses the system clock divided by 12.
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:91: CKCON0 |= 0b_0000_0000; // Timer 1 uses the system clock divided by 12.
 	mov	_CKCON0,_CKCON0
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:86: TH1 = 0x100-((SYSCLK/BAUDRATE)/(2L*12L));
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:92: TH1 = 0x100 - ((SYSCLK / BAUDRATE) / (2L * 12L));
 	mov	_TH1,#0xE6
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:87: TL1 = TH1;      // Init Timer1
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:93: TL1 = TH1;     // Init Timer1
 	mov	_TL1,_TH1
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:88: TMOD &= ~0xf0;  // TMOD: timer 1 in 8-bit auto-reload
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:94: TMOD &= ~0xf0; // TMOD: timer 1 in 8-bit auto-reload
 	anl	_TMOD,#0x0F
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:89: TMOD |=  0x20;                       
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:95: TMOD |= 0x20;
 	orl	_TMOD,#0x20
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:90: TR1 = 1; // START Timer1
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:96: TR1 = 1; // START Timer1
 	setb	_TR1
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:91: TI = 1;  // Indicate TX0 ready
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:97: TI = 1;  // Indicate TX0 ready
 	setb	_TI
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:93: return 0;
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:99: return 0;
 	mov	dpl,#0x00
 	ret
 ;------------------------------------------------------------
@@ -626,40 +634,40 @@ L002004?:
 ;us                        Allocated to registers r2 
 ;i                         Allocated to registers r3 
 ;------------------------------------------------------------
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:97: void Timer3us(unsigned char us)
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:103: void Timer3us(unsigned char us)
 ;	-----------------------------------------
 ;	 function Timer3us
 ;	-----------------------------------------
 _Timer3us:
 	mov	r2,dpl
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:102: CKCON0|=0b_0100_0000;
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:108: CKCON0 |= 0b_0100_0000;
 	orl	_CKCON0,#0x40
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:104: TMR3RL = (-(SYSCLK)/1000000L); // Set Timer3 to overflow in 1us.
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:110: TMR3RL = (-(SYSCLK) / 1000000L); // Set Timer3 to overflow in 1us.
 	mov	_TMR3RL,#0xB8
 	mov	(_TMR3RL >> 8),#0xFF
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:105: TMR3 = TMR3RL;                 // Initialize Timer3 for first overflow
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:111: TMR3 = TMR3RL;                   // Initialize Timer3 for first overflow
 	mov	_TMR3,_TMR3RL
 	mov	(_TMR3 >> 8),(_TMR3RL >> 8)
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:107: TMR3CN0 = 0x04;                 // Sart Timer3 and clear overflow flag
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:113: TMR3CN0 = 0x04;          // Sart Timer3 and clear overflow flag
 	mov	_TMR3CN0,#0x04
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:108: for (i = 0; i < us; i++)       // Count <us> overflows
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:114: for (i = 0; i < us; i++) // Count <us> overflows
 	mov	r3,#0x00
 L003004?:
 	clr	c
 	mov	a,r3
 	subb	a,r2
 	jnc	L003007?
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:110: while (!(TMR3CN0 & 0x80));  // Wait for overflow
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:116: while (!(TMR3CN0 & 0x80))
 L003001?:
 	mov	a,_TMR3CN0
 	jnb	acc.7,L003001?
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:111: TMR3CN0 &= ~(0x80);         // Clear overflow indicator
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:118: TMR3CN0 &= ~(0x80); // Clear overflow indicator
 	anl	_TMR3CN0,#0x7F
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:108: for (i = 0; i < us; i++)       // Count <us> overflows
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:114: for (i = 0; i < us; i++) // Count <us> overflows
 	inc	r3
 	sjmp	L003004?
 L003007?:
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:113: TMR3CN0 = 0 ;                   // Stop Timer3 and clear overflow flag
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:120: TMR3CN0 = 0; // Stop Timer3 and clear overflow flag
 	mov	_TMR3CN0,#0x00
 	ret
 ;------------------------------------------------------------
@@ -668,36 +676,36 @@ L003007?:
 ;ms                        Allocated to registers r2 r3 
 ;j                         Allocated to registers r2 r3 
 ;------------------------------------------------------------
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:116: void waitms (unsigned int ms)
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:123: void waitms(unsigned int ms)
 ;	-----------------------------------------
 ;	 function waitms
 ;	-----------------------------------------
 _waitms:
 	mov	r2,dpl
 	mov	r3,dph
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:119: for(j=ms; j!=0; j--)
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:126: for (j = ms; j != 0; j--)
 L004001?:
 	cjne	r2,#0x00,L004010?
 	cjne	r3,#0x00,L004010?
 	ret
 L004010?:
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:121: Timer3us(249);
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:128: Timer3us(249);
 	mov	dpl,#0xF9
 	push	ar2
 	push	ar3
 	lcall	_Timer3us
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:122: Timer3us(249);
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:129: Timer3us(249);
 	mov	dpl,#0xF9
 	lcall	_Timer3us
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:123: Timer3us(249);
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:130: Timer3us(249);
 	mov	dpl,#0xF9
 	lcall	_Timer3us
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:124: Timer3us(250);
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:131: Timer3us(250);
 	mov	dpl,#0xFA
 	lcall	_Timer3us
 	pop	ar3
 	pop	ar2
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:119: for(j=ms; j!=0; j--)
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:126: for (j = ms; j != 0; j--)
 	dec	r2
 	cjne	r2,#0xff,L004011?
 	dec	r3
@@ -707,33 +715,33 @@ L004011?:
 ;Allocation info for local variables in function 'TIMER0_Init'
 ;------------------------------------------------------------
 ;------------------------------------------------------------
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:128: void TIMER0_Init(void)
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:135: void TIMER0_Init(void)
 ;	-----------------------------------------
 ;	 function TIMER0_Init
 ;	-----------------------------------------
 _TIMER0_Init:
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:130: TMOD&=0b_1111_0000; // Set the bits of Timer/Counter 0 to zero
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:137: TMOD &= 0b_1111_0000; // Set the bits of Timer/Counter 0 to zero
 	anl	_TMOD,#0xF0
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:131: TMOD|=0b_0000_0001; // Timer/Counter 0 used as a 16-bit timer
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:138: TMOD |= 0b_0000_0001; // Timer/Counter 0 used as a 16-bit timer
 	orl	_TMOD,#0x01
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:132: TR0=0; // Stop Timer/Counter 0
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:139: TR0 = 0;              // Stop Timer/Counter 0
 	clr	_TR0
 	ret
 ;------------------------------------------------------------
 ;Allocation info for local variables in function 'LCD_pulse'
 ;------------------------------------------------------------
 ;------------------------------------------------------------
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:135: void LCD_pulse (void)
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:142: void LCD_pulse(void)
 ;	-----------------------------------------
 ;	 function LCD_pulse
 ;	-----------------------------------------
 _LCD_pulse:
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:137: LCD_E=1;
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:144: LCD_E = 1;
 	setb	_P2_5
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:138: Timer3us(40);
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:145: Timer3us(40);
 	mov	dpl,#0x28
 	lcall	_Timer3us
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:139: LCD_E=0;
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:146: LCD_E = 0;
 	clr	_P2_5
 	ret
 ;------------------------------------------------------------
@@ -741,66 +749,66 @@ _LCD_pulse:
 ;------------------------------------------------------------
 ;x                         Allocated to registers r2 
 ;------------------------------------------------------------
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:142: void LCD_byte (unsigned char x)
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:149: void LCD_byte(unsigned char x)
 ;	-----------------------------------------
 ;	 function LCD_byte
 ;	-----------------------------------------
 _LCD_byte:
 	mov	r2,dpl
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:145: ACC=x; //Send high nible
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:152: ACC = x; // Send high nible
 	mov	_ACC,r2
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:146: LCD_D7=ACC_7;
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:153: LCD_D7 = ACC_7;
 	mov	c,_ACC_7
 	mov	_P2_1,c
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:147: LCD_D6=ACC_6;
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:154: LCD_D6 = ACC_6;
 	mov	c,_ACC_6
 	mov	_P2_2,c
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:148: LCD_D5=ACC_5;
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:155: LCD_D5 = ACC_5;
 	mov	c,_ACC_5
 	mov	_P2_3,c
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:149: LCD_D4=ACC_4;
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:156: LCD_D4 = ACC_4;
 	mov	c,_ACC_4
 	mov	_P2_4,c
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:150: LCD_pulse();
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:157: LCD_pulse();
 	push	ar2
 	lcall	_LCD_pulse
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:151: Timer3us(40);
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:158: Timer3us(40);
 	mov	dpl,#0x28
 	lcall	_Timer3us
 	pop	ar2
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:152: ACC=x; //Send low nible
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:159: ACC = x; // Send low nible
 	mov	_ACC,r2
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:153: LCD_D7=ACC_3;
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:160: LCD_D7 = ACC_3;
 	mov	c,_ACC_3
 	mov	_P2_1,c
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:154: LCD_D6=ACC_2;
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:161: LCD_D6 = ACC_2;
 	mov	c,_ACC_2
 	mov	_P2_2,c
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:155: LCD_D5=ACC_1;
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:162: LCD_D5 = ACC_1;
 	mov	c,_ACC_1
 	mov	_P2_3,c
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:156: LCD_D4=ACC_0;
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:163: LCD_D4 = ACC_0;
 	mov	c,_ACC_0
 	mov	_P2_4,c
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:157: LCD_pulse();
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:164: LCD_pulse();
 	ljmp	_LCD_pulse
 ;------------------------------------------------------------
 ;Allocation info for local variables in function 'WriteData'
 ;------------------------------------------------------------
 ;x                         Allocated to registers r2 
 ;------------------------------------------------------------
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:160: void WriteData (unsigned char x)
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:167: void WriteData(unsigned char x)
 ;	-----------------------------------------
 ;	 function WriteData
 ;	-----------------------------------------
 _WriteData:
 	mov	r2,dpl
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:162: LCD_RS=1;
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:169: LCD_RS = 1;
 	setb	_P2_6
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:163: LCD_byte(x);
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:170: LCD_byte(x);
 	mov	dpl,r2
 	lcall	_LCD_byte
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:164: waitms(2);
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:171: waitms(2);
 	mov	dptr,#0x0002
 	ljmp	_waitms
 ;------------------------------------------------------------
@@ -808,53 +816,53 @@ _WriteData:
 ;------------------------------------------------------------
 ;x                         Allocated to registers r2 
 ;------------------------------------------------------------
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:167: void WriteCommand (unsigned char x)
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:174: void WriteCommand(unsigned char x)
 ;	-----------------------------------------
 ;	 function WriteCommand
 ;	-----------------------------------------
 _WriteCommand:
 	mov	r2,dpl
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:169: LCD_RS=0;
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:176: LCD_RS = 0;
 	clr	_P2_6
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:170: LCD_byte(x);
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:177: LCD_byte(x);
 	mov	dpl,r2
 	lcall	_LCD_byte
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:171: waitms(5);
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:178: waitms(5);
 	mov	dptr,#0x0005
 	ljmp	_waitms
 ;------------------------------------------------------------
 ;Allocation info for local variables in function 'LCD_4BIT'
 ;------------------------------------------------------------
 ;------------------------------------------------------------
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:174: void LCD_4BIT (void)
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:181: void LCD_4BIT(void)
 ;	-----------------------------------------
 ;	 function LCD_4BIT
 ;	-----------------------------------------
 _LCD_4BIT:
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:176: LCD_E=0; // Resting state of LCD's enable is zero
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:183: LCD_E = 0; // Resting state of LCD's enable is zero
 	clr	_P2_5
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:178: waitms(20);
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:185: waitms(20);
 	mov	dptr,#0x0014
 	lcall	_waitms
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:180: WriteCommand(0x33);
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:187: WriteCommand(0x33);
 	mov	dpl,#0x33
 	lcall	_WriteCommand
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:181: WriteCommand(0x33);
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:188: WriteCommand(0x33);
 	mov	dpl,#0x33
 	lcall	_WriteCommand
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:182: WriteCommand(0x32); // Change to 4-bit mode
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:189: WriteCommand(0x32); // Change to 4-bit mode
 	mov	dpl,#0x32
 	lcall	_WriteCommand
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:185: WriteCommand(0x28);
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:192: WriteCommand(0x28);
 	mov	dpl,#0x28
 	lcall	_WriteCommand
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:186: WriteCommand(0x0c);
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:193: WriteCommand(0x0c);
 	mov	dpl,#0x0C
 	lcall	_WriteCommand
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:187: WriteCommand(0x01); // Clear screen command (takes some time)
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:194: WriteCommand(0x01); // Clear screen command (takes some time)
 	mov	dpl,#0x01
 	lcall	_WriteCommand
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:188: waitms(20); // Wait for clear screen command to finsih.
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:195: waitms(20);         // Wait for clear screen command to finsih.
 	mov	dptr,#0x0014
 	ljmp	_waitms
 ;------------------------------------------------------------
@@ -864,7 +872,7 @@ _LCD_4BIT:
 ;string                    Allocated to registers r2 r3 r4 
 ;j                         Allocated to registers r5 r6 
 ;------------------------------------------------------------
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:191: void LCDprint(char * string, unsigned char line, bit clear)
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:198: void LCDprint(char *string, unsigned char line, bit clear)
 ;	-----------------------------------------
 ;	 function LCDprint
 ;	-----------------------------------------
@@ -872,7 +880,7 @@ _LCDprint:
 	mov	r2,dpl
 	mov	r3,dph
 	mov	r4,b
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:195: WriteCommand(line==2?0xc0:0x80);
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:202: WriteCommand(line == 2 ? 0xc0 : 0x80);
 	mov	a,#0x02
 	cjne	a,_LCDprint_PARM_2,L011013?
 	mov	r5,#0xC0
@@ -885,13 +893,13 @@ L011014?:
 	push	ar3
 	push	ar4
 	lcall	_WriteCommand
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:196: waitms(5);
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:203: waitms(5);
 	mov	dptr,#0x0005
 	lcall	_waitms
 	pop	ar4
 	pop	ar3
 	pop	ar2
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:197: for(j=0; string[j]!=0; j++)	WriteData(string[j]);// Write the message
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:204: for (j = 0; string[j] != 0; j++)
 	mov	r5,#0x00
 	mov	r6,#0x00
 L011003?:
@@ -908,6 +916,7 @@ L011003?:
 	lcall	__gptrget
 	mov	r7,a
 	jz	L011006?
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:205: WriteData(string[j]); // Write the message
 	mov	dpl,r7
 	push	ar2
 	push	ar3
@@ -920,16 +929,18 @@ L011003?:
 	pop	ar4
 	pop	ar3
 	pop	ar2
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:204: for (j = 0; string[j] != 0; j++)
 	inc	r5
 	cjne	r5,#0x00,L011003?
 	inc	r6
 	sjmp	L011003?
 L011006?:
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:198: if(clear) for(; j<CHARS_PER_LINE; j++) WriteData(' '); // Clear the rest of the line
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:206: if (clear)
 	jnb	_LCDprint_PARM_3,L011011?
 	mov	ar2,r5
 	mov	ar3,r6
 L011007?:
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:207: for (; j < CHARS_PER_LINE; j++)
 	clr	c
 	mov	a,r2
 	subb	a,#0x10
@@ -937,12 +948,14 @@ L011007?:
 	xrl	a,#0x80
 	subb	a,#0x80
 	jnc	L011011?
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:208: WriteData(' '); // Clear the rest of the line
 	mov	dpl,#0x20
 	push	ar2
 	push	ar3
 	lcall	_WriteData
 	pop	ar3
 	pop	ar2
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:207: for (; j < CHARS_PER_LINE; j++)
 	inc	r2
 	cjne	r2,#0x00,L011007?
 	inc	r3
@@ -952,37 +965,60 @@ L011011?:
 ;------------------------------------------------------------
 ;Allocation info for local variables in function 'main'
 ;------------------------------------------------------------
-;period                    Allocated to registers r2 r3 r4 r5 
+;period                    Allocated with name '_main_period_1_46'
 ;capacitance               Allocated with name '_main_capacitance_1_46'
 ;buff                      Allocated with name '_main_buff_1_46'
 ;cap_old                   Allocated to registers r6 r7 r0 r1 
+;units                     Allocated with name '_main_units_1_46'
+;conversion_factor         Allocated with name '_main_conversion_factor_1_46'
+;sloc0                     Allocated with name '_main_sloc0_1_0'
 ;------------------------------------------------------------
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:201: void main (void) 
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:211: void main(void)
 ;	-----------------------------------------
 ;	 function main
 ;	-----------------------------------------
 _main:
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:204: double capacitance = 0.0;
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:214: double capacitance = 0.0;
 	mov	_main_capacitance_1_46,#0x00
 	mov	(_main_capacitance_1_46 + 1),#0x00
 	mov	(_main_capacitance_1_46 + 2),#0x00
-	mov	(_main_capacitance_1_46 + 3),#0x00
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:207: P3_7 = 1;
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:216: double cap_old = 0.0;
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:217: int units = 0;
+	clr	a
+	mov	(_main_capacitance_1_46 + 3),a
+	mov	r6,a
+	mov	r7,a
+	mov	r0,a
+	mov	r1,a
+	mov	_main_units_1_46,a
+	mov	(_main_units_1_46 + 1),a
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:218: float conversion_factor = 1000000000.0;
+	mov	_main_conversion_factor_1_46,#0x28
+	mov	(_main_conversion_factor_1_46 + 1),#0x6B
+	mov	(_main_conversion_factor_1_46 + 2),#0x6E
+	mov	(_main_conversion_factor_1_46 + 3),#0x4E
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:219: P3_7 = 1;
 	setb	_P3_7
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:209: TIMER0_Init(); // 
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:220: P2_0 = 1;
+	setb	_P2_0
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:222: TIMER0_Init(); //
+	push	ar6
+	push	ar7
+	push	ar0
+	push	ar1
 	lcall	_TIMER0_Init
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:210: LCD_4BIT(); // init lcd
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:223: LCD_4BIT();    // init lcd
 	lcall	_LCD_4BIT
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:212: LCDprint("C measured [nF]:", 1, 1);
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:225: LCDprint("C measured [nF]:", 1, 1);
 	mov	_LCDprint_PARM_2,#0x01
 	setb	_LCDprint_PARM_3
 	mov	dptr,#__str_0
 	mov	b,#0x80
 	lcall	_LCDprint
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:214: waitms(500); // Give PuTTY a chance to start.
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:227: waitms(500);       // Give PuTTY a chance to start.
 	mov	dptr,#0x01F4
 	lcall	_waitms
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:215: printf("\x1b[2J"); // Clear screen using ANSI escape sequence.
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:228: printf("\x1b[2J"); // Clear screen using ANSI escape sequence.
 	mov	a,#__str_1
 	push	acc
 	mov	a,#(__str_1 >> 8)
@@ -993,8 +1029,8 @@ _main:
 	dec	sp
 	dec	sp
 	dec	sp
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:220: __FILE__, __DATE__, __TIME__);
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:219: "Compiled: %s, %s\n\n",
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:233: __FILE__, __DATE__, __TIME__);
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:232: "Compiled: %s, %s\n\n",
 	mov	a,#__str_5
 	push	acc
 	mov	a,#(__str_5 >> 8)
@@ -1023,69 +1059,62 @@ _main:
 	mov	a,sp
 	add	a,#0xf4
 	mov	sp,a
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:222: while (1)
-L012021?:
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:225: TL0=0; 
+	pop	ar1
+	pop	ar0
+	pop	ar7
+	pop	ar6
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:235: while (1)
+L012029?:
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:238: TL0 = 0;
 	mov	_TL0,#0x00
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:226: TH0=0;
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:239: TH0 = 0;
 	mov	_TH0,#0x00
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:227: TF0=0;
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:240: TF0 = 0;
 	clr	_TF0
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:228: overflow_count=0;
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:241: overflow_count = 0;
 	mov	_overflow_count,#0x00
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:230: while(P3_7!=0); // wait for boot to be pressed for next read
-L012001?:
-	jb	_P3_7,L012001?
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:231: waitms(50); // make sure switch doesn't bounce
-	mov	dptr,#0x0032
-	lcall	_waitms
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:233: while(P0_1!=0); // Wait for the signal to be zero
-L012004?:
-	jb	_P0_1,L012004?
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:234: while(P0_1!=1); // Wait for the signal to be one
-L012007?:
-	jnb	_P0_1,L012007?
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:235: TR0=1; // Start the timer
-	setb	_TR0
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:236: while(P0_1!=0) // Wait for the signal to be zero
-L012012?:
-	jnb	_P0_1,L012017?
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:238: if(TF0==1) // Did the 16-bit timer overflow?
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:240: TF0=0;
-	jbc	_TF0,L012041?
-	sjmp	L012012?
-L012041?:
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:241: overflow_count++;
-	inc	_overflow_count
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:244: while(P0_1!=1) // Wait for the signal to be one
-	sjmp	L012012?
-L012017?:
-	jb	_P0_1,L012019?
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:246: if(TF0==1) // Did the 16-bit timer overflow?
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:248: TF0=0;
-	jbc	_TF0,L012043?
-	sjmp	L012017?
-L012043?:
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:249: overflow_count++;
-	inc	_overflow_count
-	sjmp	L012017?
-L012019?:
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:252: TR0=0; // Stop timer 0, the 24-bit number [overflow_count-TH0-TL0] has the period!
-	clr	_TR0
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:253: period=(overflow_count*65536.0+TH0*256.0+TL0)*(12.0/SYSCLK);
-	mov	dpl,_overflow_count
-	lcall	___uchar2fs
-	mov	r6,dpl
-	mov	r7,dph
-	mov	r0,b
-	mov	r1,a
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:243: while (P3_7 != 0)
+L012006?:
+	jb	_P3_7,L012048?
+	ljmp	L012008?
+L012048?:
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:245: if (P2_0 == 0)
+	jnb	_P2_0,L012049?
+	ljmp	L012005?
+L012049?:
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:247: units = !units;
+	mov	a,_main_units_1_46
+	orl	a,(_main_units_1_46 + 1)
+	cjne	a,#0x01,L012050?
+L012050?:
+	clr	a
+	rlc	a
+	mov	r4,a
+	mov	_main_units_1_46,r4
+	mov	(_main_units_1_46 + 1),#0x00
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:248: if (units == 0)
+	mov	a,_main_units_1_46
+	orl	a,(_main_units_1_46 + 1)
+	jnz	L012002?
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:250: LCDprint("C measured [nF]:", 1, 1);
+	mov	_LCDprint_PARM_2,#0x01
+	setb	_LCDprint_PARM_3
+	mov	dptr,#__str_0
+	mov	b,#0x80
 	push	ar6
 	push	ar7
 	push	ar0
 	push	ar1
+	lcall	_LCDprint
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:251: conversion_factor = 1000000000.0;
+	mov	_main_conversion_factor_1_46,#0x28
+	mov	(_main_conversion_factor_1_46 + 1),#0x6B
+	mov	(_main_conversion_factor_1_46 + 2),#0x6E
+	mov	(_main_conversion_factor_1_46 + 3),#0x4E
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:252: cap_old = cap_old * 1000.0;
 	mov	dptr,#0x0000
-	mov	b,#0x80
-	mov	a,#0x47
+	mov	b,#0x7A
+	mov	a,#0x44
 	lcall	___fsmul
 	mov	r6,dpl
 	mov	r7,dph
@@ -1094,11 +1123,120 @@ L012019?:
 	mov	a,sp
 	add	a,#0xfc
 	mov	sp,a
-	mov	dpl,_TH0
+	sjmp	L012005?
+L012002?:
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:256: LCDprint("C measured [uF]:", 1, 1);
+	mov	_LCDprint_PARM_2,#0x01
+	setb	_LCDprint_PARM_3
+	mov	dptr,#__str_6
+	mov	b,#0x80
 	push	ar6
 	push	ar7
 	push	ar0
 	push	ar1
+	lcall	_LCDprint
+	pop	ar1
+	pop	ar0
+	pop	ar7
+	pop	ar6
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:257: conversion_factor = 1000000.0;
+	mov	_main_conversion_factor_1_46,#0x00
+	mov	(_main_conversion_factor_1_46 + 1),#0x24
+	mov	(_main_conversion_factor_1_46 + 2),#0x74
+	mov	(_main_conversion_factor_1_46 + 3),#0x49
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:258: cap_old = cap_old / 1000.0;
+	clr	a
+	push	acc
+	push	acc
+	mov	a,#0x7A
+	push	acc
+	mov	a,#0x44
+	push	acc
+	mov	dpl,r6
+	mov	dph,r7
+	mov	b,r0
+	mov	a,r1
+	lcall	___fsdiv
+	mov	r6,dpl
+	mov	r7,dph
+	mov	r0,b
+	mov	r1,a
+	mov	a,sp
+	add	a,#0xfc
+	mov	sp,a
+L012005?:
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:261: waitms(100);
+	mov	dptr,#0x0064
+	push	ar6
+	push	ar7
+	push	ar0
+	push	ar1
+	lcall	_waitms
+	pop	ar1
+	pop	ar0
+	pop	ar7
+	pop	ar6
+	ljmp	L012006?
+L012008?:
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:263: waitms(50); // make sure switch doesn't bounce
+	mov	dptr,#0x0032
+	lcall	_waitms
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:265: while (P0_1 != 0); // Wait for the signal to be zero
+L012009?:
+	jb	_P0_1,L012009?
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:266: while (P0_1 != 1);             // Wait for the signal to be one
+L012012?:
+	jnb	_P0_1,L012012?
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:267: TR0 = 1;          // Start the timer
+	setb	_TR0
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:268: while (P0_1 != 0) // Wait for the signal to be zero
+L012017?:
+	jnb	_P0_1,L012022?
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:270: if (TF0 == 1) // Did the 16-bit timer overflow?
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:272: TF0 = 0;
+	jbc	_TF0,L012055?
+	sjmp	L012017?
+L012055?:
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:273: overflow_count++;
+	inc	_overflow_count
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:276: while (P0_1 != 1) // Wait for the signal to be one
+	sjmp	L012017?
+L012022?:
+	jb	_P0_1,L012024?
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:278: if (TF0 == 1) // Did the 16-bit timer overflow?
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:280: TF0 = 0;
+	jbc	_TF0,L012057?
+	sjmp	L012022?
+L012057?:
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:281: overflow_count++;
+	inc	_overflow_count
+	sjmp	L012022?
+L012024?:
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:284: TR0 = 0; // Stop timer 0, the 24-bit number [overflow_count-TH0-TL0] has the period!
+	clr	_TR0
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:285: period = (overflow_count * 65536.0 + TH0 * 256.0 + TL0) * (12.0 / SYSCLK);
+	mov	dpl,_overflow_count
+	lcall	___uchar2fs
+	mov	r4,dpl
+	mov	r5,dph
+	mov	r2,b
+	mov	r3,a
+	push	ar4
+	push	ar5
+	push	ar2
+	push	ar3
+	mov	dptr,#0x0000
+	mov	b,#0x80
+	mov	a,#0x47
+	lcall	___fsmul
+	mov	_main_sloc0_1_0,dpl
+	mov	(_main_sloc0_1_0 + 1),dph
+	mov	(_main_sloc0_1_0 + 2),b
+	mov	(_main_sloc0_1_0 + 3),a
+	mov	a,sp
+	add	a,#0xfc
+	mov	sp,a
+	mov	dpl,_TH0
 	lcall	___uchar2fs
 	mov	r2,dpl
 	mov	r3,dph
@@ -1119,51 +1257,39 @@ L012019?:
 	mov	a,sp
 	add	a,#0xfc
 	mov	sp,a
-	pop	ar1
-	pop	ar0
-	pop	ar7
-	pop	ar6
 	push	ar2
 	push	ar3
 	push	ar4
 	push	ar5
-	mov	dpl,r6
-	mov	dph,r7
-	mov	b,r0
-	mov	a,r1
+	mov	dpl,_main_sloc0_1_0
+	mov	dph,(_main_sloc0_1_0 + 1)
+	mov	b,(_main_sloc0_1_0 + 2)
+	mov	a,(_main_sloc0_1_0 + 3)
 	lcall	___fsadd
+	mov	_main_sloc0_1_0,dpl
+	mov	(_main_sloc0_1_0 + 1),dph
+	mov	(_main_sloc0_1_0 + 2),b
+	mov	(_main_sloc0_1_0 + 3),a
+	mov	a,sp
+	add	a,#0xfc
+	mov	sp,a
+	mov	r2,_TL0
+	mov	r3,#0x00
+	mov	dpl,r2
+	mov	dph,r3
+	lcall	___sint2fs
 	mov	r2,dpl
 	mov	r3,dph
 	mov	r4,b
 	mov	r5,a
-	mov	a,sp
-	add	a,#0xfc
-	mov	sp,a
-	mov	r6,_TL0
-	mov	r7,#0x00
-	mov	dpl,r6
-	mov	dph,r7
 	push	ar2
 	push	ar3
 	push	ar4
 	push	ar5
-	lcall	___sint2fs
-	mov	r6,dpl
-	mov	r7,dph
-	mov	r0,b
-	mov	r1,a
-	pop	ar5
-	pop	ar4
-	pop	ar3
-	pop	ar2
-	push	ar6
-	push	ar7
-	push	ar0
-	push	ar1
-	mov	dpl,r2
-	mov	dph,r3
-	mov	b,r4
-	mov	a,r5
+	mov	dpl,_main_sloc0_1_0
+	mov	dph,(_main_sloc0_1_0 + 1)
+	mov	b,(_main_sloc0_1_0 + 2)
+	mov	a,(_main_sloc0_1_0 + 3)
 	lcall	___fsadd
 	mov	r2,dpl
 	mov	r3,dph
@@ -1180,6 +1306,22 @@ L012019?:
 	mov	b,#0x32
 	mov	a,#0x34
 	lcall	___fsmul
+	mov	_main_period_1_46,dpl
+	mov	(_main_period_1_46 + 1),dph
+	mov	(_main_period_1_46 + 2),b
+	mov	(_main_period_1_46 + 3),a
+	mov	a,sp
+	add	a,#0xfc
+	mov	sp,a
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:287: printf("T=%f ms    \n", period * 1000.0);
+	push	_main_period_1_46
+	push	(_main_period_1_46 + 1)
+	push	(_main_period_1_46 + 2)
+	push	(_main_period_1_46 + 3)
+	mov	dptr,#0x0000
+	mov	b,#0x7A
+	mov	a,#0x44
+	lcall	___fsmul
 	mov	r2,dpl
 	mov	r3,dph
 	mov	r4,b
@@ -1187,33 +1329,13 @@ L012019?:
 	mov	a,sp
 	add	a,#0xfc
 	mov	sp,a
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:255: printf( "T=%f ms    \n", period*1000.0);
 	push	ar2
 	push	ar3
 	push	ar4
 	push	ar5
-	push	ar2
-	push	ar3
-	push	ar4
-	push	ar5
-	mov	dptr,#0x0000
-	mov	b,#0x7A
-	mov	a,#0x44
-	lcall	___fsmul
-	mov	r6,dpl
-	mov	r7,dph
-	mov	r0,b
-	mov	r1,a
-	mov	a,sp
-	add	a,#0xfc
-	mov	sp,a
-	push	ar6
-	push	ar7
-	push	ar0
-	push	ar1
-	mov	a,#__str_6
+	mov	a,#__str_7
 	push	acc
-	mov	a,#(__str_6 >> 8)
+	mov	a,#(__str_7 >> 8)
 	push	acc
 	mov	a,#0x80
 	push	acc
@@ -1221,27 +1343,24 @@ L012019?:
 	mov	a,sp
 	add	a,#0xf9
 	mov	sp,a
-	pop	ar5
-	pop	ar4
-	pop	ar3
-	pop	ar2
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:256: cap_old = capacitance;
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:288: cap_old = capacitance;
 	mov	r6,_main_capacitance_1_46
 	mov	r7,(_main_capacitance_1_46 + 1)
 	mov	r0,(_main_capacitance_1_46 + 2)
 	mov	r1,(_main_capacitance_1_46 + 3)
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:257: capacitance = 1000000000.0 * period / (0.693 * RESISTANCE * 3.0);
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:289: capacitance = conversion_factor * period / (0.693 * RESISTANCE * 3.0);
 	push	ar6
 	push	ar7
 	push	ar0
 	push	ar1
-	push	ar2
-	push	ar3
-	push	ar4
-	push	ar5
-	mov	dptr,#0x6B28
-	mov	b,#0x6E
-	mov	a,#0x4E
+	push	_main_period_1_46
+	push	(_main_period_1_46 + 1)
+	push	(_main_period_1_46 + 2)
+	push	(_main_period_1_46 + 3)
+	mov	dpl,_main_conversion_factor_1_46
+	mov	dph,(_main_conversion_factor_1_46 + 1)
+	mov	b,(_main_conversion_factor_1_46 + 2)
+	mov	a,(_main_conversion_factor_1_46 + 3)
 	lcall	___fsmul
 	mov	r2,dpl
 	mov	r3,dph
@@ -1270,22 +1389,7 @@ L012019?:
 	mov	a,sp
 	add	a,#0xfc
 	mov	sp,a
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:258: printf( "C=%f nF    \n", capacitance);
-	push	_main_capacitance_1_46
-	push	(_main_capacitance_1_46 + 1)
-	push	(_main_capacitance_1_46 + 2)
-	push	(_main_capacitance_1_46 + 3)
-	mov	a,#__str_7
-	push	acc
-	mov	a,#(__str_7 >> 8)
-	push	acc
-	mov	a,#0x80
-	push	acc
-	lcall	_printf
-	mov	a,sp
-	add	a,#0xf9
-	mov	sp,a
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:259: sprintf(buff, "%.1f %.1f", capacitance, cap_old);
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:290: printf("C=%f nF    \n", capacitance);
 	push	_main_capacitance_1_46
 	push	(_main_capacitance_1_46 + 1)
 	push	(_main_capacitance_1_46 + 2)
@@ -1293,6 +1397,37 @@ L012019?:
 	mov	a,#__str_8
 	push	acc
 	mov	a,#(__str_8 >> 8)
+	push	acc
+	mov	a,#0x80
+	push	acc
+	lcall	_printf
+	mov	a,sp
+	add	a,#0xf9
+	mov	sp,a
+	pop	ar1
+	pop	ar0
+	pop	ar7
+	pop	ar6
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:291: if (units == 0)
+	mov	a,_main_units_1_46
+	orl	a,(_main_units_1_46 + 1)
+	jnz	L012026?
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:293: sprintf(buff, "%.1f %.1f", capacitance, cap_old);
+	push	ar6
+	push	ar7
+	push	ar0
+	push	ar1
+	push	ar6
+	push	ar7
+	push	ar0
+	push	ar1
+	push	_main_capacitance_1_46
+	push	(_main_capacitance_1_46 + 1)
+	push	(_main_capacitance_1_46 + 2)
+	push	(_main_capacitance_1_46 + 3)
+	mov	a,#__str_9
+	push	acc
+	mov	a,#(__str_9 >> 8)
 	push	acc
 	mov	a,#0x80
 	push	acc
@@ -1306,16 +1441,61 @@ L012019?:
 	mov	a,sp
 	add	a,#0xf2
 	mov	sp,a
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:260: LCDprint(buff, 2, 1);
+	pop	ar1
+	pop	ar0
+	pop	ar7
+	pop	ar6
+	sjmp	L012027?
+L012026?:
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:297: sprintf(buff, "%.3f %.3f", capacitance, cap_old);
+	push	ar6
+	push	ar7
+	push	ar0
+	push	ar1
+	push	ar6
+	push	ar7
+	push	ar0
+	push	ar1
+	push	_main_capacitance_1_46
+	push	(_main_capacitance_1_46 + 1)
+	push	(_main_capacitance_1_46 + 2)
+	push	(_main_capacitance_1_46 + 3)
+	mov	a,#__str_10
+	push	acc
+	mov	a,#(__str_10 >> 8)
+	push	acc
+	mov	a,#0x80
+	push	acc
+	mov	a,#_main_buff_1_46
+	push	acc
+	mov	a,#(_main_buff_1_46 >> 8)
+	push	acc
+	mov	a,#0x40
+	push	acc
+	lcall	_sprintf
+	mov	a,sp
+	add	a,#0xf2
+	mov	sp,a
+	pop	ar1
+	pop	ar0
+	pop	ar7
+	pop	ar6
+L012027?:
+;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:299: LCDprint(buff, 2, 1);
 	mov	_LCDprint_PARM_2,#0x02
 	setb	_LCDprint_PARM_3
 	mov	dptr,#_main_buff_1_46
 	mov	b,#0x40
+	push	ar6
+	push	ar7
+	push	ar0
+	push	ar1
 	lcall	_LCDprint
-;	C:\ELEC291\Elec-291\Lab4\EFM8-CapMeter.c:261: waitms(1000);
-	mov	dptr,#0x03E8
-	lcall	_waitms
-	ljmp	L012021?
+	pop	ar1
+	pop	ar0
+	pop	ar7
+	pop	ar6
+	ljmp	L012029?
 	rseg R_CSEG
 
 	rseg R_XINIT
@@ -1349,21 +1529,27 @@ __str_3:
 	db 'EFM8-CapMeter.c'
 	db 0x00
 __str_4:
-	db 'Feb 27 2023'
+	db 'Feb 28 2023'
 	db 0x00
 __str_5:
-	db '14:40:18'
+	db '14:03:55'
 	db 0x00
 __str_6:
+	db 'C measured [uF]:'
+	db 0x00
+__str_7:
 	db 'T=%f ms    '
 	db 0x0A
 	db 0x00
-__str_7:
+__str_8:
 	db 'C=%f nF    '
 	db 0x0A
 	db 0x00
-__str_8:
+__str_9:
 	db '%.1f %.1f'
+	db 0x00
+__str_10:
+	db '%.3f %.3f'
 	db 0x00
 
 	CSEG

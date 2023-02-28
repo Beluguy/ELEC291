@@ -214,7 +214,7 @@ void main(void)
     double capacitance = 0.0;
     char buff[17];
     double cap_old = 0.0;
-    bool units = 0;
+    int units = 0;
     float conversion_factor = 1000000000.0;
     P3_7 = 1;
     P2_0 = 1;
