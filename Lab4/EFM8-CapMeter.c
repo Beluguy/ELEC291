@@ -304,5 +304,6 @@ void main(void)
             sprintf(buff, "%.3f %.3f", capacitance, cap_old);
         }
         LCDprint(buff, 2, 1);
+        waitms(500);
     }
 }
