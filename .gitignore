@@ -356,3 +356,5 @@ MigrationBackup/
 *.hex
 *.lkr
 *.map
+
+Lab4/*.asm
