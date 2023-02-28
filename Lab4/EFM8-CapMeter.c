@@ -10,7 +10,6 @@
 
 #define SYSCLK 72000000L // SYSCLK frequency in Hz
 #define BAUDRATE 115200L // Baud rate of UART in bps
-
 #define RESISTANCE 1666.7
 
 #define LCD_RS P2_6
