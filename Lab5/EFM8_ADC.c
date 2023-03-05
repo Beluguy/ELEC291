@@ -296,8 +296,12 @@ void main(void)
     float vrms[2];
     char buff[17];
     float frequency;
+    float period;
     unsigned int half_period;
     unsigned int quarter_period_ms;
+    float period_diff;
+    float phase_diff;
+
     BOOT_BUTTON = 1;
     UNIT_CHANGE_BUTTON = 1;
 
@@ -317,7 +321,7 @@ void main(void)
 
     while (1)
     {
-        while(P3_7 != 0) // wait for bttn before measuring
+        while(BOOT_BUTTON != 0) // wait for bttn before measuring
         {
 
         }
@@ -337,13 +341,14 @@ void main(void)
         TR0 = 0;                         // Stop timer 0
         half_period = TH0 * 0x100 + TL0; // The 16-bit number [TH0-TL0]
         // Time from the beginning of the sine wave to its peak
-        quarter_period_ms = (half_period * 2.0 * (12.0 / SYSCLK))/2.0*1000.0;
-        frequency = 1.0/(half_period * 2.0 * (12.0 / SYSCLK));
+        period = half_period * 2.0 * (12.0 / SYSCLK);
+        quarter_period_ms = period / 4.0 * 1000.0;
+        frequency = 1.0 / period;
 
         // now to read reference Vpeak
         while (Get_ADC() != 0); // wait for 0
         while (Get_ADC() == 0); // Wait for the signal to be positive
-        waitms(quarter_period_ms);
+        waitms(quarter_period_ms); //TODO replace this with timer routine :tear:
         v[0] = Volts_at_Pin(P1_7);
 
         // read Vpeak of second
@@ -353,14 +358,42 @@ void main(void)
         while (!ADINT); // Wait for conversion to complete
         while (Get_ADC() != 0); // Wait for the signal to be zero
         while (Get_ADC() == 0); // Wait for the signal to be positive
-        waitms(quarter_period_ms);
+        waitms(quarter_period_ms); //TODO replace this with timer routine :tear:
         v[1] = Volts_at_Pin(P0_4);
 
         // calculate Vrms
         vrms[0] = 0.7071068 * v[0];
         vrms[1] = 0.7071068 * v[1];
 
-        // calculate phase diff
+        // measure phase diff
+        // Start tracking the reference signal @ p 1.7
+        AMX0P = LQFP32_MUX_P1_7;
+        ADINT = 0;
+        AD0BUSY = 1;
+        while (!ADINT); // Wait for conversion to complete
+        // Reset the timer
+        TL0 = 0;
+        TH0 = 0;
+        while (Get_ADC() != 0); // Wait for the signal to be zero
+        while (Get_ADC() == 0); // Wait for the signal to be positive
+        TR0 = 1; // Start the timer 0
+        // Start tracking the secondary signal @ p 0.4
+        AMX0P = LQFP32_MUX_P1_7;
+        ADINT = 0;
+        AD0BUSY = 1;
+        while (!ADINT); // Wait for conversion to complete
+        while (Get_ADC() != 0); // Wait for the signal to be zero
+        while (Get_ADC() == 0); // Wait for the signal to be positive
+        TR0 = 0;                         // Stop timer 0
+        period_diff = (TH0 * 256.0 + TL0) * (12.0 / SYSCLK);
+        phase_diff = period_diff / (360.0 * period);
+
+        if (phase_diff > 180.0) {
+            phase_diff = phase_diff - 360.0
+        }
+
+        
+
 
         /*
         v[0] = Volts_at_Pin(QFP32_MUX_P2_2);
