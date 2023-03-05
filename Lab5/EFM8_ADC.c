@@ -1,9 +1,7 @@
 // ADC.c:  Shows how to use the 14-bit ADC.  This program
 // measures the voltage from some pins of the EFM8LB1 using the ADC.
-//
 // (c) 2008-2023, Jesus Calvino-Fraga
-//
-
+// Bonus: contrast, buzzer, volume control, unit conversion, psu, memory, button 
 #include <stdio.h>
 #include <stdlib.h>
 #include <EFM8LB1.h>
@@ -24,6 +22,8 @@
 #define CHARS_PER_LINE 16
 
 #define VDD 3.3035 // The measured value of VDD in volts
+#define BOOT_BUTTON P3_7
+#define UNIT_CHANGE_BUTTON P2_0
 
 char _c51_external_startup(void)
 {
@@ -291,13 +291,12 @@ void main(void)
     float frequency;
     unsigned int half_period;
     unsigned int overflow_count;
-    P3_7 = 1; //BOOT BUTTON
-    P2_0 = 1; //UNIT CHANGE BUTTON
+    BOOT_BUTTON = 1;
+    UNIT_CHANGE_BUTTON = 1;
 
     InitPinADC(0, 4); // Configure P0.4 as analog input
     InitPinADC(1, 7); // Configure P1.7 as analog input
     InitADC();
-
     TIMER0_Init(); //
     LCD_4BIT();    // init lcd
 
