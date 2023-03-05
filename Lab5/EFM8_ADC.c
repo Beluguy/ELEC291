@@ -321,6 +321,7 @@ void main(void)
 
     while (1)
     {
+        loop:
         while(BOOT_BUTTON != 0) // wait for bttn before measuring
         {
 
@@ -392,7 +393,7 @@ void main(void)
             phase_diff = phase_diff - 360.0
         }
 
-        
+
 
 
         /*
