@@ -69,12 +69,10 @@ char _c51_external_startup(void)
                           // Before setting clock to 72 MHz, must transition to 24.5 MHz first
     CLKSEL = 0x00;
     CLKSEL = 0x00;
-    while ((CLKSEL & 0x80) == 0)
-        ;
+    while ((CLKSEL & 0x80) == 0);
     CLKSEL = 0x03;
     CLKSEL = 0x03;
-    while ((CLKSEL & 0x80) == 0)
-        ;
+    while ((CLKSEL & 0x80) == 0);
 #else
 #error SYSCLK must be either 12250000L, 24500000L, 48000000L, or 72000000L
 #endif
@@ -194,6 +192,14 @@ void InitPinADC(unsigned char portno, unsigned char pinno)
     SFRPAGE = 0x00;
 }
 
+unsigned int Get_ADC(void)
+{
+    ADINT = 0;
+    AD0BUSY = 1;
+    while (!ADINT); // Wait for conversion to complete
+    return (ADC0);
+}
+
 unsigned int ADC_at_Pin(unsigned char pin)
 {
     ADC0MX = pin; // Select input from pin
@@ -287,10 +293,11 @@ void LCDprint(char *string, unsigned char line, bit clear)
 void main(void)
 {
     float v[2];
+    float vrms[2];
     char buff[17];
     float frequency;
     unsigned int half_period;
-    unsigned int overflow_count;
+    unsigned int quarter_period_ms;
     P3_7 = 1; //BOOT BUTTON
     P2_0 = 1; //UNIT CHANGE BUTTON
 
@@ -331,8 +338,31 @@ void main(void)
         TR0 = 0;                         // Stop timer 0
         half_period = TH0 * 0x100 + TL0; // The 16-bit number [TH0-TL0]
         // Time from the beginning of the sine wave to its peak
-        overflow_count = 65536 - (half_period / 2);
+        quarter_period_ms = (half_period * 2.0 * (12.0 / SYSCLK))/2.0*1000.0;
         frequency = 1.0/(half_period * 2.0 * (12.0 / SYSCLK));
+
+        // now to read reference Vpeak
+        while (Get_ADC() != 0); // wait for 0
+        while (Get_ADC() == 0); // Wait for the signal to be positive
+        waitms(quarter_period_ms);
+        v[0] = Volts_at_Pin(P1_7);
+
+        // read Vpeak of second
+        AMX0P = LQFP32_MUX_P0_4;
+        ADINT = 0;
+        AD0BUSY = 1;
+        while (!ADINT); // Wait for conversion to complete
+        while (Get_ADC() != 0); // Wait for the signal to be zero
+        while (Get_ADC() == 0); // Wait for the signal to be positive
+        waitms(quarter_period_ms);
+        v[1] = Volts_at_Pin(P0_4);
+
+        // calculate Vrms
+        vrms[0] = 0.7071068 * v[0];
+        vrms[1] = 0.7071068 * v[1];
+
+        // calculate phase diff
+
         /*
         v[0] = Volts_at_Pin(QFP32_MUX_P2_2);
         v[1] = Volts_at_Pin(QFP32_MUX_P2_3);
