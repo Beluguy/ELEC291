@@ -374,6 +374,8 @@ void main(void)
         waitus(quarter_period_us); //TODO replace this with timer routine :tear:
         v[1] = Volts_at_Pin(QFP32_MUX_P0_5);
 
+        printf("c");
+
         // calculate Vrms
         vrms[0] = 0.7071068 * v[0];
         vrms[1] = 0.7071068 * v[1];
@@ -400,6 +402,8 @@ void main(void)
         TR0 = 0;                         // Stop timer 0
         period_diff = (TH0 * 256.0 + TL0) * (12.0 / SYSCLK);
         phase_diff = period_diff / (360.0 * period);
+
+        printf("d");
 
         if (phase_diff > 180.0) {
             phase_diff = phase_diff - 360.0;
