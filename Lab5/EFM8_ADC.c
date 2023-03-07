@@ -319,7 +319,7 @@ void main(void)
     printf("\x1b[2J"); // Clear screen using ANSI escape sequence.
 
     printf("Phasor Test Program\n"
-           "Apply reference signal to P1.7, and test signal to P0.4\n"
+           "Apply reference signal to P1.7, and test signal to P0.5\n"
            "File: %s\n"
            "Compiled: %s, %s\n\n",
            __FILE__, __DATE__, __TIME__);
