@@ -336,17 +336,13 @@ void main(void)
         }
 
         // Start tracking the reference signal @ p 1.7
-        ADC0MX = QFP32_MUX_P1_7;
-        ADINT = 0;
-        ADBUSY = 1;
-        while (!ADINT){} // Wait for conversion to complete
         // Reset the timer
         TL0 = 0;
         TH0 = 0;
-        while (Get_ADC() != 0){} // Wait for the signal to be zero
-        while (Get_ADC() == 0){} // Wait for the signal to be positive
+        while (ADC_at_Pin(QFP32_MUX_P1_7) != 0); // Wait for the signal to be zero
+        while (ADC_at_Pin(QFP32_MUX_P1_7) == 0); // Wait for the signal to be positive
         TR0 = 1; // Start the timer 0
-        while (Get_ADC() != 0){}                          // Wait for the signal to be zero again
+        while (ADC_at_Pin(QFP32_MUX_P1_7) != 0);                          // Wait for the signal to be zero again
         TR0 = 0;                         // Stop timer 0
         half_period = TH0 * 0x100 + TL0; // The 16-bit number [TH0-TL0]
         // Time from the beginning of the sine wave to its peak
@@ -358,25 +354,19 @@ void main(void)
         LCDprint(buff, 1, 1);
 
         // now to read reference Vpeak
-        while (Get_ADC() != 0); // wait for 0
-        while (Get_ADC() == 0); // Wait for the signal to be positive
-        printf("a");
+        while (ADC_at_Pin(QFP32_MUX_P1_7) != 0); // wait for 0
+        while (ADC_at_Pin(QFP32_MUX_P1_7) == 0); // Wait for the signal to be positive
         waitus(quarter_period_us); //TODO replace this with timer routine :tear:
-        printf("b");
         v[0] = Volts_at_Pin(QFP32_MUX_P1_7);
-        printf("%f", v[0]);
+        printf("%f ", v[0]);
 
         // read Vpeak of second
-        ADC0MX = QFP32_MUX_P0_5;
-        ADINT = 0;
-        ADBUSY = 1;
-        while (!ADINT); // Wait for conversion to complete
-        while (Get_ADC() != 0); // Wait for the signal to be zero
-        while (Get_ADC() == 0); // Wait for the signal to be positive
+        while (ADC_at_Pin(QFP32_MUX_P0_5) != 0); // Wait for the signal to be zero
+        while (ADC_at_Pin(QFP32_MUX_P0_5) == 0); // Wait for the signal to be positive
         waitus(quarter_period_us); //TODO replace this with timer routine :tear:
         v[1] = Volts_at_Pin(QFP32_MUX_P0_5);
 
-        printf("c");
+        printf("%f ", v[1]);
 
         // calculate Vrms
         vrms[0] = 0.7071068 * v[0];
