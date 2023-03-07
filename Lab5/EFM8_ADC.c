@@ -358,8 +358,11 @@ void main(void)
         // now to read reference Vpeak
         while (Get_ADC() != 0); // wait for 0
         while (Get_ADC() == 0); // Wait for the signal to be positive
+        printf("a");
         waitus(quarter_period_us); //TODO replace this with timer routine :tear:
+        printf("b");
         v[0] = Volts_at_Pin(QFP32_MUX_P1_7);
+        printf("%f", v[0]);
 
         // read Vpeak of second
         ADC0MX = QFP32_MUX_P0_5;
