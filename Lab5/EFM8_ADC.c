@@ -309,7 +309,7 @@ void main(void)
     BOOT_BUTTON = 1;
     UNIT_CHANGE_BUTTON = 1;
 
-    InitPinADC(0, 5); // Configure P0.5 as analog input
+    InitPinADC(0, 6); // Configure P0.6 as analog input
     InitPinADC(1, 7); // Configure P1.7 as analog input
     InitADC();
     TIMER0_Init(); 
@@ -319,7 +319,7 @@ void main(void)
     printf("\x1b[2J"); // Clear screen using ANSI escape sequence.
 
     printf("Phasor Measurement Program\n"
-           "Apply reference signal to P1.7, and test signal to P0.5\n"
+           "Apply reference signal to P1.7, and test signal to P0.6\n"
            "File: %s\n"
            "Compiled: %s, %s\n\n",
            __FILE__, __DATE__, __TIME__);
@@ -361,19 +361,19 @@ void main(void)
         printf("%f ", v[0]);
 
         // reading Vpeak of second
-        while (ADC_at_Pin(QFP32_MUX_P0_5) != 0); // Wait for the signal to be zero
-        while (ADC_at_Pin(QFP32_MUX_P0_5) == 0); // Wait for the signal to be positive
+        while (ADC_at_Pin(QFP32_MUX_P0_6) != 0); // Wait for the signal to be zero
+        while (ADC_at_Pin(QFP32_MUX_P0_6) == 0); // Wait for the signal to be positive
         waitus(quarter_period_us); //TODO replace this with timer routine :tear:
-        v[1] = Volts_at_Pin(QFP32_MUX_P0_5);
+        v[1] = Volts_at_Pin(QFP32_MUX_P0_6);
 
         printf("%f ", v[1]);
 
         // calculating Vrms
         vrms[0] = 0.7071068 * v[0];
-        sprintf(buff, "%.1f", vrms[0]); // print ref Vrms to LCD
+        sprintf(buff, "VR:%.1f Freq:%.1f", vrms[0],frequency); // print test Frequenct to LCD
         LCDprint(buff, 1, 1);
         vrms[1] = 0.7071068 * v[1];
-        sprintf(buff, "%.1f", vrms[1]); // print test Vrms to LCD
+        sprintf(buff, "VT:%.1f P:-XXX.XX", , vrms[1],frequency); // print test Frequenct to LCD
         LCDprint(buff, 2, 1);
        
         // measuring phase diff
@@ -384,10 +384,10 @@ void main(void)
         while (ADC_at_Pin(QFP32_MUX_P1_7) != 0); // Wait for the signal to be zero
         while (ADC_at_Pin(QFP32_MUX_P1_7) == 0); // Wait for the signal to be positive
         TR0 = 1; // Start the timer 0
-        // Start tracking the secondary signal @ p 0.5
+        // Start tracking the secondary signal @ p 0.6
 
-        while (ADC_at_Pin(QFP32_MUX_P0_5) != 0); // Wait for the signal to be zero
-        while (ADC_at_Pin(QFP32_MUX_P0_5) == 0); // Wait for the signal to be positive
+        while (ADC_at_Pin(QFP32_MUX_P0_6) != 0); // Wait for the signal to be zero
+        while (ADC_at_Pin(QFP32_MUX_P0_6) == 0); // Wait for the signal to be positive
         TR0 = 0;                         // Stop timer 0
         period_diff = (TH0 * 256.0 + TL0) * (12.0 / SYSCLK);
         phase_diff = period_diff / (360.0 * period);
