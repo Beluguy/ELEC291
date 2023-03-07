@@ -353,14 +353,14 @@ void main(void)
         sprintf(buff, "VR:X.X Freq:%.1f", frequency); // print test Frequenct to LCD
         LCDprint(buff, 1, 1);
 
-        // now to read reference Vpeak
+        // reading reference Vpeak
         while (ADC_at_Pin(QFP32_MUX_P1_7) != 0); // wait for 0
         while (ADC_at_Pin(QFP32_MUX_P1_7) == 0); // Wait for the signal to be positive
         waitus(quarter_period_us); //TODO replace this with timer routine :tear:
         v[0] = Volts_at_Pin(QFP32_MUX_P1_7);
         printf("%f ", v[0]);
 
-        // read Vpeak of second
+        // reading Vpeak of second
         while (ADC_at_Pin(QFP32_MUX_P0_5) != 0); // Wait for the signal to be zero
         while (ADC_at_Pin(QFP32_MUX_P0_5) == 0); // Wait for the signal to be positive
         waitus(quarter_period_us); //TODO replace this with timer routine :tear:
@@ -368,7 +368,7 @@ void main(void)
 
         printf("%f ", v[1]);
 
-        // calculate Vrms
+        // calculating Vrms
         vrms[0] = 0.7071068 * v[0];
         sprintf(buff, "%.1f", vrms[0]); // print ref Vrms to LCD
         LCDprint(buff, 1, 1);
@@ -376,7 +376,7 @@ void main(void)
         sprintf(buff, "%.1f", vrms[1]); // print test Vrms to LCD
         LCDprint(buff, 2, 1);
        
-        // measure phase diff
+        // measuring phase diff
         // Start tracking the reference signal @ p 1.7
         ADC0MX = QFP32_MUX_P1_7;
         ADINT = 0;
