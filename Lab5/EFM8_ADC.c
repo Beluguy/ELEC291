@@ -309,7 +309,7 @@ void main(void)
     BOOT_BUTTON = 1;
     UNIT_CHANGE_BUTTON = 1;
 
-    InitPinADC(0, 4); // Configure P0.4 as analog input
+    InitPinADC(0, 5); // Configure P0.5 as analog input
     InitPinADC(1, 7); // Configure P1.7 as analog input
     InitADC();
     TIMER0_Init(); //
@@ -332,22 +332,21 @@ void main(void)
         loop:
         while(BOOT_BUTTON != 0) // wait for bttn before measuring
         {
-			printf("-1");
+
         }
 
         // Start tracking the reference signal @ p 1.7
         ADC0MX = QFP32_MUX_P1_7;
         ADINT = 0;
         ADBUSY = 1;
-        while (!ADINT){printf("0");} // Wait for conversion to complete
+        while (!ADINT){} // Wait for conversion to complete
         // Reset the timer
         TL0 = 0;
         TH0 = 0;
-        TF0 = 0;
-        while (Get_ADC() != 0){printf("1");} // Wait for the signal to be zero
-        while (Get_ADC() == 0){printf("2");} // Wait for the signal to be positive
+        while (Get_ADC() != 0){} // Wait for the signal to be zero
+        while (Get_ADC() == 0){} // Wait for the signal to be positive
         TR0 = 1; // Start the timer 0
-        while (Get_ADC() != 0){printf("3");}                          // Wait for the signal to be zero again
+        while (Get_ADC() != 0){}                          // Wait for the signal to be zero again
         TR0 = 0;                         // Stop timer 0
         half_period = TH0 * 0x100 + TL0; // The 16-bit number [TH0-TL0]
         // Time from the beginning of the sine wave to its peak
@@ -363,14 +362,14 @@ void main(void)
         v[0] = Volts_at_Pin(QFP32_MUX_P1_7);
 
         // read Vpeak of second
-        ADC0MX = QFP32_MUX_P0_4;
+        ADC0MX = QFP32_MUX_P0_5;
         ADINT = 0;
         ADBUSY = 1;
         while (!ADINT); // Wait for conversion to complete
         while (Get_ADC() != 0); // Wait for the signal to be zero
         while (Get_ADC() == 0); // Wait for the signal to be positive
         waitus(quarter_period_us); //TODO replace this with timer routine :tear:
-        v[1] = Volts_at_Pin(QFP32_MUX_P0_4);
+        v[1] = Volts_at_Pin(QFP32_MUX_P0_5);
 
         // calculate Vrms
         vrms[0] = 0.7071068 * v[0];
@@ -385,12 +384,11 @@ void main(void)
         // Reset the timer
         TL0 = 0;
         TH0 = 0;
-        TF0 = 0;
         while (Get_ADC() != 0); // Wait for the signal to be zero
         while (Get_ADC() == 0); // Wait for the signal to be positive
         TR0 = 1; // Start the timer 0
-        // Start tracking the secondary signal @ p 0.4
-        ADC0MX = QFP32_MUX_P0_4;
+        // Start tracking the secondary signal @ p 0.5
+        ADC0MX = QFP32_MUX_P0_5;
         ADINT = 0;
         ADBUSY = 1;
         while (!ADINT); // Wait for conversion to complete
