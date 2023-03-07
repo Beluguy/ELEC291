@@ -1,7 +1,7 @@
 // ADC.c:  Shows how to use the 14-bit ADC.  This program
 // measures the voltage from some pins of the EFM8LB1 using the ADC.
 // (c) 2008-2023, Jesus Calvino-Fraga
-// Bonus: contrast, buzzer, volume control, unit conversion, psu, memory, button, display 
+// Bonus: contrast, buzzer, volume control, unit conversion, psu, memory, button, display freq
 #include <stdio.h>
 #include <stdlib.h>
 #include <EFM8LB1.h>
@@ -21,7 +21,7 @@
 #define LCD_D7 P2_1
 #define CHARS_PER_LINE 16
 
-#define VDD 3.3035 // The measured value of VDD in volts
+#define VDD 3.290 // The measured value of VDD in volts
 #define BOOT_BUTTON P3_7
 #define UNIT_CHANGE_BUTTON P2_0
 
@@ -324,11 +324,24 @@ void main(void)
            "Compiled: %s, %s\n\n",
            __FILE__, __DATE__, __TIME__);
 
-    LCDprint("VR:X.X P:-XXX.XXX", 1, 1);
-    LCDprint("VT:X.X P:-XXX.XXX", 2, 1);
+    LCDprint("VR:X.X Freq:XX.X", 1, 1);
+    LCDprint("VT:X.X P:-XXX.XX", 2, 1);
 
     while (1)
     {
+        sprintf(buff, "%.1f", vrms[0]); // print ref Vrms to LCD
+        LCDprint(buff, 1, 4);
+
+        sprintf(buff, "%.1f", vrms[1]); // print test Vrms to LCD
+        LCDprint(buff, 2, 4);
+
+        sprintf(buff, "%.1f", phase_diff); // print ref phase to LCD
+        LCDprint(buff, 2, 10);
+
+        sprintf(buff, "%.1f", frequency); // print test Frequenct to LCD
+        LCDprint(buff, 1, 13);
+
+        loop:
         while(BOOT_BUTTON != 0) // wait for bttn before measuring
         {
 			printf("-1");
