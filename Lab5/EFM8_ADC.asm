@@ -1,7 +1,7 @@
 ;--------------------------------------------------------
 ; File Created by C51
 ; Version 1.0.0 #1170 (Feb 16 2022) (MSVC)
-; This file was generated Tue Mar 07 15:06:08 2023
+; This file was generated Tue Mar 07 15:22:16 2023
 ;--------------------------------------------------------
 $name EFM8_ADC
 $optc51 --model-small
@@ -1259,9 +1259,9 @@ _main:
 	lcall	_InitPinADC
 ;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:314: InitADC();
 	lcall	_InitADC
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:315: TIMER0_Init(); //
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:315: TIMER0_Init(); 
 	lcall	_TIMER0_Init
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:316: LCD_4BIT();    // init LCD
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:316: LCD_4BIT();    
 	lcall	_LCD_4BIT
 ;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:318: waitms(500);       // Give PuTTy a chance to start before sending
 	mov	dptr,#0x01F4
@@ -1322,45 +1322,39 @@ _main:
 ;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:333: while(BOOT_BUTTON != 0) // wait for bttn before measuring
 L018002?:
 	jb	_P3_7,L018002?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:339: ADC0MX = QFP32_MUX_P1_7;
-	mov	_ADC0MX,#0x0D
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:340: ADINT = 0;
-	clr	_ADINT
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:341: ADBUSY = 1;
-	setb	_ADBUSY
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:342: while (!ADINT){} // Wait for conversion to complete
-L018005?:
-	jnb	_ADINT,L018005?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:344: TL0 = 0;
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:340: TL0 = 0;
 	mov	_TL0,#0x00
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:345: TH0 = 0;
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:341: TH0 = 0;
 	mov	_TH0,#0x00
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:346: while (Get_ADC() != 0){} // Wait for the signal to be zero
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:342: while (ADC_at_Pin(QFP32_MUX_P1_7) != 0); // Wait for the signal to be zero
+L018005?:
+	mov	dpl,#0x0D
+	lcall	_ADC_at_Pin
+	mov	a,dpl
+	mov	b,dph
+	orl	a,b
+	jnz	L018005?
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:343: while (ADC_at_Pin(QFP32_MUX_P1_7) == 0); // Wait for the signal to be positive
 L018008?:
-	lcall	_Get_ADC
+	mov	dpl,#0x0D
+	lcall	_ADC_at_Pin
 	mov	a,dpl
 	mov	b,dph
 	orl	a,b
-	jnz	L018008?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:347: while (Get_ADC() == 0){} // Wait for the signal to be positive
-L018011?:
-	lcall	_Get_ADC
-	mov	a,dpl
-	mov	b,dph
-	orl	a,b
-	jz	L018011?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:348: TR0 = 1; // Start the timer 0
+	jz	L018008?
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:344: TR0 = 1; // Start the timer 0
 	setb	_TR0
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:349: while (Get_ADC() != 0){}                          // Wait for the signal to be zero again
-L018014?:
-	lcall	_Get_ADC
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:345: while (ADC_at_Pin(QFP32_MUX_P1_7) != 0);                          // Wait for the signal to be zero again
+L018011?:
+	mov	dpl,#0x0D
+	lcall	_ADC_at_Pin
 	mov	a,dpl
 	mov	b,dph
 	orl	a,b
-	jnz	L018014?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:350: TR0 = 0;                         // Stop timer 0
+	jnz	L018011?
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:346: TR0 = 0;                         // Stop timer 0
 	clr	_TR0
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:351: half_period = TH0 * 0x100 + TL0; // The 16-bit number [TH0-TL0]
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:347: half_period = TH0 * 0x100 + TL0; // The 16-bit number [TH0-TL0]
 	mov	r3,_TH0
 	mov	r2,#0x00
 	mov	r4,_TL0
@@ -1371,7 +1365,7 @@ L018014?:
 	mov	a,r5
 	addc	a,r3
 	mov	dph,a
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:353: period = half_period * 2.0 * (12.0 / SYSCLK);
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:349: period = half_period * 2.0 * (12.0 / SYSCLK);
 	lcall	___uint2fs
 	mov	r2,dpl
 	mov	r3,dph
@@ -1392,7 +1386,7 @@ L018014?:
 	mov	a,sp
 	add	a,#0xfc
 	mov	sp,a
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:354: quarter_period_us = period / 4.0 * 1000000.0;
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:350: quarter_period_us = period / 4.0 * 1000000.0;
 	clr	a
 	push	acc
 	push	acc
@@ -1434,7 +1428,7 @@ L018014?:
 	lcall	___fs2uint
 	mov	_main_quarter_period_us_1_78,dpl
 	mov	(_main_quarter_period_us_1_78 + 1),dph
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:355: frequency = 1.0 / period;
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:351: frequency = 1.0 / period;
 	push	_main_period_1_78
 	push	(_main_period_1_78 + 1)
 	push	(_main_period_1_78 + 2)
@@ -1450,7 +1444,7 @@ L018014?:
 	mov	a,sp
 	add	a,#0xfc
 	mov	sp,a
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:356: printf("%f", frequency);
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:352: printf("%f ", frequency);
 	push	_main_frequency_1_78
 	push	(_main_frequency_1_78 + 1)
 	push	(_main_frequency_1_78 + 2)
@@ -1465,7 +1459,7 @@ L018014?:
 	mov	a,sp
 	add	a,#0xf9
 	mov	sp,a
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:357: sprintf(buff, "VR:X.X Freq:%.1f", frequency); // print test Frequenct to LCD
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:353: sprintf(buff, "VR:X.X Freq:%.1f", frequency); // print test Frequenct to LCD
 	push	_main_frequency_1_78
 	push	(_main_frequency_1_78 + 1)
 	push	(_main_frequency_1_78 + 2)
@@ -1486,53 +1480,33 @@ L018014?:
 	mov	a,sp
 	add	a,#0xf6
 	mov	sp,a
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:358: LCDprint(buff, 1, 1);
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:354: LCDprint(buff, 1, 1);
 	mov	_LCDprint_PARM_2,#0x01
 	setb	_LCDprint_PARM_3
 	mov	dptr,#_main_buff_1_78
 	mov	b,#0x40
 	lcall	_LCDprint
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:361: while (Get_ADC() != 0); // wait for 0
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:357: while (ADC_at_Pin(QFP32_MUX_P1_7) != 0); // wait for 0
+L018014?:
+	mov	dpl,#0x0D
+	lcall	_ADC_at_Pin
+	mov	a,dpl
+	mov	b,dph
+	orl	a,b
+	jnz	L018014?
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:358: while (ADC_at_Pin(QFP32_MUX_P1_7) == 0); // Wait for the signal to be positive
 L018017?:
-	lcall	_Get_ADC
+	mov	dpl,#0x0D
+	lcall	_ADC_at_Pin
 	mov	a,dpl
 	mov	b,dph
 	orl	a,b
-	jnz	L018017?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:362: while (Get_ADC() == 0); // Wait for the signal to be positive
-L018020?:
-	lcall	_Get_ADC
-	mov	a,dpl
-	mov	b,dph
-	orl	a,b
-	jz	L018020?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:363: printf("a");
-	mov	a,#__str_9
-	push	acc
-	mov	a,#(__str_9 >> 8)
-	push	acc
-	mov	a,#0x80
-	push	acc
-	lcall	_printf
-	dec	sp
-	dec	sp
-	dec	sp
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:364: waitus(quarter_period_us); //TODO replace this with timer routine :tear:
+	jz	L018017?
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:359: waitus(quarter_period_us); //TODO replace this with timer routine :tear:
 	mov	dpl,_main_quarter_period_us_1_78
 	mov	dph,(_main_quarter_period_us_1_78 + 1)
 	lcall	_waitus
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:365: printf("b");
-	mov	a,#__str_10
-	push	acc
-	mov	a,#(__str_10 >> 8)
-	push	acc
-	mov	a,#0x80
-	push	acc
-	lcall	_printf
-	dec	sp
-	dec	sp
-	dec	sp
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:366: v[0] = Volts_at_Pin(QFP32_MUX_P1_7);
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:360: v[0] = Volts_at_Pin(QFP32_MUX_P1_7);
 	mov	dpl,#0x0D
 	lcall	_Volts_at_Pin
 	mov	r2,dpl
@@ -1543,7 +1517,7 @@ L018020?:
 	mov	(_main_v_1_78 + 1),r3
 	mov	(_main_v_1_78 + 2),r4
 	mov	(_main_v_1_78 + 3),r5
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:367: printf("%f", v[0]);
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:361: printf("%f ", v[0]);
 	push	ar2
 	push	ar3
 	push	ar4
@@ -1558,34 +1532,27 @@ L018020?:
 	mov	a,sp
 	add	a,#0xf9
 	mov	sp,a
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:370: ADC0MX = QFP32_MUX_P0_5;
-	mov	_ADC0MX,#0x03
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:371: ADINT = 0;
-	clr	_ADINT
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:372: ADBUSY = 1;
-	setb	_ADBUSY
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:373: while (!ADINT); // Wait for conversion to complete
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:364: while (ADC_at_Pin(QFP32_MUX_P0_5) != 0); // Wait for the signal to be zero
+L018020?:
+	mov	dpl,#0x03
+	lcall	_ADC_at_Pin
+	mov	a,dpl
+	mov	b,dph
+	orl	a,b
+	jnz	L018020?
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:365: while (ADC_at_Pin(QFP32_MUX_P0_5) == 0); // Wait for the signal to be positive
 L018023?:
-	jnb	_ADINT,L018023?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:374: while (Get_ADC() != 0); // Wait for the signal to be zero
-L018026?:
-	lcall	_Get_ADC
+	mov	dpl,#0x03
+	lcall	_ADC_at_Pin
 	mov	a,dpl
 	mov	b,dph
 	orl	a,b
-	jnz	L018026?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:375: while (Get_ADC() == 0); // Wait for the signal to be positive
-L018029?:
-	lcall	_Get_ADC
-	mov	a,dpl
-	mov	b,dph
-	orl	a,b
-	jz	L018029?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:376: waitus(quarter_period_us); //TODO replace this with timer routine :tear:
+	jz	L018023?
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:366: waitus(quarter_period_us); //TODO replace this with timer routine :tear:
 	mov	dpl,_main_quarter_period_us_1_78
 	mov	dph,(_main_quarter_period_us_1_78 + 1)
 	lcall	_waitus
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:377: v[1] = Volts_at_Pin(QFP32_MUX_P0_5);
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:367: v[1] = Volts_at_Pin(QFP32_MUX_P0_5);
 	mov	dpl,#0x03
 	lcall	_Volts_at_Pin
 	mov	r2,dpl
@@ -1596,18 +1563,22 @@ L018029?:
 	mov	((_main_v_1_78 + 0x0004) + 1),r3
 	mov	((_main_v_1_78 + 0x0004) + 2),r4
 	mov	((_main_v_1_78 + 0x0004) + 3),r5
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:379: printf("c");
-	mov	a,#__str_11
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:369: printf("%f ", v[1]);
+	push	ar2
+	push	ar3
+	push	ar4
+	push	ar5
+	mov	a,#__str_7
 	push	acc
-	mov	a,#(__str_11 >> 8)
+	mov	a,#(__str_7 >> 8)
 	push	acc
 	mov	a,#0x80
 	push	acc
 	lcall	_printf
-	dec	sp
-	dec	sp
-	dec	sp
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:382: vrms[0] = 0.7071068 * v[0];
+	mov	a,sp
+	add	a,#0xf9
+	mov	sp,a
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:372: vrms[0] = 0.7071068 * v[0];
 	push	_main_v_1_78
 	push	(_main_v_1_78 + 1)
 	push	(_main_v_1_78 + 2)
@@ -1627,7 +1598,34 @@ L018029?:
 	mov	(_main_vrms_1_78 + 1),r3
 	mov	(_main_vrms_1_78 + 2),r4
 	mov	(_main_vrms_1_78 + 3),r5
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:383: vrms[1] = 0.7071068 * v[1];
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:373: sprintf(buff, "%.1f", vrms[0]); // print ref Vrms to LCD
+	push	ar2
+	push	ar3
+	push	ar4
+	push	ar5
+	mov	a,#__str_9
+	push	acc
+	mov	a,#(__str_9 >> 8)
+	push	acc
+	mov	a,#0x80
+	push	acc
+	mov	a,#_main_buff_1_78
+	push	acc
+	mov	a,#(_main_buff_1_78 >> 8)
+	push	acc
+	mov	a,#0x40
+	push	acc
+	lcall	_sprintf
+	mov	a,sp
+	add	a,#0xf6
+	mov	sp,a
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:374: LCDprint(buff, 1, 1);
+	mov	_LCDprint_PARM_2,#0x01
+	setb	_LCDprint_PARM_3
+	mov	dptr,#_main_buff_1_78
+	mov	b,#0x40
+	lcall	_LCDprint
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:375: vrms[1] = 0.7071068 * v[1];
 	push	(_main_v_1_78 + 0x0004)
 	push	((_main_v_1_78 + 0x0004) + 1)
 	push	((_main_v_1_78 + 0x0004) + 2)
@@ -1647,61 +1645,74 @@ L018029?:
 	mov	((_main_vrms_1_78 + 0x0004) + 1),r3
 	mov	((_main_vrms_1_78 + 0x0004) + 2),r4
 	mov	((_main_vrms_1_78 + 0x0004) + 3),r5
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:387: ADC0MX = QFP32_MUX_P1_7;
-	mov	_ADC0MX,#0x0D
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:388: ADINT = 0;
-	clr	_ADINT
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:389: ADBUSY = 1;
-	setb	_ADBUSY
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:390: while (!ADINT); // Wait for conversion to complete
-L018032?:
-	jnb	_ADINT,L018032?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:392: TL0 = 0;
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:376: sprintf(buff, "%.1f", vrms[1]); // print test Vrms to LCD
+	push	ar2
+	push	ar3
+	push	ar4
+	push	ar5
+	mov	a,#__str_9
+	push	acc
+	mov	a,#(__str_9 >> 8)
+	push	acc
+	mov	a,#0x80
+	push	acc
+	mov	a,#_main_buff_1_78
+	push	acc
+	mov	a,#(_main_buff_1_78 >> 8)
+	push	acc
+	mov	a,#0x40
+	push	acc
+	lcall	_sprintf
+	mov	a,sp
+	add	a,#0xf6
+	mov	sp,a
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:377: LCDprint(buff, 2, 1);
+	mov	_LCDprint_PARM_2,#0x02
+	setb	_LCDprint_PARM_3
+	mov	dptr,#_main_buff_1_78
+	mov	b,#0x40
+	lcall	_LCDprint
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:382: TL0 = 0;
 	mov	_TL0,#0x00
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:393: TH0 = 0;
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:383: TH0 = 0;
 	mov	_TH0,#0x00
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:394: while (Get_ADC() != 0); // Wait for the signal to be zero
-L018035?:
-	lcall	_Get_ADC
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:384: while (ADC_at_Pin(QFP32_MUX_P1_7) != 0); // Wait for the signal to be zero
+L018026?:
+	mov	dpl,#0x0D
+	lcall	_ADC_at_Pin
 	mov	a,dpl
 	mov	b,dph
 	orl	a,b
-	jnz	L018035?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:395: while (Get_ADC() == 0); // Wait for the signal to be positive
-L018038?:
-	lcall	_Get_ADC
+	jnz	L018026?
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:385: while (ADC_at_Pin(QFP32_MUX_P1_7) == 0); // Wait for the signal to be positive
+L018029?:
+	mov	dpl,#0x0D
+	lcall	_ADC_at_Pin
 	mov	a,dpl
 	mov	b,dph
 	orl	a,b
-	jz	L018038?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:396: TR0 = 1; // Start the timer 0
+	jz	L018029?
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:386: TR0 = 1; // Start the timer 0
 	setb	_TR0
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:398: ADC0MX = QFP32_MUX_P0_5;
-	mov	_ADC0MX,#0x03
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:399: ADINT = 0;
-	clr	_ADINT
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:400: ADBUSY = 1;
-	setb	_ADBUSY
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:401: while (!ADINT); // Wait for conversion to complete
-L018041?:
-	jnb	_ADINT,L018041?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:402: while (Get_ADC() != 0); // Wait for the signal to be zero
-L018044?:
-	lcall	_Get_ADC
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:388: while (ADC_at_Pin(QFP32_MUX_P0_5) != 0); // Wait for the signal to be zero
+L018032?:
+	mov	dpl,#0x03
+	lcall	_ADC_at_Pin
 	mov	a,dpl
 	mov	b,dph
 	orl	a,b
-	jnz	L018044?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:403: while (Get_ADC() == 0); // Wait for the signal to be positive
-L018047?:
-	lcall	_Get_ADC
+	jnz	L018032?
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:389: while (ADC_at_Pin(QFP32_MUX_P0_5) == 0); // Wait for the signal to be positive
+L018035?:
+	mov	dpl,#0x03
+	lcall	_ADC_at_Pin
 	mov	a,dpl
 	mov	b,dph
 	orl	a,b
-	jz	L018047?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:404: TR0 = 0;                         // Stop timer 0
+	jz	L018035?
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:390: TR0 = 0;                         // Stop timer 0
 	clr	_TR0
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:405: period_diff = (TH0 * 256.0 + TL0) * (12.0 / SYSCLK);
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:391: period_diff = (TH0 * 256.0 + TL0) * (12.0 / SYSCLK);
 	mov	dpl,_TH0
 	lcall	___uchar2fs
 	mov	r2,dpl
@@ -1763,7 +1774,7 @@ L018047?:
 	mov	a,sp
 	add	a,#0xfc
 	mov	sp,a
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:406: phase_diff = period_diff / (360.0 * period);
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:392: phase_diff = period_diff / (360.0 * period);
 	push	_main_period_1_78
 	push	(_main_period_1_78 + 1)
 	push	(_main_period_1_78 + 2)
@@ -1795,14 +1806,14 @@ L018047?:
 	mov	a,sp
 	add	a,#0xfc
 	mov	sp,a
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:408: printf("d");
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:394: printf("d");
 	push	ar2
 	push	ar3
 	push	ar4
 	push	ar5
-	mov	a,#__str_12
+	mov	a,#__str_10
 	push	acc
-	mov	a,#(__str_12 >> 8)
+	mov	a,#(__str_10 >> 8)
 	push	acc
 	mov	a,#0x80
 	push	acc
@@ -1814,7 +1825,7 @@ L018047?:
 	pop	ar4
 	pop	ar3
 	pop	ar2
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:410: if (phase_diff > 180.0) {
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:396: if (phase_diff > 180.0) {
 	push	ar2
 	push	ar3
 	push	ar4
@@ -1840,8 +1851,8 @@ L018047?:
 	pop	ar3
 	pop	ar2
 	mov	a,r6
-	jz	L018051?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:411: phase_diff = phase_diff - 360.0;
+	jz	L018039?
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:397: phase_diff = phase_diff - 360.0;
 	clr	a
 	push	acc
 	push	acc
@@ -1861,8 +1872,8 @@ L018047?:
 	mov	a,sp
 	add	a,#0xfc
 	mov	sp,a
-L018051?:
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:416: printf("V1: %f V2: %f phase: %f f: %f ", vrms[0], vrms[1], phase_diff, frequency);
+L018039?:
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:402: printf("V1: %f V2: %f phase: %f f: %f ", vrms[0], vrms[1], phase_diff, frequency);
 	push	ar2
 	push	ar3
 	push	ar4
@@ -1883,9 +1894,9 @@ L018051?:
 	push	(_main_vrms_1_78 + 1)
 	push	(_main_vrms_1_78 + 2)
 	push	(_main_vrms_1_78 + 3)
-	mov	a,#__str_13
+	mov	a,#__str_11
 	push	acc
-	mov	a,#(__str_13 >> 8)
+	mov	a,#(__str_11 >> 8)
 	push	acc
 	mov	a,#0x80
 	push	acc
@@ -1893,14 +1904,10 @@ L018051?:
 	mov	a,sp
 	add	a,#0xed
 	mov	sp,a
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:418: sprintf(buff, "%.1f", vrms[0]); // print ref Vrms to LCD
-	push	_main_vrms_1_78
-	push	(_main_vrms_1_78 + 1)
-	push	(_main_vrms_1_78 + 2)
-	push	(_main_vrms_1_78 + 3)
-	mov	a,#__str_14
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:405: sprintf(buff, "%.1f", phase_diff); // print ref phase to LCD
+	mov	a,#__str_9
 	push	acc
-	mov	a,#(__str_14 >> 8)
+	mov	a,#(__str_9 >> 8)
 	push	acc
 	mov	a,#0x80
 	push	acc
@@ -1914,57 +1921,7 @@ L018051?:
 	mov	a,sp
 	add	a,#0xf6
 	mov	sp,a
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:419: LCDprint(buff, 1, 1);
-	mov	_LCDprint_PARM_2,#0x01
-	setb	_LCDprint_PARM_3
-	mov	dptr,#_main_buff_1_78
-	mov	b,#0x40
-	lcall	_LCDprint
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:421: sprintf(buff, "%.1f", vrms[1]); // print test Vrms to LCD
-	push	(_main_vrms_1_78 + 0x0004)
-	push	((_main_vrms_1_78 + 0x0004) + 1)
-	push	((_main_vrms_1_78 + 0x0004) + 2)
-	push	((_main_vrms_1_78 + 0x0004) + 3)
-	mov	a,#__str_14
-	push	acc
-	mov	a,#(__str_14 >> 8)
-	push	acc
-	mov	a,#0x80
-	push	acc
-	mov	a,#_main_buff_1_78
-	push	acc
-	mov	a,#(_main_buff_1_78 >> 8)
-	push	acc
-	mov	a,#0x40
-	push	acc
-	lcall	_sprintf
-	mov	a,sp
-	add	a,#0xf6
-	mov	sp,a
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:422: LCDprint(buff, 2, 1);
-	mov	_LCDprint_PARM_2,#0x02
-	setb	_LCDprint_PARM_3
-	mov	dptr,#_main_buff_1_78
-	mov	b,#0x40
-	lcall	_LCDprint
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:424: sprintf(buff, "%.1f", phase_diff); // print ref phase to LCD
-	mov	a,#__str_14
-	push	acc
-	mov	a,#(__str_14 >> 8)
-	push	acc
-	mov	a,#0x80
-	push	acc
-	mov	a,#_main_buff_1_78
-	push	acc
-	mov	a,#(_main_buff_1_78 >> 8)
-	push	acc
-	mov	a,#0x40
-	push	acc
-	lcall	_sprintf
-	mov	a,sp
-	add	a,#0xf6
-	mov	sp,a
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:425: LCDprint(buff, 2, 1);
+;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:406: LCDprint(buff, 2, 1);
 	mov	_LCDprint_PARM_2,#0x02
 	setb	_LCDprint_PARM_3
 	mov	dptr,#_main_buff_1_78
@@ -1981,10 +1938,10 @@ __str_0:
 	db '[2J'
 	db 0x00
 __str_1:
-	db 'Phasor Test Program'
+	db 'Phasor Measurement Program'
 	db 0x0A
-	db 'Apply reference signal to P1.7, and test'
-	db ' signal to P0.5'
+	db 'Apply reference signal to P1.7, a'
+	db 'nd test signal to P0.5'
 	db 0x0A
 	db 'File: %s'
 	db 0x0A
@@ -2007,7 +1964,7 @@ __str_3:
 	db 'Mar  7 2023'
 	db 0x00
 __str_4:
-	db '15:06:07'
+	db '15:22:15'
 	db 0x00
 __str_5:
 	db 'VR:X.X Freq:XX.X'
@@ -2016,28 +1973,19 @@ __str_6:
 	db 'VT:X.X P:-XXX.XX'
 	db 0x00
 __str_7:
-	db '%f'
+	db '%f '
 	db 0x00
 __str_8:
 	db 'VR:X.X Freq:%.1f'
 	db 0x00
 __str_9:
-	db 'a'
+	db '%.1f'
 	db 0x00
 __str_10:
-	db 'b'
-	db 0x00
-__str_11:
-	db 'c'
-	db 0x00
-__str_12:
 	db 'd'
 	db 0x00
-__str_13:
+__str_11:
 	db 'V1: %f V2: %f phase: %f f: %f '
-	db 0x00
-__str_14:
-	db '%.1f'
 	db 0x00
 
 	CSEG
