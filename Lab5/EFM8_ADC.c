@@ -312,13 +312,13 @@ void main(void)
     InitPinADC(0, 5); // Configure P0.5 as analog input
     InitPinADC(1, 7); // Configure P1.7 as analog input
     InitADC();
-    TIMER0_Init(); //
-    LCD_4BIT();    // init LCD
+    TIMER0_Init(); 
+    LCD_4BIT();    
 
     waitms(500);       // Give PuTTy a chance to start before sending
     printf("\x1b[2J"); // Clear screen using ANSI escape sequence.
 
-    printf("Phasor Test Program\n"
+    printf("Phasor Measurement Program\n"
            "Apply reference signal to P1.7, and test signal to P0.5\n"
            "File: %s\n"
            "Compiled: %s, %s\n\n",
@@ -343,13 +343,13 @@ void main(void)
         // Reset the timer
         TL0 = 0;
         TH0 = 0;
-        while (Get_ADC() != 0){} // Wait for the signal to be zero
-        while (Get_ADC() == 0){} // Wait for the signal to be positive
-        TR0 = 1; // Start the timer 0
-        while (Get_ADC() != 0){}                          // Wait for the signal to be zero again
+        while (Get_ADC() != 0){}        // Wait for the signal to be zero
+        while (Get_ADC() == 0){}        // Wait for the signal to be positive
+        TR0 = 1;                        // Start the timer 0
+        while (Get_ADC() != 0){}        // Wait for the signal to be zero again
         TR0 = 0;                         // Stop timer 0
         half_period = TH0 * 0x100 + TL0; // The 16-bit number [TH0-TL0]
-        // Time from the beginning of the sine wave to its peak
+        //Time from the beginning of the sine wave to its peak
         period = half_period * 2.0 * (12.0 / SYSCLK);
         quarter_period_us = period / 4.0 * 1000000.0;
         frequency = 1.0 / period;
@@ -358,30 +358,34 @@ void main(void)
         LCDprint(buff, 1, 1);
 
         // now to read reference Vpeak
-        while (Get_ADC() != 0); // wait for 0
-        while (Get_ADC() == 0); // Wait for the signal to be positive
+        while (Get_ADC() != 0);     // wait for 0
+        while (Get_ADC() == 0);     // Wait for the signal to be positive
         printf("a");
-        waitus(quarter_period_us); //TODO replace this with timer routine :tear:
+        waitus(quarter_period_us);  //TODO replace this with timer routine :tear:
         printf("b");
         v[0] = Volts_at_Pin(QFP32_MUX_P1_7);
-        printf("%f", v[0]);
+        printf("%f", v[0]); 
 
         // read Vpeak of second
         ADC0MX = QFP32_MUX_P0_5;
         ADINT = 0;
         ADBUSY = 1;
-        while (!ADINT); // Wait for conversion to complete
-        while (Get_ADC() != 0); // Wait for the signal to be zero
-        while (Get_ADC() == 0); // Wait for the signal to be positive
-        waitus(quarter_period_us); //TODO replace this with timer routine :tear:
+        while (!ADINT);             // Wait for conversion to complete
+        while (Get_ADC() != 0);     // Wait for the signal to be zero
+        while (Get_ADC() == 0);     // Wait for the signal to be positive
+        waitus(quarter_period_us);  //TODO replace this with timer routine :tear:
         v[1] = Volts_at_Pin(QFP32_MUX_P0_5);
 
         printf("c");
 
         // calculate Vrms
         vrms[0] = 0.7071068 * v[0];
+        sprintf(buff, "%.1f", vrms[0]); // print ref Vrms to LCD
+        LCDprint(buff, 1, 1);
         vrms[1] = 0.7071068 * v[1];
-
+        sprintf(buff, "%.1f", vrms[1]); // print test Vrms to LCD
+        LCDprint(buff, 2, 1);
+       
         // measure phase diff
         // Start tracking the reference signal @ p 1.7
         ADC0MX = QFP32_MUX_P1_7;
@@ -415,11 +419,6 @@ void main(void)
         // display results vrms[0] vrms[1] phase_diff frequency
         printf("V1: %f V2: %f phase: %f f: %f ", vrms[0], vrms[1], phase_diff, frequency);
 
-        sprintf(buff, "%.1f", vrms[0]); // print ref Vrms to LCD
-        LCDprint(buff, 1, 1);
-
-        sprintf(buff, "%.1f", vrms[1]); // print test Vrms to LCD
-        LCDprint(buff, 2, 1);
 
         sprintf(buff, "%.1f", phase_diff); // print ref phase to LCD
         LCDprint(buff, 2, 1);
