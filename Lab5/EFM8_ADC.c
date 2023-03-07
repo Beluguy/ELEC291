@@ -165,6 +165,14 @@ void waitms(unsigned int ms)
             Timer3us(250);
 }
 
+void waitus(unsigned int us)
+{
+    unsigned int j;
+    for (j = 0; j < us; j++) {
+        Timer3us(1);
+    }
+}
+
 void InitPinADC(unsigned char portno, unsigned char pinno)
 {
     unsigned char mask;
@@ -298,7 +306,7 @@ void main(void)
     float frequency;
     float period;
     unsigned int half_period;
-    unsigned int quarter_period_ms;
+    unsigned int quarter_period_us;
     float period_diff;
     float phase_diff;
 
@@ -343,13 +351,13 @@ void main(void)
         half_period = TH0 * 0x100 + TL0; // The 16-bit number [TH0-TL0]
         // Time from the beginning of the sine wave to its peak
         period = half_period * 2.0 * (12.0 / SYSCLK);
-        quarter_period_ms = period / 4.0 * 1000.0;
+        quarter_period_us = period / 4.0 * 1000000.0;
         frequency = 1.0 / period;
 
         // now to read reference Vpeak
         while (Get_ADC() != 0); // wait for 0
         while (Get_ADC() == 0); // Wait for the signal to be positive
-        waitms(quarter_period_ms); //TODO replace this with timer routine :tear:
+        waitus(quarter_period_us); //TODO replace this with timer routine :tear:
         v[0] = Volts_at_Pin(P1_7);
 
         // read Vpeak of second
@@ -359,7 +367,7 @@ void main(void)
         while (!ADINT); // Wait for conversion to complete
         while (Get_ADC() != 0); // Wait for the signal to be zero
         while (Get_ADC() == 0); // Wait for the signal to be positive
-        waitms(quarter_period_ms); //TODO replace this with timer routine :tear:
+        waitus(quarter_period_us); //TODO replace this with timer routine :tear:
         v[1] = Volts_at_Pin(P0_4);
 
         // calculate Vrms
@@ -392,6 +400,9 @@ void main(void)
         if (phase_diff > 180.0) {
             phase_diff = phase_diff - 360.0
         }
+
+        // speaker beep
+        // display results vrms[0] vrms[1] phase_diff frequency
 
 
 
