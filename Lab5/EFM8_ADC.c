@@ -329,18 +329,6 @@ void main(void)
 
     while (1)
     {
-        sprintf(buff, "%.1f", vrms[0]); // print ref Vrms to LCD
-        LCDprint(buff, 1, 4);
-
-        sprintf(buff, "%.1f", vrms[1]); // print test Vrms to LCD
-        LCDprint(buff, 2, 4);
-
-        sprintf(buff, "%.1f", phase_diff); // print ref phase to LCD
-        LCDprint(buff, 2, 10);
-
-        sprintf(buff, "%.1f", frequency); // print test Frequenct to LCD
-        LCDprint(buff, 1, 13);
-
         loop:
         while(BOOT_BUTTON != 0) // wait for bttn before measuring
         {
@@ -420,7 +408,17 @@ void main(void)
         // display results vrms[0] vrms[1] phase_diff frequency
         printf("V1: %f V2: %f phase: %f f: %f ", vrms[0], vrms[1], phase_diff, frequency);
 
+        sprintf(buff, "%.1f", vrms[0]); // print ref Vrms to LCD
+        LCDprint(buff, 1, 4);
 
+        sprintf(buff, "%.1f", vrms[1]); // print test Vrms to LCD
+        LCDprint(buff, 2, 4);
+
+        sprintf(buff, "%.1f", phase_diff); // print ref phase to LCD
+        LCDprint(buff, 2, 10);
+
+        sprintf(buff, "%.1f", frequency); // print test Frequenct to LCD
+        LCDprint(buff, 1, 13);
 
         /*
         v[0] = Volts_at_Pin(QFP32_MUX_P2_2);
