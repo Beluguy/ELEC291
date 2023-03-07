@@ -203,7 +203,7 @@ void InitPinADC(unsigned char portno, unsigned char pinno)
 unsigned int Get_ADC(void)
 {
     ADINT = 0;
-    AD0BUSY = 1;
+    ADBUSY = 1;
     while (!ADINT); // Wait for conversion to complete
     return (ADC0);
 }
@@ -340,9 +340,9 @@ void main(void)
         }
 
         // Start tracking the reference signal @ p 1.7
-        AMX0P = LQFP32_MUX_P1_7;
+        ADC0MX = P1_7;
         ADINT = 0;
-        AD0BUSY = 1;
+        ADBUSY = 1;
         while (!ADINT); // Wait for conversion to complete
         // Reset the timer
         TL0 = 0;
@@ -365,9 +365,9 @@ void main(void)
         v[0] = Volts_at_Pin(P1_7);
 
         // read Vpeak of second
-        AMX0P = LQFP32_MUX_P0_4;
+        ADC0MX = P0_4;
         ADINT = 0;
-        AD0BUSY = 1;
+        ADBUSY = 1;
         while (!ADINT); // Wait for conversion to complete
         while (Get_ADC() != 0); // Wait for the signal to be zero
         while (Get_ADC() == 0); // Wait for the signal to be positive
@@ -380,9 +380,9 @@ void main(void)
 
         // measure phase diff
         // Start tracking the reference signal @ p 1.7
-        AMX0P = LQFP32_MUX_P1_7;
+        ADC0MX = P1_7;
         ADINT = 0;
-        AD0BUSY = 1;
+        ADBUSY = 1;
         while (!ADINT); // Wait for conversion to complete
         // Reset the timer
         TL0 = 0;
@@ -391,9 +391,9 @@ void main(void)
         while (Get_ADC() == 0); // Wait for the signal to be positive
         TR0 = 1; // Start the timer 0
         // Start tracking the secondary signal @ p 0.4
-        AMX0P = LQFP32_MUX_P1_7;
+        ADC0MX = P1_7;
         ADINT = 0;
-        AD0BUSY = 1;
+        ADBUSY = 1;
         while (!ADINT); // Wait for conversion to complete
         while (Get_ADC() != 0); // Wait for the signal to be zero
         while (Get_ADC() == 0); // Wait for the signal to be positive
@@ -402,7 +402,7 @@ void main(void)
         phase_diff = period_diff / (360.0 * period);
 
         if (phase_diff > 180.0) {
-            phase_diff = phase_diff - 360.0
+            phase_diff = phase_diff - 360.0;
         }
 
         // speaker beep
