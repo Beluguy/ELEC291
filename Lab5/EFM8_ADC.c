@@ -349,7 +349,7 @@ void main(void)
         period = half_period * 2.0 * (12.0 / SYSCLK);
         quarter_period_us = period / 4.0 * 1000000.0;
         frequency = 1.0 / period;
-        printf("%f", frequency);
+        printf("%f ", frequency);
         sprintf(buff, "VR:X.X Freq:%.1f", frequency); // print test Frequenct to LCD
         LCDprint(buff, 1, 1);
 
@@ -378,23 +378,16 @@ void main(void)
        
         // measuring phase diff
         // Start tracking the reference signal @ p 1.7
-        ADC0MX = QFP32_MUX_P1_7;
-        ADINT = 0;
-        ADBUSY = 1;
-        while (!ADINT); // Wait for conversion to complete
         // Reset the timer
         TL0 = 0;
         TH0 = 0;
-        while (Get_ADC() != 0); // Wait for the signal to be zero
-        while (Get_ADC() == 0); // Wait for the signal to be positive
+        while (ADC_at_Pin(QFP32_MUX_P1_7) != 0); // Wait for the signal to be zero
+        while (ADC_at_Pin(QFP32_MUX_P1_7) == 0); // Wait for the signal to be positive
         TR0 = 1; // Start the timer 0
         // Start tracking the secondary signal @ p 0.5
-        ADC0MX = QFP32_MUX_P0_5;
-        ADINT = 0;
-        ADBUSY = 1;
-        while (!ADINT); // Wait for conversion to complete
-        while (Get_ADC() != 0); // Wait for the signal to be zero
-        while (Get_ADC() == 0); // Wait for the signal to be positive
+
+        while (ADC_at_Pin(QFP32_MUX_P0_5) != 0); // Wait for the signal to be zero
+        while (ADC_at_Pin(QFP32_MUX_P0_5) == 0); // Wait for the signal to be positive
         TR0 = 0;                         // Stop timer 0
         period_diff = (TH0 * 256.0 + TL0) * (12.0 / SYSCLK);
         phase_diff = period_diff / (360.0 * period);
