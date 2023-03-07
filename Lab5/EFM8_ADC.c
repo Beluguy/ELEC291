@@ -313,7 +313,7 @@ void main(void)
     InitPinADC(1, 7); // Configure P1.7 as analog input
     InitADC();
     TIMER0_Init(); //
-    LCD_4BIT();    // init lcd
+    LCD_4BIT();    // init LCD
 
     waitms(500);       // Give PuTTy a chance to start before sending
     printf("\x1b[2J"); // Clear screen using ANSI escape sequence.
@@ -354,6 +354,8 @@ void main(void)
         quarter_period_us = period / 4.0 * 1000000.0;
         frequency = 1.0 / period;
         printf("%f", frequency);
+        sprintf(buff, "VR:X.X Freq:%.1f", frequency); // print test Frequenct to LCD
+        LCDprint(buff, 1, 1);
 
         // now to read reference Vpeak
         while (Get_ADC() != 0); // wait for 0
@@ -407,16 +409,13 @@ void main(void)
         printf("V1: %f V2: %f phase: %f f: %f ", vrms[0], vrms[1], phase_diff, frequency);
 
         sprintf(buff, "%.1f", vrms[0]); // print ref Vrms to LCD
-        LCDprint(buff, 1, 4);
+        LCDprint(buff, 1, 1);
 
         sprintf(buff, "%.1f", vrms[1]); // print test Vrms to LCD
-        LCDprint(buff, 2, 4);
+        LCDprint(buff, 2, 1);
 
         sprintf(buff, "%.1f", phase_diff); // print ref phase to LCD
-        LCDprint(buff, 2, 10);
-
-        sprintf(buff, "%.1f", frequency); // print test Frequenct to LCD
-        LCDprint(buff, 1, 13);
+        LCDprint(buff, 2, 1);
 
         /*
         v[0] = Volts_at_Pin(QFP32_MUX_P2_2);
