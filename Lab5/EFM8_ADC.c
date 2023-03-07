@@ -1,7 +1,7 @@
 // ADC.c:  Shows how to use the 14-bit ADC.  This program
 // measures the voltage from some pins of the EFM8LB1 using the ADC.
 // (c) 2008-2023, Jesus Calvino-Fraga
-// Bonus: contrast, buzzer, volume control, unit conversion, psu, memory, button 
+// Bonus: contrast, buzzer, volume control, unit conversion, psu, memory, button, display 
 #include <stdio.h>
 #include <stdlib.h>
 #include <EFM8LB1.h>
@@ -322,10 +322,14 @@ void main(void)
     waitms(500);       // Give PuTTy a chance to start before sending
     printf("\x1b[2J"); // Clear screen using ANSI escape sequence.
 
-    printf("ADC test program\n"
+    printf("Phasor Test Program\n"
+           "Apply reference signal to P1.7, and test signal to P0.4\n"
            "File: %s\n"
            "Compiled: %s, %s\n\n",
            __FILE__, __DATE__, __TIME__);
+
+    LCDprint("VR:X.X P:-XXX.XXX", 1, 1);
+    LCDprint("VT:X.X P:-XXX.XXX", 2, 1);
 
     while (1)
     {
