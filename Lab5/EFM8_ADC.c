@@ -343,11 +343,7 @@ void main(void)
 
     BOOT_BUTTON = 1;
     UNIT_CHANGE_BUTTON = 1;
-<<<<<<< Updated upstream
     MEMORY_BUTTON = 1;
-=======
-    P2_0 = 1;
->>>>>>> Stashed changes
 
     InitPinADC(0, 6);               // Configure P0.6 as analog input
     InitPinADC(1, 7);               // Configure P1.7 as analog input
@@ -396,7 +392,7 @@ void main(void)
                 sprintf(buff, "VT:%.1f P:%.1f", vrms[1], phase_diff);
                 LCDprint(buff, 2, 1);
             }
-            if (P2_0 == 0)
+            if (UNIT_CHANGE_BUTTON == 0)
             {
                 units = !units;
                 if (units == 0)
