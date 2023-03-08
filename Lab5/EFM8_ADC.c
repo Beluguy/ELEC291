@@ -314,7 +314,7 @@ void main(void)
     float frequency;
     float period;
     unsigned int half_period;
-    unsigned int quarter_period;
+    float quarter_period;
     float period_diff;
     float phase_diff;
     unsigned int overflow_count;
@@ -370,12 +370,19 @@ void main(void)
         period = half_period * 2.0 * (12.0 / SYSCLK);
         quarter_period = period / 4.0;
         frequency = 1.0 / period;
+        
+        printf("p: %f, qp: %f", period, quarter_period);
 
         // reading reference Vpeak
+        while (1) {
+        P0_0 = 0;
         while (ADC_at_Pin(QFP32_MUX_P1_7) != 0); // wait for 0
         while (ADC_at_Pin(QFP32_MUX_P1_7) == 0); // Wait for the signal to be positive
+        P0_0 = 1;
         Timer3wait(quarter_period); 
+        P0_0 = 0;
         v[0] = Volts_at_Pin(QFP32_MUX_P1_7);
+        }
 
         // reading Vpeak of second
         while (ADC_at_Pin(QFP32_MUX_P0_6) != 0); // Wait for the signal to be zero
