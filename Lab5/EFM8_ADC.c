@@ -406,9 +406,13 @@ void main(void)
         P0_0 = 0;
         while (ADC_at_Pin(QFP32_MUX_P1_7) != 0); // wait for 0
         while (ADC_at_Pin(QFP32_MUX_P1_7) == 0); // Wait for the signal to be positive
+<<<<<<< Updated upstream
         P0_0 = 1;
         Timer3wait(quarter_period); 
         P0_0 = 0;
+=======
+        Timer3wait(quarter_period);
+>>>>>>> Stashed changes
         v[0] = Volts_at_Pin(QFP32_MUX_P1_7);
         }
 
