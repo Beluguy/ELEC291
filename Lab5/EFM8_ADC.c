@@ -327,7 +327,7 @@ void main(void)
 
     char buff[17];
 
-    float tempf;
+    float temp;
 
     float frequency;
     float freqmem;
@@ -377,13 +377,13 @@ void main(void)
                 vrms[0] = temp[0];
                 vrms[1] = temp[1];
 
-                tempf = freqmem;
+                temp = freqmem;
                 freqmem = frequency;
-                frequency = tempf;
+                frequency = temp;
 
-                tempf = phase_diffmem;
+                temp = phase_diffmem;
                 phase_diffmem = phase_diff;
-                phase_diff = tempf;
+                phase_diff = temp;
 
                 // update display
                 sprintf(buff, "VR:%.1f Freq:%.1f", vrms[0], frequency); // print test Frequenct to LCD
@@ -457,7 +457,6 @@ void main(void)
         // reading reference Vpeak
         while (ADC_at_Pin(QFP32_MUX_P1_7) != 0); // wait for 0
         while (ADC_at_Pin(QFP32_MUX_P1_7) == 0); // Wait for the signal to be positive
-
         waitus(quarter_period); 
         v[0] = Volts_at_Pin(QFP32_MUX_P1_7);
 
