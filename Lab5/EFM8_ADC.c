@@ -325,7 +325,7 @@ void main(void)
 
     char buff[17];
 
-    float tempf;
+    float temp;
 
     float frequency = 0;
     float freqmem = 0;
@@ -374,16 +374,16 @@ void main(void)
                 vrms[0] = v[0];
                 vrms[1] = v[1];
 
-                tempf = freqmem;
+                temp = freqmem;
                 freqmem = frequency;
-                frequency = tempf;
+                frequency = temp;
 
-                tempf = phase_diffmem;
+                temp = phase_diffmem;
                 phase_diffmem = phase_diff;
-                phase_diff = tempf;
+                phase_diff = temp;
 
                 // update display
-                sprintf(buff, "VR:%.1f Freq:%.1f", vrms[0], frequency); // print test Frequenct to LCD
+                sprintf(buff, "VR:%.1f F:%.1f", vrms[0], frequency); // print test Frequenct to LCD
                 LCDprint(buff, 1, 1);
 
                 sprintf(buff, "VT:%.1f P:%.1f", vrms[1], phase_diff);
@@ -454,7 +454,6 @@ void main(void)
         // reading reference Vpeak
         while (ADC_at_Pin(QFP32_MUX_P1_7) != 0); // wait for 0
         while (ADC_at_Pin(QFP32_MUX_P1_7) == 0); // Wait for the signal to be positive
-
         waitus(quarter_period); 
         v[0] = Volts_at_Pin(QFP32_MUX_P1_7);
 
@@ -505,7 +504,7 @@ void main(void)
         // display results vrms[0] vrms[1] phase_diff frequency
         printf("VR:%f VT:%f phase_diff:%f freq:%f V1:%f V2:%f\n", vrms[0], vrms[1], phase_diff, frequency, v[0], v[1]);
 
-        sprintf(buff, "VR:%.1f Freq:%.1f", vrms[0], frequency); // print test Frequenct to LCD
+        sprintf(buff, "VR:%.1f F:%.1f", vrms[0], frequency); // print test Frequenct to LCD
         LCDprint(buff, 1, 1);
 
         sprintf(buff, "VT:%.1f P:%.1f", vrms[1], phase_diff); 
