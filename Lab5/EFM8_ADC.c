@@ -320,25 +320,22 @@ void LCDprint(char *string, unsigned char line, bit clear)
 void main(void)
 {
     float v[2];
-
-    float temp[2];
-    float vrms[2];
-    float vrmsmem[2];
+    float vrms[2] = {0,0};
+    float vrmsmem[2] = {0,0};
 
     char buff[17];
 
     float temp;
 
-    float frequency;
-    float freqmem;
+    float frequency = 0;
+    float freqmem = 0;
     float period;
     unsigned int half_period;
     unsigned int quarter_period;
-    float period_diff;
-    float phase_diff;
-    float phase_diffmem;
+    float phase_diff = 0;
+    float phase_diffmem = 0;
     unsigned int overflow_count;
-    int units = 0;
+    unsigned char units = 0;
     float conversion_factor = 1 ;
 
     BOOT_BUTTON = 1;
@@ -370,12 +367,12 @@ void main(void)
         {
             if (MEMORY_BUTTON == 0) {
                 // switch to last read input
-                temp[0] = vrmsmem[0];
-                temp[1] = vrmsmem[1];
+                v[0] = vrmsmem[0];
+                v[1] = vrmsmem[1];
                 vrmsmem[0] = vrms[0];
                 vrmsmem[1] = vrms[1];
-                vrms[0] = temp[0];
-                vrms[1] = temp[1];
+                vrms[0] = v[0];
+                vrms[1] = v[1];
 
                 temp = freqmem;
                 freqmem = frequency;
@@ -497,8 +494,7 @@ void main(void)
             }
         }                                // Wait for the signal to be positive
         TR0 = 0;                         // Stop timer 0
-        period_diff = (overflow_count * 65536.0 + TH0 * 256.0 + TL0) * (12.0 / SYSCLK);
-        phase_diff = period_diff * 360.0 * frequency;
+        phase_diff = (overflow_count * 65536.0 + TH0 * 256.0 + TL0) * (12.0 / SYSCLK) * 360.0 * frequency;
         
         if (phase_diff > 180.0) {
             phase_diff = phase_diff - 360.0;
@@ -506,7 +502,7 @@ void main(void)
 
         // speaker beep
         // display results vrms[0] vrms[1] phase_diff frequency
-        printf("VR:%f VT:%f phase_diff:%f freq:%f V1:%f V2:%f period_diff:%f \n", vrms[0], vrms[1], phase_diff, frequency, v[1], v[2], period_diff);
+        printf("VR:%f VT:%f phase_diff:%f freq:%f V1:%f V2:%f\n", vrms[0], vrms[1], phase_diff, frequency, v[0], v[1]);
 
         sprintf(buff, "VR:%.1f Freq:%.1f", vrms[0], frequency); // print test Frequenct to LCD
         LCDprint(buff, 1, 1);
