@@ -319,7 +319,7 @@ void main(void)
     float phase_diff;
     unsigned int overflow_count;
     int units = 0;
-    float conversion_factor = 3.1415926535897932 / 180;
+    float conversion_factor = 1 ;
 
     BOOT_BUTTON = 1;
     UNIT_CHANGE_BUTTON = 1;
@@ -352,20 +352,24 @@ void main(void)
                 units = !units;
                 if (units == 0)
                 {
-                    LCDprint("C measured [nF]:", 1, 1);
-                    conversion_factor = 1000000000.0;
-                    cap_old = cap_old * 1000.0;
-                    capacitance = capacitance * 1000.0;
-                    sprintf(buff, "%.1f %.1f", capacitance, cap_old);
+                    conversion_factor = 1;
+                    frequency = conversion_factor * frequency;
+                    phase_diff = conversion_factor * phase_diff;
+                    sprintf(buff, "VR:%.1f F:%.1fD", vrms[0], frequency); // print test Frequenct to LCD
+                    LCDprint(buff, 1, 1);
+
+                    sprintf(buff, "VT:%.1f P:%.1fD", vrms[1], phase_diff); 
                     LCDprint(buff, 2, 1);
                 }
                 else
                 {
-                    LCDprint("C measured [uF]:", 1, 1);
-                    conversion_factor = 1000000.0;
-                    cap_old = cap_old / 1000.0;
-                    capacitance = capacitance / 1000.0;
-                    sprintf(buff, "%.3f %.3f", capacitance, cap_old);
+                    conversion_factor = 3.1415926535897932 / 180;
+                    frequency = conversion_factor * frequency;
+                    phase_diff = conversion_factor * phase_diff;
+                    sprintf(buff, "VR:%.1f F:%.1fR", vrms[0], frequency); // print test Frequenct to LCD
+                    LCDprint(buff, 1, 1);
+
+                    sprintf(buff, "VT:%.1f P:%.1fR", vrms[1], phase_diff); 
                     LCDprint(buff, 2, 1);
                 }
                 waitms(500);
@@ -406,13 +410,7 @@ void main(void)
         P0_0 = 0;
         while (ADC_at_Pin(QFP32_MUX_P1_7) != 0); // wait for 0
         while (ADC_at_Pin(QFP32_MUX_P1_7) == 0); // Wait for the signal to be positive
-<<<<<<< Updated upstream
-        P0_0 = 1;
-        Timer3wait(quarter_period); 
-        P0_0 = 0;
-=======
         Timer3wait(quarter_period);
->>>>>>> Stashed changes
         v[0] = Volts_at_Pin(QFP32_MUX_P1_7);
         }
 
