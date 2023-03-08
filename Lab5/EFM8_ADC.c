@@ -417,7 +417,7 @@ void main(void)
         }                                // Wait for the signal to be positive
         TR0 = 0;                         // Stop timer 0
         period_diff = (overflow_count * 65536.0 + TH0 * 256.0 + TL0) * (12.0 / SYSCLK);
-        phase_diff = period_diff / (360.0 * period);
+        phase_diff = period_diff * 360.0 * frequency;
         
         if (phase_diff > 180.0) {
             phase_diff = phase_diff - 360.0;
@@ -425,7 +425,7 @@ void main(void)
 
         // speaker beep
         // display results vrms[0] vrms[1] phase_diff frequency
-        printf("VR:%f VT:%f phase diff:%f freq:%f ", vrms[0], vrms[1], phase_diff, frequency);
+        printf("VR:%f VT:%f phase diff:%f freq:%f V1:%f V2:%f perioddiff:%f \n", vrms[0], vrms[1], phase_diff, frequency, v[1], v[2], period_diff);
 
         sprintf(buff, "VR:%.1f Freq:%.1f", vrms[0], frequency); // print test Frequenct to LCD
         LCDprint(buff, 1, 1);
