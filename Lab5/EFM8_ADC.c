@@ -317,6 +317,32 @@ void LCDprint(char *string, unsigned char line, bit clear)
             WriteData(' '); // Clear the rest of the line
 }
 
+void display(){
+    if (units == 0)
+                {
+                    frequency = frequency * 2 * 3.14159265;                // rad to hz
+                    phase_diff = phase_diff * 180 / 3.1415926535;          // rad to degree
+                    sprintf(buff, "VR:%.1f F:%5.1fHz", vrms[0], frequency); // print test Frequenct to LCD
+                    LCDprint(buff, 1, 1);
+
+                    sprintf(buff, "VT:%.1f P:%5.1fD", vrms[1], phase_diff); 
+                    LCDprint(buff, 2, 1);
+                }
+                else
+                {
+                    frequency = frequency / ( 2 * 3.14159265);      // hz to rad
+                    phase_diff = phase_diff * 3.1415926535 / 180;            // degree to rad
+                    sprintf(buff, "VR:%.1f F:%5.3fR", vrms[0], frequency); // print test Frequenct to LCD
+                    LCDprint(buff, 1, 1);
+
+                    sprintf(buff, "VT:%.1f P:%5.3fR", vrms[1], phase_diff); 
+                    LCDprint(buff, 2, 1);
+                }
+
+
+}
+
+
 void main(void)
 {
     float v[2];
@@ -381,36 +407,12 @@ void main(void)
                 phase_diffmem = phase_diff;
                 phase_diff = temp;
 
-                // update display
-                sprintf(buff, "VR:%.1f F:%5.1f", vrms[0], frequency); // print test Frequenct to LCD
-                LCDprint(buff, 1, 1);
-
-                sprintf(buff, "VT:%.1f P:%5.1f", vrms[1], phase_diff);
-                LCDprint(buff, 2, 1);
+                void display()
             }
             if (UNIT_CHANGE_BUTTON == 0)
             {
                 units = !units;
-                if (units == 0)
-                {
-                    frequency = frequency * 2 * 3.14159265;                // rad to hz
-                    phase_diff = phase_diff * 180 / 3.1415926535;          // rad to degree
-                    sprintf(buff, "VR:%.1f F:%5.1fD", vrms[0], frequency); // print test Frequenct to LCD
-                    LCDprint(buff, 1, 1);
-
-                    sprintf(buff, "VT:%.1f P:%5.1fD", vrms[1], phase_diff); 
-                    LCDprint(buff, 2, 1);
-                }
-                else
-                {
-                    frequency = frequency / ( 2 * 3.14159265);      // hz to rad
-                    phase_diff = phase_diff * 3.1415926535 / 180;            // degree to rad
-                    sprintf(buff, "VR:%.1f F:%5.3fR", vrms[0], frequency); // print test Frequenct to LCD
-                    LCDprint(buff, 1, 1);
-
-                    sprintf(buff, "VT:%.1f P:%5.3fR", vrms[1], phase_diff); 
-                    LCDprint(buff, 2, 1);
-                }
+                void display()
                 waitms(500);
             }
 
@@ -500,25 +502,6 @@ void main(void)
         // speaker beep
         // display results vrms[0] vrms[1] phase_diff frequency
         printf("VR:%f VT:%f phase_diff:%f freq:%f V1:%f V2:%f\n", vrms[0], vrms[1], phase_diff, frequency, v[0], v[1]);
-         if (units == 0)
-                {
-                    frequency = frequency * 2 * 3.14159265;                // rad to hz
-                    phase_diff = phase_diff * 180 / 3.1415926535;          // rad to degree
-                    sprintf(buff, "VR:%.1f F:%5.1fD", vrms[0], frequency); // print test Frequenct to LCD
-                    LCDprint(buff, 1, 1);
-
-                    sprintf(buff, "VT:%.1f P:%5.1fD", vrms[1], phase_diff); 
-                    LCDprint(buff, 2, 1);
-                }
-                else
-                {
-                    frequency = frequency / ( 2 * 3.14159265);      // hz to rad
-                    phase_diff = phase_diff * 3.1415926535 / 180;            // degree to rad
-                    sprintf(buff, "VR:%.1f F:%5.3fR", vrms[0], frequency); // print test Frequenct to LCD
-                    LCDprint(buff, 1, 1);
-
-                    sprintf(buff, "VT:%.1f P:%5.3fR", vrms[1], phase_diff); 
-                    LCDprint(buff, 2, 1);
-                }
+       void display();
     }
 }
