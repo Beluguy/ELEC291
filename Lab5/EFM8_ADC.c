@@ -337,8 +337,8 @@ void main(void)
            "Compiled: %s, %s\n\n",
            __FILE__, __DATE__, __TIME__);
 
-    LCDprint("VR:X.X Freq:XX.X", 1, 1);
-    LCDprint("VT:X.X P:-XXX.XX", 2, 1);
+    LCDprint("VR:X.X Freq:", 1, 1);
+    LCDprint("VT:X.X P:", 2, 1);
 
     while (1)
     {
@@ -370,7 +370,6 @@ void main(void)
         period = half_period * 2.0 * (12.0 / SYSCLK);
         quarter_period = period / 4.0;
         frequency = 1.0 / period;
-        printf("%f ", frequency);
 
         // reading reference Vpeak
         while (ADC_at_Pin(QFP32_MUX_P1_7) != 0); // wait for 0
