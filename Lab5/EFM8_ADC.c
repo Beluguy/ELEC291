@@ -394,7 +394,7 @@ void main(void)
                 units = !units;
                 if (units == 0)
                 {
-                    conversion_factor = 180 / 1415926535897932;
+                    conversion_factor = 180 / 3.1415926535897932;
                     frequency = conversion_factor * frequency;
                     phase_diff = conversion_factor * phase_diff;
                     sprintf(buff, "VR:%.1f F:%5.1fD", vrms[0], frequency); // print test Frequenct to LCD
