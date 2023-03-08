@@ -152,6 +152,18 @@ void Timer3us(unsigned char us)
     TMR3CN0 = 0; // Stop Timer3 and clear overflow flag
 }
 
+void Timer3wait(unsigned int overflow) {
+    // The input for Timer 3 is selected as SYSCLK by setting T3ML (bit 6) of CKCON0:
+    CKCON0 |= 0b_0100_0000;
+
+    TMR3RL = (-(SYSCLK) / overflow); // Set Timer3 to overflow in overflow time.
+    TMR3 = TMR3RL;                   // Initialize Timer3 for first overflow
+
+    TMR3CN0 = 0x04;          // Sart Timer3 and clear overflow flag
+    while (!(TMR3CN0 & 0x80));               // Wait for overflow
+    TMR3CN0 = 0; // Stop Timer3 and clear overflow flag
+}
+
 void waitms(unsigned int ms)
 {
     unsigned int j;
@@ -302,9 +314,10 @@ void main(void)
     float frequency;
     float period;
     unsigned int half_period;
-    unsigned int quarter_period_us;
+    unsigned int quarter_period;
     float period_diff;
     float phase_diff;
+    unsigned int overflow_count;
 
     BOOT_BUTTON = 1;
     UNIT_CHANGE_BUTTON = 1;
@@ -319,7 +332,7 @@ void main(void)
     printf("\x1b[2J"); // Clear screen using ANSI escape sequence.
 
     printf("Phasor Measurement Program\n"
-           "Apply reference signal to P1.7, and test signal to P0.6\n"
+           "Apply referencte signal to P1.7, and test signal to P0.6\n"
            "File: %s\n"
            "Compiled: %s, %s\n\n",
            __FILE__, __DATE__, __TIME__);
@@ -339,34 +352,38 @@ void main(void)
         // Reset the timer
         TL0 = 0;
         TH0 = 0;
+        overflow_count = 0;
         while (ADC_at_Pin(QFP32_MUX_P1_7) != 0); // Wait for the signal to be zero
         while (ADC_at_Pin(QFP32_MUX_P1_7) == 0); // Wait for the signal to be positive
-        TR0 = 1; // Start the timer 0
-        while (ADC_at_Pin(QFP32_MUX_P1_7) != 0);                          // Wait for the signal to be zero again
+        TR0 = 1;                                 // Start the timer 0
+        while (ADC_at_Pin(QFP32_MUX_P1_7) != 0)
+        {
+            if (TF0 == 1) // Did the 16-bit timer overflow?
+            {
+                TF0 = 0;
+                overflow_count++;
+            }
+        }                                // Wait for the signal to be zero again
         TR0 = 0;                         // Stop timer 0
-        half_period = TH0 * 0x100 + TL0; // The 16-bit number [TH0-TL0]
+        half_period = overflow_count * 65536 + TH0 * 0x100 + TL0; // The 16-bit number [TH0-TL0]
         //Time from the beginning of the sine wave to its peak
         period = half_period * 2.0 * (12.0 / SYSCLK);
-        quarter_period_us = period / 4.0 * 1000000.0;
+        quarter_period = period / 4.0;
         frequency = 1.0 / period;
-        printf("%f ", frequency);
         sprintf(buff, "VR:X.X Freq:%.1f", frequency); // print test Frequenct to LCD
         LCDprint(buff, 1, 1);
 
         // reading reference Vpeak
         while (ADC_at_Pin(QFP32_MUX_P1_7) != 0); // wait for 0
         while (ADC_at_Pin(QFP32_MUX_P1_7) == 0); // Wait for the signal to be positive
-        waitus(quarter_period_us); //TODO replace this with timer routine :tear:
+        Timer3wait(quarter_period); //TODO replace this with timer routine :tear:
         v[0] = Volts_at_Pin(QFP32_MUX_P1_7);
-        printf("%f ", v[0]);
 
         // reading Vpeak of second
         while (ADC_at_Pin(QFP32_MUX_P0_6) != 0); // Wait for the signal to be zero
         while (ADC_at_Pin(QFP32_MUX_P0_6) == 0); // Wait for the signal to be positive
-        waitus(quarter_period_us); //TODO replace this with timer routine :tear:
+        Timer3wait(quarter_period); //TODO replace this with timer routine :tear:
         v[1] = Volts_at_Pin(QFP32_MUX_P0_6);
-
-        printf("%f ", v[1]);
 
         // calculating Vrms
         vrms[0] = 0.7071068 * v[0];
@@ -381,19 +398,32 @@ void main(void)
         // Reset the timer
         TL0 = 0;
         TH0 = 0;
+        overflow_count = 0;
         while (ADC_at_Pin(QFP32_MUX_P1_7) != 0); // Wait for the signal to be zero
         while (ADC_at_Pin(QFP32_MUX_P1_7) == 0); // Wait for the signal to be positive
         TR0 = 1; // Start the timer 0
         // Start tracking the secondary signal @ p 0.6
 
-        while (ADC_at_Pin(QFP32_MUX_P0_6) != 0); // Wait for the signal to be zero
-        while (ADC_at_Pin(QFP32_MUX_P0_6) == 0); // Wait for the signal to be positive
+        while (ADC_at_Pin(QFP32_MUX_P0_6) != 0)
+        {
+            if (TF0 == 1) // Did the 16-bit timer overflow?
+            {
+                TF0 = 0;
+                overflow_count++;
+            }
+        }                                        // Wait for the signal to be zero
+        while (ADC_at_Pin(QFP32_MUX_P0_6) == 0)
+        {
+            if (TF0 == 1) // Did the 16-bit timer overflow?
+            {
+                TF0 = 0;
+                overflow_count++;
+            }
+        }                                // Wait for the signal to be positive
         TR0 = 0;                         // Stop timer 0
-        period_diff = (TH0 * 256.0 + TL0) * (12.0 / SYSCLK);
+        period_diff = (overflow_count * 65536.0 + TH0 * 256.0 + TL0) * (12.0 / SYSCLK);
         phase_diff = period_diff / (360.0 * period);
-
-        printf("d");
-
+        
         if (phase_diff > 180.0) {
             phase_diff = phase_diff - 360.0;
         }
