@@ -389,8 +389,7 @@ void main(void)
          
         // measuring phase diff
         // Start tracking the reference signal @ p 1.7
-        // Reset the timer
-        TL0 = 0;
+        TL0 = 0;                                // Reset the timer 
         TH0 = 0;
         overflow_count = 0;
         while (ADC_at_Pin(QFP32_MUX_P1_7) != 0); // Wait for the signal to be zero
@@ -430,7 +429,7 @@ void main(void)
         LCDprint(buff, 1, 1);
 
         sprintf(buff, "VT:%.1f P:%.1f", vrms[1], phase_diff); 
-        LCDprint(buff, 2, 0);
+        LCDprint(buff, 2, 1);
 
         /*
         v[0] = Volts_at_Pin(QFP32_MUX_P2_2);
