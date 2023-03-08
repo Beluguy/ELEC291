@@ -327,7 +327,7 @@ void main(void)
 
     char buff[17];
 
-    float temp;
+    float tempf;
 
     float frequency;
     float freqmem;
@@ -343,11 +343,7 @@ void main(void)
 
     BOOT_BUTTON = 1;
     UNIT_CHANGE_BUTTON = 1;
-<<<<<<< Updated upstream
     MEMORY_BUTTON = 1;
-=======
-    P2_0 = 1;
->>>>>>> Stashed changes
 
     InitPinADC(0, 6);               // Configure P0.6 as analog input
     InitPinADC(1, 7);               // Configure P1.7 as analog input
@@ -381,13 +377,13 @@ void main(void)
                 vrms[0] = temp[0];
                 vrms[1] = temp[1];
 
-                temp = freqmem;
+                tempf = freqmem;
                 freqmem = frequency;
-                frequency = temp;
+                frequency = tempf;
 
-                temp = phase_diffmem;
+                tempf = phase_diffmem;
                 phase_diffmem = phase_diff;
-                phase_diff = temp;
+                phase_diff = tempf;
 
                 // update display
                 sprintf(buff, "VR:%.1f Freq:%.1f", vrms[0], frequency); // print test Frequenct to LCD
