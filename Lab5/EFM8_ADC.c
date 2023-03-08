@@ -374,13 +374,13 @@ void main(void)
         // reading reference Vpeak
         while (ADC_at_Pin(QFP32_MUX_P1_7) != 0); // wait for 0
         while (ADC_at_Pin(QFP32_MUX_P1_7) == 0); // Wait for the signal to be positive
-        Timer3wait(quarter_period); //TODO replace this with timer routine :tear:
+        Timer3wait(quarter_period); 
         v[0] = Volts_at_Pin(QFP32_MUX_P1_7);
 
         // reading Vpeak of second
         while (ADC_at_Pin(QFP32_MUX_P0_6) != 0); // Wait for the signal to be zero
         while (ADC_at_Pin(QFP32_MUX_P0_6) == 0); // Wait for the signal to be positive
-        Timer3wait(quarter_period); //TODO replace this with timer routine :tear:
+        Timer3wait(quarter_period); 
         v[1] = Volts_at_Pin(QFP32_MUX_P0_6);
 
         // calculating Vrms
