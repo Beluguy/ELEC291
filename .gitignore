@@ -358,3 +358,4 @@ MigrationBackup/
 *.map
 
 Lab4/*.asm
+Lab5/*.asm
