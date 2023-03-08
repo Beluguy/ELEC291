@@ -383,8 +383,6 @@ void main(void)
 
                 if (units == 0)
                 {
-                    frequency = frequency * 2 * 3.14159265;                 // rad to hz
-                    phase_diff = phase_diff * 180 / 3.1415926535;           // rad to degree
                     sprintf(buff, "VR:%.1f F:%5.1fHz", vrms[0], frequency); // print test Frequenct to LCD
                     LCDprint(buff, 1, 1);
 
@@ -393,8 +391,6 @@ void main(void)
                 }
                 else
                 {
-                    frequency = frequency / (2 * 3.14159265);              // hz to rad
-                    phase_diff = phase_diff * 3.1415926535 / 180;          // degree to rad
                     sprintf(buff, "VR:%.1f F:%5.3fR", vrms[0], frequency); // print test Frequenct to LCD
                     LCDprint(buff, 1, 1);
 
@@ -515,12 +511,9 @@ void main(void)
         }
 
         // speaker beep
-        // display results vrms[0] vrms[1] phase_diff frequency
-        printf("VR:%f VT:%f phase_diff:%f freq:%f V1:%f V2:%f\n", vrms[0], vrms[1], phase_diff, frequency, v[0], v[1]);
+
         if (units == 0)
         {
-            frequency = frequency * 2 * 3.14159265;                 // rad to hz
-            phase_diff = phase_diff * 180 / 3.1415926535;           // rad to degree
             sprintf(buff, "VR:%.1f F:%5.1fHz", vrms[0], frequency); // print test Frequenct to LCD
             LCDprint(buff, 1, 1);
 
