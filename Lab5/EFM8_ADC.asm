@@ -1,7 +1,7 @@
 ;--------------------------------------------------------
 ; File Created by C51
 ; Version 1.0.0 #1170 (Feb 16 2022) (MSVC)
-; This file was generated Wed Mar 08 12:20:32 2023
+; This file was generated Wed Mar 08 12:17:00 2023
 ;--------------------------------------------------------
 $name EFM8_ADC
 $optc51 --model-small
@@ -751,20 +751,61 @@ L005001?:
 	mov	_TMR3CN0,#0x00
 	ret
 ;------------------------------------------------------------
+;Allocation info for local variables in function 'Timer3wait'
+;------------------------------------------------------------
+;overflow                  Allocated to registers r2 r3 
+;------------------------------------------------------------
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:155: void Timer3wait(unsigned int overflow) {
+;	-----------------------------------------
+;	 function Timer3wait
+;	-----------------------------------------
+_Timer3wait:
+	mov	r2,dpl
+	mov	r3,dph
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:157: CKCON0 |= 0b_0100_0000;
+	orl	_CKCON0,#0x40
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:159: TMR3RL = (-(SYSCLK) / overflow); // Set Timer3 to overflow in overflow time.
+	mov	__divslong_PARM_2,r2
+	mov	(__divslong_PARM_2 + 1),r3
+	mov	(__divslong_PARM_2 + 2),#0x00
+	mov	(__divslong_PARM_2 + 3),#0x00
+	mov	dptr,#0x5E00
+	mov	b,#0xB5
+	mov	a,#0xFB
+	lcall	__divslong
+	mov	r2,dpl
+	mov	r3,dph
+	mov	r4,b
+	mov	r5,a
+	mov	_TMR3RL,r2
+	mov	(_TMR3RL >> 8),r3
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:160: TMR3 = TMR3RL;                   // Initialize Timer3 for first overflow
+	mov	_TMR3,_TMR3RL
+	mov	(_TMR3 >> 8),(_TMR3RL >> 8)
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:162: TMR3CN0 = 0x04;          // Sart Timer3 and clear overflow flag
+	mov	_TMR3CN0,#0x04
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:163: while (!(TMR3CN0 & 0x80));               // Wait for overflow
+L005001?:
+	mov	a,_TMR3CN0
+	jnb	acc.7,L005001?
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:164: TMR3CN0 = 0; // Stop Timer3 and clear overflow flag
+	mov	_TMR3CN0,#0x00
+	ret
+;------------------------------------------------------------
 ;Allocation info for local variables in function 'waitms'
 ;------------------------------------------------------------
 ;ms                        Allocated to registers r2 r3 
 ;j                         Allocated to registers r4 r5 
 ;k                         Allocated to registers r6 
 ;------------------------------------------------------------
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:167: void waitms(unsigned int ms)
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:167: void waitms(unsigned int ms)
 ;	-----------------------------------------
 ;	 function waitms
 ;	-----------------------------------------
 _waitms:
 	mov	r2,dpl
 	mov	r3,dph
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:171: for (j = 0; j < ms; j++)
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:171: for (j = 0; j < ms; j++)
 	mov	r4,#0x00
 	mov	r5,#0x00
 L006005?:
@@ -774,13 +815,13 @@ L006005?:
 	mov	a,r5
 	subb	a,r3
 	jnc	L006009?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:172: for (k = 0; k < 4; k++)
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:172: for (k = 0; k < 4; k++)
 	mov	r6,#0x00
 L006001?:
 	cjne	r6,#0x04,L006018?
 L006018?:
 	jnc	L006007?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:173: Timer3us(250);
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:173: Timer3us(250);
 	mov	dpl,#0xFA
 	push	ar2
 	push	ar3
@@ -793,11 +834,11 @@ L006018?:
 	pop	ar4
 	pop	ar3
 	pop	ar2
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:172: for (k = 0; k < 4; k++)
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:172: for (k = 0; k < 4; k++)
 	inc	r6
 	sjmp	L006001?
 L006007?:
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:171: for (j = 0; j < ms; j++)
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:171: for (j = 0; j < ms; j++)
 	inc	r4
 	cjne	r4,#0x00,L006005?
 	inc	r5
@@ -810,14 +851,14 @@ L006009?:
 ;us                        Allocated to registers r2 r3 
 ;j                         Allocated to registers r4 r5 
 ;------------------------------------------------------------
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:176: void waitus(unsigned int us)
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:176: void waitus(unsigned int us)
 ;	-----------------------------------------
 ;	 function waitus
 ;	-----------------------------------------
 _waitus:
 	mov	r2,dpl
 	mov	r3,dph
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:179: for (j = 0; j < us; j++) {
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:179: for (j = 0; j < us; j++) {
 	mov	r4,#0x00
 	mov	r5,#0x00
 L007001?:
@@ -827,7 +868,7 @@ L007001?:
 	mov	a,r5
 	subb	a,r3
 	jnc	L007005?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:180: Timer3us(1);
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:180: Timer3us(1);
 	mov	dpl,#0x01
 	push	ar2
 	push	ar3
@@ -838,7 +879,7 @@ L007001?:
 	pop	ar4
 	pop	ar3
 	pop	ar2
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:179: for (j = 0; j < us; j++) {
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:179: for (j = 0; j < us; j++) {
 	inc	r4
 	cjne	r4,#0x00,L007001?
 	inc	r5
@@ -852,13 +893,13 @@ L007005?:
 ;portno                    Allocated to registers r2 
 ;mask                      Allocated to registers r3 
 ;------------------------------------------------------------
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:184: void InitPinADC (unsigned char portno, unsigned char pinno)
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:184: void InitPinADC (unsigned char portno, unsigned char pinno)
 ;	-----------------------------------------
 ;	 function InitPinADC
 ;	-----------------------------------------
 _InitPinADC:
 	mov	r2,dpl
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:188: mask=1<<pinno;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:188: mask=1<<pinno;
 	mov	b,_InitPinADC_PARM_2
 	inc	b
 	mov	a,#0x01
@@ -868,73 +909,73 @@ L008011?:
 L008013?:
 	djnz	b,L008011?
 	mov	r3,a
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:190: SFRPAGE = 0x20;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:190: SFRPAGE = 0x20;
 	mov	_SFRPAGE,#0x20
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:191: switch (portno)
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:191: switch (portno)
 	cjne	r2,#0x00,L008014?
 	sjmp	L008001?
 L008014?:
 	cjne	r2,#0x01,L008015?
 	sjmp	L008002?
 L008015?:
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:193: case 0:
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:193: case 0:
 	cjne	r2,#0x02,L008005?
 	sjmp	L008003?
 L008001?:
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:194: P0MDIN &= (~mask); // Set pin as analog input
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:194: P0MDIN &= (~mask); // Set pin as analog input
 	mov	a,r3
 	cpl	a
 	mov	r2,a
 	anl	_P0MDIN,a
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:195: P0SKIP |= mask; // Skip Crossbar decoding for this pin
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:195: P0SKIP |= mask; // Skip Crossbar decoding for this pin
 	mov	a,r3
 	orl	_P0SKIP,a
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:196: break;
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:197: case 1:
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:196: break;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:197: case 1:
 	sjmp	L008005?
 L008002?:
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:198: P1MDIN &= (~mask); // Set pin as analog input
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:198: P1MDIN &= (~mask); // Set pin as analog input
 	mov	a,r3
 	cpl	a
 	mov	r2,a
 	anl	_P1MDIN,a
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:199: P1SKIP |= mask; // Skip Crossbar decoding for this pin
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:199: P1SKIP |= mask; // Skip Crossbar decoding for this pin
 	mov	a,r3
 	orl	_P1SKIP,a
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:200: break;
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:201: case 2:
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:200: break;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:201: case 2:
 	sjmp	L008005?
 L008003?:
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:202: P2MDIN &= (~mask); // Set pin as analog input
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:202: P2MDIN &= (~mask); // Set pin as analog input
 	mov	a,r3
 	cpl	a
 	mov	r2,a
 	anl	_P2MDIN,a
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:203: P2SKIP |= mask; // Skip Crossbar decoding for this pin
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:203: P2SKIP |= mask; // Skip Crossbar decoding for this pin
 	mov	a,r3
 	orl	_P2SKIP,a
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:207: }
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:207: }
 L008005?:
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:208: SFRPAGE = 0x00;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:208: SFRPAGE = 0x00;
 	mov	_SFRPAGE,#0x00
 	ret
 ;------------------------------------------------------------
 ;Allocation info for local variables in function 'Get_ADC'
 ;------------------------------------------------------------
 ;------------------------------------------------------------
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:211: unsigned int Get_ADC(void)
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:211: unsigned int Get_ADC(void)
 ;	-----------------------------------------
 ;	 function Get_ADC
 ;	-----------------------------------------
 _Get_ADC:
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:213: ADINT = 0;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:213: ADINT = 0;
 	clr	_ADINT
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:214: ADBUSY = 1;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:214: ADBUSY = 1;
 	setb	_ADBUSY
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:215: while (!ADINT); // Wait for conversion to complete
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:215: while (!ADINT); // Wait for conversion to complete
 L009001?:
 	jnb	_ADINT,L009001?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:216: return (ADC0);
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:216: return (ADC0);
 	mov	dpl,_ADC0
 	mov	dph,(_ADC0 >> 8)
 	ret
@@ -943,20 +984,20 @@ L009001?:
 ;------------------------------------------------------------
 ;pin                       Allocated to registers 
 ;------------------------------------------------------------
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:219: unsigned int ADC_at_Pin(unsigned char pin)
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:219: unsigned int ADC_at_Pin(unsigned char pin)
 ;	-----------------------------------------
 ;	 function ADC_at_Pin
 ;	-----------------------------------------
 _ADC_at_Pin:
 	mov	_ADC0MX,dpl
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:222: ADINT = 0;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:222: ADINT = 0;
 	clr	_ADINT
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:223: ADBUSY = 1; // Convert voltage at the pin
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:223: ADBUSY = 1; // Convert voltage at the pin
 	setb	_ADBUSY
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:224: while (!ADINT); // Wait for conversion to complete
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:224: while (!ADINT); // Wait for conversion to complete
 L010001?:
 	jnb	_ADINT,L010001?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:225: return (ADC0);
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:225: return (ADC0);
 	mov	dpl,_ADC0
 	mov	dph,(_ADC0 >> 8)
 	ret
@@ -965,12 +1006,12 @@ L010001?:
 ;------------------------------------------------------------
 ;pin                       Allocated to registers r2 
 ;------------------------------------------------------------
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:228: float Volts_at_Pin(unsigned char pin)
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:228: float Volts_at_Pin(unsigned char pin)
 ;	-----------------------------------------
 ;	 function Volts_at_Pin
 ;	-----------------------------------------
 _Volts_at_Pin:
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:230: return ((ADC_at_Pin(pin) * VDD) / 0b_0011_1111_1111_1111);
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:230: return ((ADC_at_Pin(pin) * VDD) / 0b_0011_1111_1111_1111);
 	lcall	_ADC_at_Pin
 	lcall	___uint2fs
 	mov	r2,dpl
@@ -1021,33 +1062,33 @@ _Volts_at_Pin:
 ;Allocation info for local variables in function 'TIMER0_Init'
 ;------------------------------------------------------------
 ;------------------------------------------------------------
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:233: void TIMER0_Init(void)
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:233: void TIMER0_Init(void)
 ;	-----------------------------------------
 ;	 function TIMER0_Init
 ;	-----------------------------------------
 _TIMER0_Init:
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:235: TMOD &= 0b_1111_0000; // Set the bits of Timer/Counter 0 to zero
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:235: TMOD &= 0b_1111_0000; // Set the bits of Timer/Counter 0 to zero
 	anl	_TMOD,#0xF0
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:236: TMOD |= 0b_0000_0001; // Timer/Counter 0 used as a 16-bit timer
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:236: TMOD |= 0b_0000_0001; // Timer/Counter 0 used as a 16-bit timer
 	orl	_TMOD,#0x01
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:237: TR0 = 0;              // Stop Timer/Counter 0
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:237: TR0 = 0;              // Stop Timer/Counter 0
 	clr	_TR0
 	ret
 ;------------------------------------------------------------
 ;Allocation info for local variables in function 'LCD_pulse'
 ;------------------------------------------------------------
 ;------------------------------------------------------------
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:240: void LCD_pulse(void)
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:240: void LCD_pulse(void)
 ;	-----------------------------------------
 ;	 function LCD_pulse
 ;	-----------------------------------------
 _LCD_pulse:
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:242: LCD_E = 1;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:242: LCD_E = 1;
 	setb	_P2_5
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:243: Timer3us(40);
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:243: Timer3us(40);
 	mov	dpl,#0x28
 	lcall	_Timer3us
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:244: LCD_E = 0;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:244: LCD_E = 0;
 	clr	_P2_5
 	ret
 ;------------------------------------------------------------
@@ -1055,66 +1096,66 @@ _LCD_pulse:
 ;------------------------------------------------------------
 ;x                         Allocated to registers r2 
 ;------------------------------------------------------------
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:247: void LCD_byte(unsigned char x)
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:247: void LCD_byte(unsigned char x)
 ;	-----------------------------------------
 ;	 function LCD_byte
 ;	-----------------------------------------
 _LCD_byte:
 	mov	r2,dpl
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:250: ACC = x; // Send high nible
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:250: ACC = x; // Send high nible
 	mov	_ACC,r2
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:251: LCD_D7 = ACC_7;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:251: LCD_D7 = ACC_7;
 	mov	c,_ACC_7
 	mov	_P2_1,c
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:252: LCD_D6 = ACC_6;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:252: LCD_D6 = ACC_6;
 	mov	c,_ACC_6
 	mov	_P2_2,c
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:253: LCD_D5 = ACC_5;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:253: LCD_D5 = ACC_5;
 	mov	c,_ACC_5
 	mov	_P2_3,c
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:254: LCD_D4 = ACC_4;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:254: LCD_D4 = ACC_4;
 	mov	c,_ACC_4
 	mov	_P2_4,c
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:255: LCD_pulse();
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:255: LCD_pulse();
 	push	ar2
 	lcall	_LCD_pulse
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:256: Timer3us(40);
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:256: Timer3us(40);
 	mov	dpl,#0x28
 	lcall	_Timer3us
 	pop	ar2
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:257: ACC = x; // Send low nible
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:257: ACC = x; // Send low nible
 	mov	_ACC,r2
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:258: LCD_D7 = ACC_3;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:258: LCD_D7 = ACC_3;
 	mov	c,_ACC_3
 	mov	_P2_1,c
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:259: LCD_D6 = ACC_2;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:259: LCD_D6 = ACC_2;
 	mov	c,_ACC_2
 	mov	_P2_2,c
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:260: LCD_D5 = ACC_1;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:260: LCD_D5 = ACC_1;
 	mov	c,_ACC_1
 	mov	_P2_3,c
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:261: LCD_D4 = ACC_0;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:261: LCD_D4 = ACC_0;
 	mov	c,_ACC_0
 	mov	_P2_4,c
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:262: LCD_pulse();
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:262: LCD_pulse();
 	ljmp	_LCD_pulse
 ;------------------------------------------------------------
 ;Allocation info for local variables in function 'WriteData'
 ;------------------------------------------------------------
 ;x                         Allocated to registers r2 
 ;------------------------------------------------------------
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:265: void WriteData(unsigned char x)
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:265: void WriteData(unsigned char x)
 ;	-----------------------------------------
 ;	 function WriteData
 ;	-----------------------------------------
 _WriteData:
 	mov	r2,dpl
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:267: LCD_RS = 1;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:267: LCD_RS = 1;
 	setb	_P2_6
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:268: LCD_byte(x);
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:268: LCD_byte(x);
 	mov	dpl,r2
 	lcall	_LCD_byte
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:269: waitms(2);
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:269: waitms(2);
 	mov	dptr,#0x0002
 	ljmp	_waitms
 ;------------------------------------------------------------
@@ -1122,53 +1163,53 @@ _WriteData:
 ;------------------------------------------------------------
 ;x                         Allocated to registers r2 
 ;------------------------------------------------------------
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:272: void WriteCommand(unsigned char x)
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:272: void WriteCommand(unsigned char x)
 ;	-----------------------------------------
 ;	 function WriteCommand
 ;	-----------------------------------------
 _WriteCommand:
 	mov	r2,dpl
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:274: LCD_RS = 0;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:274: LCD_RS = 0;
 	clr	_P2_6
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:275: LCD_byte(x);
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:275: LCD_byte(x);
 	mov	dpl,r2
 	lcall	_LCD_byte
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:276: waitms(5);
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:276: waitms(5);
 	mov	dptr,#0x0005
 	ljmp	_waitms
 ;------------------------------------------------------------
 ;Allocation info for local variables in function 'LCD_4BIT'
 ;------------------------------------------------------------
 ;------------------------------------------------------------
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:279: void LCD_4BIT(void)
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:279: void LCD_4BIT(void)
 ;	-----------------------------------------
 ;	 function LCD_4BIT
 ;	-----------------------------------------
 _LCD_4BIT:
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:281: LCD_E = 0; // Resting state of LCD's enable is zero
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:281: LCD_E = 0; // Resting state of LCD's enable is zero
 	clr	_P2_5
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:283: waitms(20);
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:283: waitms(20);
 	mov	dptr,#0x0014
 	lcall	_waitms
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:285: WriteCommand(0x33);
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:285: WriteCommand(0x33);
 	mov	dpl,#0x33
 	lcall	_WriteCommand
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:286: WriteCommand(0x33);
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:286: WriteCommand(0x33);
 	mov	dpl,#0x33
 	lcall	_WriteCommand
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:287: WriteCommand(0x32); // Change to 4-bit mode
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:287: WriteCommand(0x32); // Change to 4-bit mode
 	mov	dpl,#0x32
 	lcall	_WriteCommand
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:290: WriteCommand(0x28);
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:290: WriteCommand(0x28);
 	mov	dpl,#0x28
 	lcall	_WriteCommand
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:291: WriteCommand(0x0c);
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:291: WriteCommand(0x0c);
 	mov	dpl,#0x0C
 	lcall	_WriteCommand
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:292: WriteCommand(0x01); // Clear screen command (takes some time)
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:292: WriteCommand(0x01); // Clear screen command (takes some time)
 	mov	dpl,#0x01
 	lcall	_WriteCommand
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:293: waitms(20);         // Wait for clear screen command to finsih.
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:293: waitms(20);         // Wait for clear screen command to finsih.
 	mov	dptr,#0x0014
 	ljmp	_waitms
 ;------------------------------------------------------------
@@ -1178,7 +1219,7 @@ _LCD_4BIT:
 ;string                    Allocated to registers r2 r3 r4 
 ;j                         Allocated to registers r5 r6 
 ;------------------------------------------------------------
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:296: void LCDprint(char *string, unsigned char line, bit clear)
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:296: void LCDprint(char *string, unsigned char line, bit clear)
 ;	-----------------------------------------
 ;	 function LCDprint
 ;	-----------------------------------------
@@ -1186,7 +1227,7 @@ _LCDprint:
 	mov	r2,dpl
 	mov	r3,dph
 	mov	r4,b
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:300: WriteCommand(line == 2 ? 0xc0 : 0x80);
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:300: WriteCommand(line == 2 ? 0xc0 : 0x80);
 	mov	a,#0x02
 	cjne	a,_LCDprint_PARM_2,L018013?
 	mov	r5,#0xC0
@@ -1199,13 +1240,13 @@ L018014?:
 	push	ar3
 	push	ar4
 	lcall	_WriteCommand
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:301: waitms(5);
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:301: waitms(5);
 	mov	dptr,#0x0005
 	lcall	_waitms
 	pop	ar4
 	pop	ar3
 	pop	ar2
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:302: for (j = 0; string[j] != 0; j++)
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:302: for (j = 0; string[j] != 0; j++)
 	mov	r5,#0x00
 	mov	r6,#0x00
 L018003?:
@@ -1222,7 +1263,7 @@ L018003?:
 	lcall	__gptrget
 	mov	r7,a
 	jz	L018006?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:303: WriteData(string[j]); // Write the message
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:303: WriteData(string[j]); // Write the message
 	mov	dpl,r7
 	push	ar2
 	push	ar3
@@ -1235,18 +1276,18 @@ L018003?:
 	pop	ar4
 	pop	ar3
 	pop	ar2
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:302: for (j = 0; string[j] != 0; j++)
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:302: for (j = 0; string[j] != 0; j++)
 	inc	r5
 	cjne	r5,#0x00,L018003?
 	inc	r6
 	sjmp	L018003?
 L018006?:
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:304: if (clear)
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:304: if (clear)
 	jnb	_LCDprint_PARM_3,L018011?
 	mov	ar2,r5
 	mov	ar3,r6
 L018007?:
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:305: for (; j < CHARS_PER_LINE; j++)
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:305: for (; j < CHARS_PER_LINE; j++)
 	clr	c
 	mov	a,r2
 	subb	a,#0x10
@@ -1254,14 +1295,14 @@ L018007?:
 	xrl	a,#0x80
 	subb	a,#0x80
 	jnc	L018011?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:306: WriteData(' '); // Clear the rest of the line
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:306: WriteData(' '); // Clear the rest of the line
 	mov	dpl,#0x20
 	push	ar2
 	push	ar3
 	lcall	_WriteData
 	pop	ar3
 	pop	ar2
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:305: for (; j < CHARS_PER_LINE; j++)
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:305: for (; j < CHARS_PER_LINE; j++)
 	inc	r2
 	cjne	r2,#0x00,L018007?
 	inc	r3
@@ -1283,33 +1324,33 @@ L018011?:
 ;overflow_count            Allocated to registers r2 r3 
 ;sloc0                     Allocated with name '_main_sloc0_1_0'
 ;------------------------------------------------------------
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:309: void main(void)
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:309: void main(void)
 ;	-----------------------------------------
 ;	 function main
 ;	-----------------------------------------
 _main:
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:322: BOOT_BUTTON = 1;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:322: BOOT_BUTTON = 1;
 	setb	_P3_7
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:323: UNIT_CHANGE_BUTTON = 1;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:323: UNIT_CHANGE_BUTTON = 1;
 	setb	_P2_0
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:325: InitPinADC(0, 6); // Configure P0.6 as analog input
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:325: InitPinADC(0, 6); // Configure P0.6 as analog input
 	mov	_InitPinADC_PARM_2,#0x06
 	mov	dpl,#0x00
 	lcall	_InitPinADC
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:326: InitPinADC(1, 7); // Configure P1.7 as analog input
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:326: InitPinADC(1, 7); // Configure P1.7 as analog input
 	mov	_InitPinADC_PARM_2,#0x07
 	mov	dpl,#0x01
 	lcall	_InitPinADC
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:327: InitADC();
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:327: InitADC();
 	lcall	_InitADC
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:328: TIMER0_Init(); 
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:328: TIMER0_Init(); 
 	lcall	_TIMER0_Init
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:329: LCD_4BIT();    
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:329: LCD_4BIT();    
 	lcall	_LCD_4BIT
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:331: waitms(500);       // Give PuTTy a chance to start before sending
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:331: waitms(500);       // Give PuTTy a chance to start before sending
 	mov	dptr,#0x01F4
 	lcall	_waitms
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:332: printf("\x1b[2J"); // Clear screen using ANSI escape sequence.
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:332: printf("\x1b[2J"); // Clear screen using ANSI escape sequence.
 	mov	a,#__str_0
 	push	acc
 	mov	a,#(__str_0 >> 8)
@@ -1320,8 +1361,8 @@ _main:
 	dec	sp
 	dec	sp
 	dec	sp
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:338: __FILE__, __DATE__, __TIME__);
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:337: "Compiled: %s, %s\n\n",
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:338: __FILE__, __DATE__, __TIME__);
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:337: "Compiled: %s, %s\n\n",
 	mov	a,#__str_4
 	push	acc
 	mov	a,#(__str_4 >> 8)
@@ -1350,26 +1391,26 @@ _main:
 	mov	a,sp
 	add	a,#0xf4
 	mov	sp,a
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:340: LCDprint("VR:X.X Freq:XX.X", 1, 1);
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:340: LCDprint("VR:X.X Freq:", 1, 1);
 	mov	_LCDprint_PARM_2,#0x01
 	setb	_LCDprint_PARM_3
 	mov	dptr,#__str_5
 	mov	b,#0x80
 	lcall	_LCDprint
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:341: LCDprint("VT:X.X P:-XXX.XX", 2, 1);
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:341: LCDprint("VT:X.X P:", 2, 1);
 	mov	_LCDprint_PARM_2,#0x02
 	setb	_LCDprint_PARM_3
 	mov	dptr,#__str_6
 	mov	b,#0x80
 	lcall	_LCDprint
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:346: while(BOOT_BUTTON != 0) // wait for bttn before measuring
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:346: while(BOOT_BUTTON != 0) // wait for bttn before measuring
 L019002?:
 	jb	_P3_7,L019002?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:353: TL0 = 0;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:353: TL0 = 0;
 	mov	_TL0,#0x00
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:354: TH0 = 0;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:354: TH0 = 0;
 	mov	_TH0,#0x00
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:356: while (ADC_at_Pin(QFP32_MUX_P1_7) != 0); // Wait for the signal to be zero
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:356: while (ADC_at_Pin(QFP32_MUX_P1_7) != 0); // Wait for the signal to be zero
 L019005?:
 	mov	dpl,#0x0D
 	lcall	_ADC_at_Pin
@@ -1377,7 +1418,7 @@ L019005?:
 	mov	b,dph
 	orl	a,b
 	jnz	L019005?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:357: while (ADC_at_Pin(QFP32_MUX_P1_7) == 0); // Wait for the signal to be positive
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:357: while (ADC_at_Pin(QFP32_MUX_P1_7) == 0); // Wait for the signal to be positive
 L019008?:
 	mov	dpl,#0x0D
 	lcall	_ADC_at_Pin
@@ -1385,9 +1426,9 @@ L019008?:
 	mov	b,dph
 	orl	a,b
 	jz	L019008?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:358: TR0 = 1;                                 // Start the timer 0
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:358: TR0 = 1;                                 // Start the timer 0
 	setb	_TR0
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:359: while (ADC_at_Pin(QFP32_MUX_P1_7) != 0)
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:359: while (ADC_at_Pin(QFP32_MUX_P1_7) != 0)
 	mov	r2,#0x00
 	mov	r3,#0x00
 L019013?:
@@ -1401,20 +1442,20 @@ L019013?:
 	pop	ar2
 	orl	a,b
 	jz	L019015?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:361: if (TF0 == 1) // Did the 16-bit timer overflow?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:363: TF0 = 0;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:361: if (TF0 == 1) // Did the 16-bit timer overflow?
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:363: TF0 = 0;
 	jbc	_TF0,L019082?
 	sjmp	L019013?
 L019082?:
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:364: overflow_count++;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:364: overflow_count++;
 	inc	r2
 	cjne	r2,#0x00,L019013?
 	inc	r3
 	sjmp	L019013?
 L019015?:
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:367: TR0 = 0;                         // Stop timer 0
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:367: TR0 = 0;                         // Stop timer 0
 	clr	_TR0
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:368: half_period = overflow_count * 65536 + TH0 * 0x100 + TL0; // The 16-bit number [TH0-TL0]
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:368: half_period = overflow_count * 65536 + TH0 * 0x100 + TL0; // The 16-bit number [TH0-TL0]
 	mov	(_main_sloc0_1_0 + 3),r3
 	mov	(_main_sloc0_1_0 + 2),r2
 	mov	(_main_sloc0_1_0 + 1),#0x00
@@ -1457,7 +1498,7 @@ L019015?:
 	addc	a,(_main_sloc0_1_0 + 3)
 	mov	dpl,r4
 	mov	dph,r5
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:370: period = half_period * 2.0 * (12.0 / SYSCLK);
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:370: period = half_period * 2.0 * (12.0 / SYSCLK);
 	lcall	___uint2fs
 	mov	r2,dpl
 	mov	r3,dph
@@ -1478,7 +1519,7 @@ L019015?:
 	mov	a,sp
 	add	a,#0xfc
 	mov	sp,a
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:371: quarter_period = period / 4.0;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:371: quarter_period = period / 4.0;
 	clr	a
 	push	acc
 	push	acc
@@ -1505,7 +1546,7 @@ L019015?:
 	lcall	___fs2uint
 	mov	_main_quarter_period_1_80,dpl
 	mov	(_main_quarter_period_1_80 + 1),dph
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:372: frequency = 1.0 / period;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:372: frequency = 1.0 / period;
 	push	_main_period_1_80
 	push	(_main_period_1_80 + 1)
 	push	(_main_period_1_80 + 2)
@@ -1521,22 +1562,7 @@ L019015?:
 	mov	a,sp
 	add	a,#0xfc
 	mov	sp,a
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:373: printf("%f ", frequency);
-	push	_main_frequency_1_80
-	push	(_main_frequency_1_80 + 1)
-	push	(_main_frequency_1_80 + 2)
-	push	(_main_frequency_1_80 + 3)
-	mov	a,#__str_7
-	push	acc
-	mov	a,#(__str_7 >> 8)
-	push	acc
-	mov	a,#0x80
-	push	acc
-	lcall	_printf
-	mov	a,sp
-	add	a,#0xf9
-	mov	sp,a
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:376: while (ADC_at_Pin(QFP32_MUX_P1_7) != 0); // wait for 0
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:375: while (ADC_at_Pin(QFP32_MUX_P1_7) != 0); // wait for 0
 L019016?:
 	mov	dpl,#0x0D
 	lcall	_ADC_at_Pin
@@ -1544,7 +1570,7 @@ L019016?:
 	mov	b,dph
 	orl	a,b
 	jnz	L019016?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:377: while (ADC_at_Pin(QFP32_MUX_P1_7) == 0); // Wait for the signal to be positive
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:376: while (ADC_at_Pin(QFP32_MUX_P1_7) == 0); // Wait for the signal to be positive
 L019019?:
 	mov	dpl,#0x0D
 	lcall	_ADC_at_Pin
@@ -1552,11 +1578,11 @@ L019019?:
 	mov	b,dph
 	orl	a,b
 	jz	L019019?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:378: Timer3wait(quarter_period); //TODO replace this with timer routine :tear:
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:377: Timer3wait(quarter_period); //TODO replace this with timer routine :tear:
 	mov	dpl,_main_quarter_period_1_80
 	mov	dph,(_main_quarter_period_1_80 + 1)
 	lcall	_Timer3wait
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:379: v[0] = Volts_at_Pin(QFP32_MUX_P1_7);
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:378: v[0] = Volts_at_Pin(QFP32_MUX_P1_7);
 	mov	dpl,#0x0D
 	lcall	_Volts_at_Pin
 	mov	r2,dpl
@@ -1567,7 +1593,7 @@ L019019?:
 	mov	(_main_v_1_80 + 1),r3
 	mov	(_main_v_1_80 + 2),r4
 	mov	(_main_v_1_80 + 3),r5
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:382: while (ADC_at_Pin(QFP32_MUX_P0_6) != 0); // Wait for the signal to be zero
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:381: while (ADC_at_Pin(QFP32_MUX_P0_6) != 0); // Wait for the signal to be zero
 L019022?:
 	mov	dpl,#0x04
 	lcall	_ADC_at_Pin
@@ -1575,7 +1601,7 @@ L019022?:
 	mov	b,dph
 	orl	a,b
 	jnz	L019022?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:383: while (ADC_at_Pin(QFP32_MUX_P0_6) == 0); // Wait for the signal to be positive
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:382: while (ADC_at_Pin(QFP32_MUX_P0_6) == 0); // Wait for the signal to be positive
 L019025?:
 	mov	dpl,#0x04
 	lcall	_ADC_at_Pin
@@ -1583,11 +1609,11 @@ L019025?:
 	mov	b,dph
 	orl	a,b
 	jz	L019025?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:384: Timer3wait(quarter_period); //TODO replace this with timer routine :tear:
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:383: Timer3wait(quarter_period); //TODO replace this with timer routine :tear:
 	mov	dpl,_main_quarter_period_1_80
 	mov	dph,(_main_quarter_period_1_80 + 1)
 	lcall	_Timer3wait
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:385: v[1] = Volts_at_Pin(QFP32_MUX_P0_6);
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:384: v[1] = Volts_at_Pin(QFP32_MUX_P0_6);
 	mov	dpl,#0x04
 	lcall	_Volts_at_Pin
 	mov	_main_sloc0_1_0,dpl
@@ -1598,7 +1624,7 @@ L019025?:
 	mov	((_main_v_1_80 + 0x0004) + 1),(_main_sloc0_1_0 + 1)
 	mov	((_main_v_1_80 + 0x0004) + 2),(_main_sloc0_1_0 + 2)
 	mov	((_main_v_1_80 + 0x0004) + 3),(_main_sloc0_1_0 + 3)
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:388: vrms[0] = 0.7071068 * v[0];
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:387: vrms[0] = 0.7071068 * v[0];
 	push	_main_v_1_80
 	push	(_main_v_1_80 + 1)
 	push	(_main_v_1_80 + 2)
@@ -1618,7 +1644,7 @@ L019025?:
 	mov	(_main_vrms_1_80 + 1),r7
 	mov	(_main_vrms_1_80 + 2),r2
 	mov	(_main_vrms_1_80 + 3),r3
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:389: vrms[1] = 0.7071068 * v[1];
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:388: vrms[1] = 0.7071068 * v[1];
 	push	_main_sloc0_1_0
 	push	(_main_sloc0_1_0 + 1)
 	push	(_main_sloc0_1_0 + 2)
@@ -1638,11 +1664,11 @@ L019025?:
 	mov	((_main_vrms_1_80 + 0x0004) + 1),r3
 	mov	((_main_vrms_1_80 + 0x0004) + 2),r4
 	mov	((_main_vrms_1_80 + 0x0004) + 3),r5
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:394: TL0 = 0;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:393: TL0 = 0;
 	mov	_TL0,#0x00
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:395: TH0 = 0;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:394: TH0 = 0;
 	mov	_TH0,#0x00
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:397: while (ADC_at_Pin(QFP32_MUX_P1_7) != 0); // Wait for the signal to be zero
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:396: while (ADC_at_Pin(QFP32_MUX_P1_7) != 0); // Wait for the signal to be zero
 L019028?:
 	mov	dpl,#0x0D
 	lcall	_ADC_at_Pin
@@ -1650,7 +1676,7 @@ L019028?:
 	mov	b,dph
 	orl	a,b
 	jnz	L019028?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:398: while (ADC_at_Pin(QFP32_MUX_P1_7) == 0); // Wait for the signal to be positive
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:397: while (ADC_at_Pin(QFP32_MUX_P1_7) == 0); // Wait for the signal to be positive
 L019031?:
 	mov	dpl,#0x0D
 	lcall	_ADC_at_Pin
@@ -1658,9 +1684,9 @@ L019031?:
 	mov	b,dph
 	orl	a,b
 	jz	L019031?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:399: TR0 = 1; // Start the timer 0
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:398: TR0 = 1; // Start the timer 0
 	setb	_TR0
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:402: while (ADC_at_Pin(QFP32_MUX_P0_6) != 0)
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:401: while (ADC_at_Pin(QFP32_MUX_P0_6) != 0)
 	mov	r2,#0x00
 	mov	r3,#0x00
 L019036?:
@@ -1674,14 +1700,14 @@ L019036?:
 	pop	ar2
 	orl	a,b
 	jz	L019072?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:404: if (TF0 == 1) // Did the 16-bit timer overflow?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:406: TF0 = 0;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:403: if (TF0 == 1) // Did the 16-bit timer overflow?
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:405: TF0 = 0;
 	jbc	_TF0,L019091?
 	sjmp	L019036?
 L019091?:
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:407: overflow_count++;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:406: overflow_count++;
 	inc	r2
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:410: while (ADC_at_Pin(QFP32_MUX_P0_6) == 0)
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:409: while (ADC_at_Pin(QFP32_MUX_P0_6) == 0)
 	cjne	r2,#0x00,L019036?
 	inc	r3
 	sjmp	L019036?
@@ -1697,20 +1723,20 @@ L019041?:
 	pop	ar2
 	orl	a,b
 	jnz	L019043?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:412: if (TF0 == 1) // Did the 16-bit timer overflow?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:414: TF0 = 0;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:411: if (TF0 == 1) // Did the 16-bit timer overflow?
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:413: TF0 = 0;
 	jbc	_TF0,L019094?
 	sjmp	L019041?
 L019094?:
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:415: overflow_count++;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:414: overflow_count++;
 	inc	r2
 	cjne	r2,#0x00,L019041?
 	inc	r3
 	sjmp	L019041?
 L019043?:
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:418: TR0 = 0;                         // Stop timer 0
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:417: TR0 = 0;                         // Stop timer 0
 	clr	_TR0
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:419: period_diff = (overflow_count * 65536.0 + TH0 * 256.0 + TL0) * (12.0 / SYSCLK);
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:418: period_diff = (overflow_count * 65536.0 + TH0 * 256.0 + TL0) * (12.0 / SYSCLK);
 	mov	dpl,r2
 	mov	dph,r3
 	lcall	___uint2fs
@@ -1810,11 +1836,11 @@ L019043?:
 	mov	a,sp
 	add	a,#0xfc
 	mov	sp,a
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:420: phase_diff = period_diff * 360.0 * frequency;
-	push	_main_period_diff_1_80
-	push	(_main_period_diff_1_80 + 1)
-	push	(_main_period_diff_1_80 + 2)
-	push	(_main_period_diff_1_80 + 3)
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:419: phase_diff = period_diff / (360.0 * period);
+	push	_main_period_1_80
+	push	(_main_period_1_80 + 1)
+	push	(_main_period_1_80 + 2)
+	push	(_main_period_1_80 + 3)
 	mov	dptr,#0x0000
 	mov	b,#0xB4
 	mov	a,#0x43
@@ -1826,15 +1852,15 @@ L019043?:
 	mov	a,sp
 	add	a,#0xfc
 	mov	sp,a
-	push	_main_frequency_1_80
-	push	(_main_frequency_1_80 + 1)
-	push	(_main_frequency_1_80 + 2)
-	push	(_main_frequency_1_80 + 3)
-	mov	dpl,r6
-	mov	dph,r7
-	mov	b,r2
-	mov	a,r3
-	lcall	___fsmul
+	push	ar6
+	push	ar7
+	push	ar2
+	push	ar3
+	mov	dpl,_main_period_diff_1_80
+	mov	dph,(_main_period_diff_1_80 + 1)
+	mov	b,(_main_period_diff_1_80 + 2)
+	mov	a,(_main_period_diff_1_80 + 3)
+	lcall	___fsdiv
 	mov	r2,dpl
 	mov	r3,dph
 	mov	r4,b
@@ -1842,7 +1868,7 @@ L019043?:
 	mov	a,sp
 	add	a,#0xfc
 	mov	sp,a
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:422: if (phase_diff > 180.0) {
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:421: if (phase_diff > 180.0) {
 	push	ar2
 	push	ar3
 	push	ar4
@@ -1869,7 +1895,7 @@ L019043?:
 	pop	ar2
 	mov	a,r6
 	jz	L019045?
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:423: phase_diff = phase_diff - 360.0;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:422: phase_diff = phase_diff - 360.0;
 	clr	a
 	push	acc
 	push	acc
@@ -1890,23 +1916,11 @@ L019043?:
 	add	a,#0xfc
 	mov	sp,a
 L019045?:
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:428: printf("VR:%f VT:%f phase diff:%f freq:%f V1:%f V2:%f perioddiff:%f \n", vrms[0], vrms[1], phase_diff, frequency, v[1], v[2], period_diff);
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:427: printf("VR:%f VT:%f phase diff:%f freq:%f ", vrms[0], vrms[1], phase_diff, frequency);
 	push	ar2
 	push	ar3
 	push	ar4
 	push	ar5
-	push	_main_period_diff_1_80
-	push	(_main_period_diff_1_80 + 1)
-	push	(_main_period_diff_1_80 + 2)
-	push	(_main_period_diff_1_80 + 3)
-	push	(_main_v_1_80 + 0x0008)
-	push	((_main_v_1_80 + 0x0008) + 1)
-	push	((_main_v_1_80 + 0x0008) + 2)
-	push	((_main_v_1_80 + 0x0008) + 3)
-	push	(_main_v_1_80 + 0x0004)
-	push	((_main_v_1_80 + 0x0004) + 1)
-	push	((_main_v_1_80 + 0x0004) + 2)
-	push	((_main_v_1_80 + 0x0004) + 3)
 	push	_main_frequency_1_80
 	push	(_main_frequency_1_80 + 1)
 	push	(_main_frequency_1_80 + 2)
@@ -1923,17 +1937,23 @@ L019045?:
 	push	(_main_vrms_1_80 + 1)
 	push	(_main_vrms_1_80 + 2)
 	push	(_main_vrms_1_80 + 3)
-	mov	a,#__str_8
+	mov	a,#__str_7
 	push	acc
-	mov	a,#(__str_8 >> 8)
+	mov	a,#(__str_7 >> 8)
 	push	acc
 	mov	a,#0x80
 	push	acc
-	lcall	_printf
+	mov	a,#_main_buff_1_80
+	push	acc
+	mov	a,#(_main_buff_1_80 >> 8)
+	push	acc
+	mov	a,#0x40
+	push	acc
+	lcall	_sprintf
 	mov	a,sp
-	add	a,#0xe1
+	add	a,#0xf2
 	mov	sp,a
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:430: sprintf(buff, "VR:%.1f Freq:%.1f", vrms[0], frequency); // print test Frequenct to LCD
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:429: sprintf(buff, "VR:%.1f Freq:%.1f", vrms[0], frequency); // print test Frequenct to LCD
 	push	_main_frequency_1_80
 	push	(_main_frequency_1_80 + 1)
 	push	(_main_frequency_1_80 + 2)
@@ -1942,6 +1962,33 @@ L019045?:
 	push	(_main_vrms_1_80 + 1)
 	push	(_main_vrms_1_80 + 2)
 	push	(_main_vrms_1_80 + 3)
+	mov	a,#__str_8
+	push	acc
+	mov	a,#(__str_8 >> 8)
+	push	acc
+	mov	a,#0x80
+	push	acc
+	mov	a,#_main_buff_1_80
+	push	acc
+	mov	a,#(_main_buff_1_80 >> 8)
+	push	acc
+	mov	a,#0x40
+	push	acc
+	lcall	_sprintf
+	mov	a,sp
+	add	a,#0xf2
+	mov	sp,a
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:430: LCDprint(buff, 1, 1);
+	mov	_LCDprint_PARM_2,#0x01
+	setb	_LCDprint_PARM_3
+	mov	dptr,#_main_buff_1_80
+	mov	b,#0x40
+	lcall	_LCDprint
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:432: sprintf(buff, "VT:%.1f P:%.1f", vrms[1], phase_diff); 
+	push	(_main_vrms_1_80 + 0x0004)
+	push	((_main_vrms_1_80 + 0x0004) + 1)
+	push	((_main_vrms_1_80 + 0x0004) + 2)
+	push	((_main_vrms_1_80 + 0x0004) + 3)
 	mov	a,#__str_9
 	push	acc
 	mov	a,#(__str_9 >> 8)
@@ -1958,34 +2005,7 @@ L019045?:
 	mov	a,sp
 	add	a,#0xf2
 	mov	sp,a
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:431: LCDprint(buff, 1, 1);
-	mov	_LCDprint_PARM_2,#0x01
-	setb	_LCDprint_PARM_3
-	mov	dptr,#_main_buff_1_80
-	mov	b,#0x40
-	lcall	_LCDprint
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:433: sprintf(buff, "VT:%.1f P:%.1f", vrms[1], phase_diff); 
-	push	(_main_vrms_1_80 + 0x0004)
-	push	((_main_vrms_1_80 + 0x0004) + 1)
-	push	((_main_vrms_1_80 + 0x0004) + 2)
-	push	((_main_vrms_1_80 + 0x0004) + 3)
-	mov	a,#__str_10
-	push	acc
-	mov	a,#(__str_10 >> 8)
-	push	acc
-	mov	a,#0x80
-	push	acc
-	mov	a,#_main_buff_1_80
-	push	acc
-	mov	a,#(_main_buff_1_80 >> 8)
-	push	acc
-	mov	a,#0x40
-	push	acc
-	lcall	_sprintf
-	mov	a,sp
-	add	a,#0xf2
-	mov	sp,a
-;	C:\ELEC291\Elec-291\Lab5\EFM8_ADC.c:434: LCDprint(buff, 2, 0);
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:433: LCDprint(buff, 2, 0);
 	mov	_LCDprint_PARM_2,#0x02
 	clr	_LCDprint_PARM_3
 	mov	dptr,#_main_buff_1_80
@@ -2028,25 +2048,21 @@ __str_3:
 	db 'Mar  8 2023'
 	db 0x00
 __str_4:
-	db '12:20:32'
+	db '12:17:00'
 	db 0x00
 __str_5:
-	db 'VR:X.X Freq:XX.X'
+	db 'VR:X.X Freq:'
 	db 0x00
 __str_6:
-	db 'VT:X.X P:-XXX.XX'
+	db 'VT:X.X P:'
 	db 0x00
 __str_7:
-	db '%f '
+	db 'VR:%f VT:%f phase diff:%f freq:%f '
 	db 0x00
 __str_8:
-	db 'VR:%f VT:%f phase diff:%f freq:%f V1:%f V2:%f perioddiff:%f '
-	db 0x0A
-	db 0x00
-__str_9:
 	db 'VR:%.1f Freq:%.1f'
 	db 0x00
-__str_10:
+__str_9:
 	db 'VT:%.1f P:%.1f'
 	db 0x00
 
