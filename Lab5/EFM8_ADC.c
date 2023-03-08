@@ -308,8 +308,8 @@ void LCDprint(char *string, unsigned char line, bit clear)
 
 void main(void)
 {
-    float v[2];
-    float vrms[2];
+    float v[2];                     // Vpeak
+    float vrms[2];                  // Vrms
     char buff[17];
     float frequency;
     float period;
@@ -318,12 +318,14 @@ void main(void)
     float period_diff;
     float phase_diff;
     unsigned int overflow_count;
+    int units = 0;
+    float conversion_factor = 3.1415926535897932 / 180;
 
     BOOT_BUTTON = 1;
     UNIT_CHANGE_BUTTON = 1;
 
-    InitPinADC(0, 6); // Configure P0.6 as analog input
-    InitPinADC(1, 7); // Configure P1.7 as analog input
+    InitPinADC(0, 6);               // Configure P0.6 as analog input
+    InitPinADC(1, 7);               // Configure P1.7 as analog input
     InitADC();
     TIMER0_Init(); 
     LCD_4BIT();    
@@ -337,16 +339,42 @@ void main(void)
            "Compiled: %s, %s\n\n",
            __FILE__, __DATE__, __TIME__);
 
-    LCDprint("VR:X.X Freq:", 1, 1);
+    LCDprint("VR:X.X F:", 1, 1);
     LCDprint("VT:X.X P:", 2, 1);
 
     while (1)
     {
         loop:
-        while(BOOT_BUTTON != 0) // wait for bttn before measuring
+        while (BOOT_BUTTON != 0)
         {
+            if (P2_0 == 0)
+            {
+                units = !units;
+                if (units == 0)
+                {
+                    LCDprint("C measured [nF]:", 1, 1);
+                    conversion_factor = 1000000000.0;
+                    cap_old = cap_old * 1000.0;
+                    capacitance = capacitance * 1000.0;
+                    sprintf(buff, "%.1f %.1f", capacitance, cap_old);
+                    LCDprint(buff, 2, 1);
+                }
+                else
+                {
+                    LCDprint("C measured [uF]:", 1, 1);
+                    conversion_factor = 1000000.0;
+                    cap_old = cap_old / 1000.0;
+                    capacitance = capacitance / 1000.0;
+                    sprintf(buff, "%.3f %.3f", capacitance, cap_old);
+                    LCDprint(buff, 2, 1);
+                }
+                waitms(500);
+            }
+            waitms(50);
+        }           // wait for boot to be pressed for next read
+        waitms(50); // make sure switch doesn't bounce
 
-        }
+
 
         // Start tracking the reference signal @ p 1.7
         // Reset the timer
@@ -393,7 +421,7 @@ void main(void)
         // calculating Vrms
         vrms[0] = 0.7071068 * v[0];
         vrms[1] = 0.7071068 * v[1];
-         
+        
         // measuring phase diff
         // Start tracking the reference signal @ p 1.7
         TL0 = 0;                                // Reset the timer 
@@ -430,7 +458,7 @@ void main(void)
 
         // speaker beep
         // display results vrms[0] vrms[1] phase_diff frequency
-        printf("VR:%f VT:%f phase diff:%f freq:%f V1:%f V2:%f perioddiff:%f \n", vrms[0], vrms[1], phase_diff, frequency, v[1], v[2], period_diff);
+        printf("VR:%f VT:%f phase_diff:%f freq:%f V1:%f V2:%f period_diff:%f \n", vrms[0], vrms[1], phase_diff, frequency, v[1], v[2], period_diff);
 
         sprintf(buff, "VR:%.1f Freq:%.1f", vrms[0], frequency); // print test Frequenct to LCD
         LCDprint(buff, 1, 1);
