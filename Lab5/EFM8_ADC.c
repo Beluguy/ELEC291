@@ -317,7 +317,7 @@ void main(void)
 
     waitms(500);       // Give PuTTy a chance to start before sending
     printf("\x1b[2J"); // Clear screen using ANSI escape sequence.
-
+    
     printf("Phasor Measurement Program\n"
            "Apply reference signal to P1.7, and test signal to P0.6\n"
            "File: %s\n"
@@ -350,8 +350,6 @@ void main(void)
         quarter_period_us = period / 4.0 * 1000000.0;
         frequency = 1.0 / period;
         printf("%f ", frequency);
-        sprintf(buff, "VR:X.X Freq:%.1f", frequency); // print test Frequenct to LCD
-        LCDprint(buff, 1, 1);
 
         // reading reference Vpeak
         while (ADC_at_Pin(QFP32_MUX_P1_7) != 0); // wait for 0
@@ -365,17 +363,12 @@ void main(void)
         while (ADC_at_Pin(QFP32_MUX_P0_6) == 0); // Wait for the signal to be positive
         waitus(quarter_period_us); //TODO replace this with timer routine :tear:
         v[1] = Volts_at_Pin(QFP32_MUX_P0_6);
-
         printf("%f ", v[1]);
 
         // calculating Vrms
         vrms[0] = 0.7071068 * v[0];
-        sprintf(buff, "VR:%.1f Freq:%.1f", vrms[0],frequency); // print test Frequenct to LCD
-        LCDprint(buff, 1, 1);
         vrms[1] = 0.7071068 * v[1];
-        sprintf(buff, "VT:%.1f P:-XXX.XX", , vrms[1],frequency); // print test Frequenct to LCD
-        LCDprint(buff, 2, 1);
-       
+         
         // measuring phase diff
         // Start tracking the reference signal @ p 1.7
         // Reset the timer
@@ -400,11 +393,13 @@ void main(void)
 
         // speaker beep
         // display results vrms[0] vrms[1] phase_diff frequency
-        printf("V1: %f V2: %f phase: %f f: %f ", vrms[0], vrms[1], phase_diff, frequency);
+        printf("VR:%f VT:%f phase diff:%f freq:%f ", vrms[0], vrms[1], phase_diff, frequency);
 
+        sprintf(buff, "VR:%.1f Freq:%.1f", vrms[0], frequency); // print test Frequenct to LCD
+        LCDprint(buff, 1, 1);
 
-        sprintf(buff, "%.1f", phase_diff); // print ref phase to LCD
-        LCDprint(buff, 2, 1);
+        sprintf(buff, "VT:%.1f P:%.1f", vrms[1], phase_diff); 
+        LCDprint(buff, 2, 0);
 
         /*
         v[0] = Volts_at_Pin(QFP32_MUX_P2_2);

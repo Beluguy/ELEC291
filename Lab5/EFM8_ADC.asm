@@ -1,7 +1,7 @@
 ;--------------------------------------------------------
 ; File Created by C51
 ; Version 1.0.0 #1170 (Feb 16 2022) (MSVC)
-; This file was generated Tue Mar 07 15:40:55 2023
+; This file was generated Wed Mar 08 12:09:40 2023
 ;--------------------------------------------------------
 $name EFM8_ADC
 $optc51 --model-small
@@ -1459,34 +1459,7 @@ L018011?:
 	mov	a,sp
 	add	a,#0xf9
 	mov	sp,a
-;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:353: sprintf(buff, "VR:X.X Freq:%.1f", frequency); // print test Frequenct to LCD
-	push	_main_frequency_1_78
-	push	(_main_frequency_1_78 + 1)
-	push	(_main_frequency_1_78 + 2)
-	push	(_main_frequency_1_78 + 3)
-	mov	a,#__str_8
-	push	acc
-	mov	a,#(__str_8 >> 8)
-	push	acc
-	mov	a,#0x80
-	push	acc
-	mov	a,#_main_buff_1_78
-	push	acc
-	mov	a,#(_main_buff_1_78 >> 8)
-	push	acc
-	mov	a,#0x40
-	push	acc
-	lcall	_sprintf
-	mov	a,sp
-	add	a,#0xf6
-	mov	sp,a
-;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:354: LCDprint(buff, 1, 1);
-	mov	_LCDprint_PARM_2,#0x01
-	setb	_LCDprint_PARM_3
-	mov	dptr,#_main_buff_1_78
-	mov	b,#0x40
-	lcall	_LCDprint
-;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:357: while (ADC_at_Pin(QFP32_MUX_P1_7) != 0); // wait for 0
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:355: while (ADC_at_Pin(QFP32_MUX_P1_7) != 0); // wait for 0
 L018014?:
 	mov	dpl,#0x0D
 	lcall	_ADC_at_Pin
@@ -1494,7 +1467,7 @@ L018014?:
 	mov	b,dph
 	orl	a,b
 	jnz	L018014?
-;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:358: while (ADC_at_Pin(QFP32_MUX_P1_7) == 0); // Wait for the signal to be positive
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:356: while (ADC_at_Pin(QFP32_MUX_P1_7) == 0); // Wait for the signal to be positive
 L018017?:
 	mov	dpl,#0x0D
 	lcall	_ADC_at_Pin
@@ -1502,11 +1475,11 @@ L018017?:
 	mov	b,dph
 	orl	a,b
 	jz	L018017?
-;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:359: waitus(quarter_period_us); //TODO replace this with timer routine :tear:
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:357: waitus(quarter_period_us); //TODO replace this with timer routine :tear:
 	mov	dpl,_main_quarter_period_us_1_78
 	mov	dph,(_main_quarter_period_us_1_78 + 1)
 	lcall	_waitus
-;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:360: v[0] = Volts_at_Pin(QFP32_MUX_P1_7);
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:358: v[0] = Volts_at_Pin(QFP32_MUX_P1_7);
 	mov	dpl,#0x0D
 	lcall	_Volts_at_Pin
 	mov	r2,dpl
@@ -1517,7 +1490,7 @@ L018017?:
 	mov	(_main_v_1_78 + 1),r3
 	mov	(_main_v_1_78 + 2),r4
 	mov	(_main_v_1_78 + 3),r5
-;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:361: printf("%f ", v[0]);
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:359: printf("%f ", v[0]);
 	push	ar2
 	push	ar3
 	push	ar4
@@ -1532,7 +1505,7 @@ L018017?:
 	mov	a,sp
 	add	a,#0xf9
 	mov	sp,a
-;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:364: while (ADC_at_Pin(QFP32_MUX_P0_6) != 0); // Wait for the signal to be zero
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:362: while (ADC_at_Pin(QFP32_MUX_P0_6) != 0); // Wait for the signal to be zero
 L018020?:
 	mov	dpl,#0x04
 	lcall	_ADC_at_Pin
@@ -1540,7 +1513,7 @@ L018020?:
 	mov	b,dph
 	orl	a,b
 	jnz	L018020?
-;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:365: while (ADC_at_Pin(QFP32_MUX_P0_6) == 0); // Wait for the signal to be positive
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:363: while (ADC_at_Pin(QFP32_MUX_P0_6) == 0); // Wait for the signal to be positive
 L018023?:
 	mov	dpl,#0x04
 	lcall	_ADC_at_Pin
@@ -1548,11 +1521,11 @@ L018023?:
 	mov	b,dph
 	orl	a,b
 	jz	L018023?
-;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:366: waitus(quarter_period_us); //TODO replace this with timer routine :tear:
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:364: waitus(quarter_period_us); //TODO replace this with timer routine :tear:
 	mov	dpl,_main_quarter_period_us_1_78
 	mov	dph,(_main_quarter_period_us_1_78 + 1)
 	lcall	_waitus
-;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:367: v[1] = Volts_at_Pin(QFP32_MUX_P0_6);
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:365: v[1] = Volts_at_Pin(QFP32_MUX_P0_6);
 	mov	dpl,#0x04
 	lcall	_Volts_at_Pin
 	mov	r2,dpl
@@ -1563,7 +1536,7 @@ L018023?:
 	mov	((_main_v_1_78 + 0x0004) + 1),r3
 	mov	((_main_v_1_78 + 0x0004) + 2),r4
 	mov	((_main_v_1_78 + 0x0004) + 3),r5
-;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:369: printf("%f ", v[1]);
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:366: printf("%f ", v[1]);
 	push	ar2
 	push	ar3
 	push	ar4
@@ -1578,7 +1551,7 @@ L018023?:
 	mov	a,sp
 	add	a,#0xf9
 	mov	sp,a
-;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:372: vrms[0] = 0.7071068 * v[0];
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:369: vrms[0] = 0.7071068 * v[0];
 	push	_main_v_1_78
 	push	(_main_v_1_78 + 1)
 	push	(_main_v_1_78 + 2)
@@ -1598,34 +1571,7 @@ L018023?:
 	mov	(_main_vrms_1_78 + 1),r3
 	mov	(_main_vrms_1_78 + 2),r4
 	mov	(_main_vrms_1_78 + 3),r5
-;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:373: sprintf(buff, "%.1f", vrms[0]); // print ref Vrms to LCD
-	push	ar2
-	push	ar3
-	push	ar4
-	push	ar5
-	mov	a,#__str_9
-	push	acc
-	mov	a,#(__str_9 >> 8)
-	push	acc
-	mov	a,#0x80
-	push	acc
-	mov	a,#_main_buff_1_78
-	push	acc
-	mov	a,#(_main_buff_1_78 >> 8)
-	push	acc
-	mov	a,#0x40
-	push	acc
-	lcall	_sprintf
-	mov	a,sp
-	add	a,#0xf6
-	mov	sp,a
-;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:374: LCDprint(buff, 1, 1);
-	mov	_LCDprint_PARM_2,#0x01
-	setb	_LCDprint_PARM_3
-	mov	dptr,#_main_buff_1_78
-	mov	b,#0x40
-	lcall	_LCDprint
-;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:375: vrms[1] = 0.7071068 * v[1];
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:370: vrms[1] = 0.7071068 * v[1];
 	push	(_main_v_1_78 + 0x0004)
 	push	((_main_v_1_78 + 0x0004) + 1)
 	push	((_main_v_1_78 + 0x0004) + 2)
@@ -1645,38 +1591,11 @@ L018023?:
 	mov	((_main_vrms_1_78 + 0x0004) + 1),r3
 	mov	((_main_vrms_1_78 + 0x0004) + 2),r4
 	mov	((_main_vrms_1_78 + 0x0004) + 3),r5
-;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:376: sprintf(buff, "%.1f", vrms[1]); // print test Vrms to LCD
-	push	ar2
-	push	ar3
-	push	ar4
-	push	ar5
-	mov	a,#__str_9
-	push	acc
-	mov	a,#(__str_9 >> 8)
-	push	acc
-	mov	a,#0x80
-	push	acc
-	mov	a,#_main_buff_1_78
-	push	acc
-	mov	a,#(_main_buff_1_78 >> 8)
-	push	acc
-	mov	a,#0x40
-	push	acc
-	lcall	_sprintf
-	mov	a,sp
-	add	a,#0xf6
-	mov	sp,a
-;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:377: LCDprint(buff, 2, 1);
-	mov	_LCDprint_PARM_2,#0x02
-	setb	_LCDprint_PARM_3
-	mov	dptr,#_main_buff_1_78
-	mov	b,#0x40
-	lcall	_LCDprint
-;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:382: TL0 = 0;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:375: TL0 = 0;
 	mov	_TL0,#0x00
-;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:383: TH0 = 0;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:376: TH0 = 0;
 	mov	_TH0,#0x00
-;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:384: while (ADC_at_Pin(QFP32_MUX_P1_7) != 0); // Wait for the signal to be zero
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:377: while (ADC_at_Pin(QFP32_MUX_P1_7) != 0); // Wait for the signal to be zero
 L018026?:
 	mov	dpl,#0x0D
 	lcall	_ADC_at_Pin
@@ -1684,7 +1603,7 @@ L018026?:
 	mov	b,dph
 	orl	a,b
 	jnz	L018026?
-;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:385: while (ADC_at_Pin(QFP32_MUX_P1_7) == 0); // Wait for the signal to be positive
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:378: while (ADC_at_Pin(QFP32_MUX_P1_7) == 0); // Wait for the signal to be positive
 L018029?:
 	mov	dpl,#0x0D
 	lcall	_ADC_at_Pin
@@ -1692,9 +1611,9 @@ L018029?:
 	mov	b,dph
 	orl	a,b
 	jz	L018029?
-;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:386: TR0 = 1; // Start the timer 0
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:379: TR0 = 1; // Start the timer 0
 	setb	_TR0
-;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:389: while (ADC_at_Pin(QFP32_MUX_P0_6) != 0); // Wait for the signal to be zero
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:382: while (ADC_at_Pin(QFP32_MUX_P0_6) != 0); // Wait for the signal to be zero
 L018032?:
 	mov	dpl,#0x04
 	lcall	_ADC_at_Pin
@@ -1702,7 +1621,7 @@ L018032?:
 	mov	b,dph
 	orl	a,b
 	jnz	L018032?
-;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:390: while (ADC_at_Pin(QFP32_MUX_P0_6) == 0); // Wait for the signal to be positive
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:383: while (ADC_at_Pin(QFP32_MUX_P0_6) == 0); // Wait for the signal to be positive
 L018035?:
 	mov	dpl,#0x04
 	lcall	_ADC_at_Pin
@@ -1710,9 +1629,9 @@ L018035?:
 	mov	b,dph
 	orl	a,b
 	jz	L018035?
-;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:391: TR0 = 0;                         // Stop timer 0
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:384: TR0 = 0;                         // Stop timer 0
 	clr	_TR0
-;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:392: period_diff = (TH0 * 256.0 + TL0) * (12.0 / SYSCLK);
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:385: period_diff = (TH0 * 256.0 + TL0) * (12.0 / SYSCLK);
 	mov	dpl,_TH0
 	lcall	___uchar2fs
 	mov	r2,dpl
@@ -1774,7 +1693,7 @@ L018035?:
 	mov	a,sp
 	add	a,#0xfc
 	mov	sp,a
-;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:393: phase_diff = period_diff / (360.0 * period);
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:386: phase_diff = period_diff / (360.0 * period);
 	push	_main_period_1_78
 	push	(_main_period_1_78 + 1)
 	push	(_main_period_1_78 + 2)
@@ -1806,14 +1725,14 @@ L018035?:
 	mov	a,sp
 	add	a,#0xfc
 	mov	sp,a
-;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:395: printf("d");
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:388: printf("d");
 	push	ar2
 	push	ar3
 	push	ar4
 	push	ar5
-	mov	a,#__str_10
+	mov	a,#__str_8
 	push	acc
-	mov	a,#(__str_10 >> 8)
+	mov	a,#(__str_8 >> 8)
 	push	acc
 	mov	a,#0x80
 	push	acc
@@ -1825,7 +1744,7 @@ L018035?:
 	pop	ar4
 	pop	ar3
 	pop	ar2
-;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:397: if (phase_diff > 180.0) {
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:390: if (phase_diff > 180.0) {
 	push	ar2
 	push	ar3
 	push	ar4
@@ -1852,7 +1771,7 @@ L018035?:
 	pop	ar2
 	mov	a,r6
 	jz	L018039?
-;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:398: phase_diff = phase_diff - 360.0;
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:391: phase_diff = phase_diff - 360.0;
 	clr	a
 	push	acc
 	push	acc
@@ -1873,7 +1792,7 @@ L018035?:
 	add	a,#0xfc
 	mov	sp,a
 L018039?:
-;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:403: printf("V1: %f V2: %f phase: %f f: %f ", vrms[0], vrms[1], phase_diff, frequency);
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:396: printf("VR:%f VT:%f phase diff:%f freq:%f ", vrms[0], vrms[1], phase_diff, frequency);
 	push	ar2
 	push	ar3
 	push	ar4
@@ -1894,9 +1813,9 @@ L018039?:
 	push	(_main_vrms_1_78 + 1)
 	push	(_main_vrms_1_78 + 2)
 	push	(_main_vrms_1_78 + 3)
-	mov	a,#__str_11
+	mov	a,#__str_9
 	push	acc
-	mov	a,#(__str_11 >> 8)
+	mov	a,#(__str_9 >> 8)
 	push	acc
 	mov	a,#0x80
 	push	acc
@@ -1904,10 +1823,18 @@ L018039?:
 	mov	a,sp
 	add	a,#0xed
 	mov	sp,a
-;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:406: sprintf(buff, "%.1f", phase_diff); // print ref phase to LCD
-	mov	a,#__str_9
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:398: sprintf(buff, "VR:%.1f Freq:%.1f", vrms[0], frequency); // print test Frequenct to LCD
+	push	_main_frequency_1_78
+	push	(_main_frequency_1_78 + 1)
+	push	(_main_frequency_1_78 + 2)
+	push	(_main_frequency_1_78 + 3)
+	push	_main_vrms_1_78
+	push	(_main_vrms_1_78 + 1)
+	push	(_main_vrms_1_78 + 2)
+	push	(_main_vrms_1_78 + 3)
+	mov	a,#__str_10
 	push	acc
-	mov	a,#(__str_9 >> 8)
+	mov	a,#(__str_10 >> 8)
 	push	acc
 	mov	a,#0x80
 	push	acc
@@ -1919,11 +1846,38 @@ L018039?:
 	push	acc
 	lcall	_sprintf
 	mov	a,sp
-	add	a,#0xf6
+	add	a,#0xf2
 	mov	sp,a
-;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:407: LCDprint(buff, 2, 1);
-	mov	_LCDprint_PARM_2,#0x02
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:399: LCDprint(buff, 1, 1);
+	mov	_LCDprint_PARM_2,#0x01
 	setb	_LCDprint_PARM_3
+	mov	dptr,#_main_buff_1_78
+	mov	b,#0x40
+	lcall	_LCDprint
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:401: sprintf(buff, "VT:%.1f P:%.1f", vrms[1], phase_diff); 
+	push	(_main_vrms_1_78 + 0x0004)
+	push	((_main_vrms_1_78 + 0x0004) + 1)
+	push	((_main_vrms_1_78 + 0x0004) + 2)
+	push	((_main_vrms_1_78 + 0x0004) + 3)
+	mov	a,#__str_11
+	push	acc
+	mov	a,#(__str_11 >> 8)
+	push	acc
+	mov	a,#0x80
+	push	acc
+	mov	a,#_main_buff_1_78
+	push	acc
+	mov	a,#(_main_buff_1_78 >> 8)
+	push	acc
+	mov	a,#0x40
+	push	acc
+	lcall	_sprintf
+	mov	a,sp
+	add	a,#0xf2
+	mov	sp,a
+;	C:\Users\Muon\School-UBC\Year2\Term2\ELEC291\Projects\Elec-291\Lab5\EFM8_ADC.c:402: LCDprint(buff, 2, 0);
+	mov	_LCDprint_PARM_2,#0x02
+	clr	_LCDprint_PARM_3
 	mov	dptr,#_main_buff_1_78
 	mov	b,#0x40
 	lcall	_LCDprint
@@ -1974,10 +1928,10 @@ __str_2:
 	db 'EFM8_ADC.c'
 	db 0x00
 __str_3:
-	db 'Mar  7 2023'
+	db 'Mar  8 2023'
 	db 0x00
 __str_4:
-	db '15:40:55'
+	db '12:09:40'
 	db 0x00
 __str_5:
 	db 'VR:X.X Freq:XX.X'
@@ -1989,16 +1943,16 @@ __str_7:
 	db '%f '
 	db 0x00
 __str_8:
-	db 'VR:X.X Freq:%.1f'
-	db 0x00
-__str_9:
-	db '%.1f'
-	db 0x00
-__str_10:
 	db 'd'
 	db 0x00
+__str_9:
+	db 'VR:%f VT:%f phase diff:%f freq:%f '
+	db 0x00
+__str_10:
+	db 'VR:%.1f Freq:%.1f'
+	db 0x00
 __str_11:
-	db 'V1: %f V2: %f phase: %f f: %f '
+	db 'VT:%.1f P:%.1f'
 	db 0x00
 
 	CSEG
