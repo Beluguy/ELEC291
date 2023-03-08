@@ -24,6 +24,7 @@
 #define VDD 3.290 // The measured value of VDD in volts
 #define BOOT_BUTTON P3_7
 #define UNIT_CHANGE_BUTTON P2_0
+#define MEMORY_BUTTON P0_2
 
 char _c51_external_startup (void)
 {
@@ -156,7 +157,7 @@ void Timer3wait(unsigned int overflow) {
     // The input for Timer 3 is selected as SYSCLK by setting T3ML (bit 6) of CKCON0:
     CKCON0 |= 0b_0100_0000;
 
-    TMR3RL = (-(SYSCLK) / overflow); // Set Timer3 to overflow in overflow time.
+    TMR3RL = (-(SYSCLK) * overflow); // Set Timer3 to overflow in overflow time.
     TMR3 = TMR3RL;                   // Initialize Timer3 for first overflow
 
     TMR3CN0 = 0x04;          // Sart Timer3 and clear overflow flag
@@ -175,10 +176,20 @@ void waitms(unsigned int ms)
 
 void waitus(unsigned int us)
 {
-    unsigned int j;
-    for (j = 0; j < us; j++) {
-        Timer3us(1);
+	unsigned int i;
+    // The input for Timer 3 is selected as SYSCLK by setting T3ML (bit 6) of CKCON0:
+    CKCON0 |= 0b_0100_0000;
+
+    TMR3RL = (-(SYSCLK) / 1000000L); // Set Timer3 to overflow in 1us.
+    TMR3 = TMR3RL;                   // Initialize Timer3 for first overflow
+
+    TMR3CN0 = 0x04;          // Sart Timer3 and clear overflow flag
+    for (i = 0; i < us; i++) // Count <us> overflows
+    {
+        while (!(TMR3CN0 & 0x80));               // Wait for overflow
+        TMR3CN0 &= ~(0x80); // Clear overflow indicator
     }
+    TMR3CN0 = 0; // Stop Timer3 and clear overflow flag
 }
 
 void InitPinADC (unsigned char portno, unsigned char pinno)
@@ -309,18 +320,28 @@ void LCDprint(char *string, unsigned char line, bit clear)
 void main(void)
 {
     float v[2];
+
+    float temp[2];
     float vrms[2];
+    float vrmsmem[2];
+
     char buff[17];
+
+    float temp;
+
     float frequency;
+    float freqmem;
     float period;
     unsigned int half_period;
-    float quarter_period;
+    unsigned int quarter_period;
     float period_diff;
     float phase_diff;
+    float phase_diffmem;
     unsigned int overflow_count;
 
     BOOT_BUTTON = 1;
     UNIT_CHANGE_BUTTON = 1;
+    MEMORY_BUTTON = 1;
 
     InitPinADC(0, 6); // Configure P0.6 as analog input
     InitPinADC(1, 7); // Configure P1.7 as analog input
@@ -345,8 +366,22 @@ void main(void)
         loop:
         while(BOOT_BUTTON != 0) // wait for bttn before measuring
         {
+            if (MEMORY_BUTTON == 0) {
+                // switch to last read input
+                temp[0] = vrmsmem[0];
+                temp[1] = vrmsmem[1];
+
+                vrmsmem = vrms[]
+            }
 
         }
+
+        // store last val to mem
+        vrmsmem[0] = vrms[0];
+        vrmsmem[1] = vrms[1];
+        freqmem = frequency;
+        phase_diffmem = phase_diff;
+
 
         // Start tracking the reference signal @ p 1.7
         // Reset the timer
@@ -368,26 +403,20 @@ void main(void)
         half_period = overflow_count * 65536 + TH0 * 0x100 + TL0; // The 16-bit number [TH0-TL0]
         //Time from the beginning of the sine wave to its peak
         period = half_period * 2.0 * (12.0 / SYSCLK);
-        quarter_period = period / 4.0;
+        quarter_period = period * 1000000.0 / 4.0;
         frequency = 1.0 / period;
-        
-        printf("p: %f, qp: %f", period, quarter_period);
 
         // reading reference Vpeak
-        while (1) {
-        P0_0 = 0;
         while (ADC_at_Pin(QFP32_MUX_P1_7) != 0); // wait for 0
         while (ADC_at_Pin(QFP32_MUX_P1_7) == 0); // Wait for the signal to be positive
-        P0_0 = 1;
-        Timer3wait(quarter_period); 
-        P0_0 = 0;
+
+        waitus(quarter_period); 
         v[0] = Volts_at_Pin(QFP32_MUX_P1_7);
-        }
 
         // reading Vpeak of second
         while (ADC_at_Pin(QFP32_MUX_P0_6) != 0); // Wait for the signal to be zero
         while (ADC_at_Pin(QFP32_MUX_P0_6) == 0); // Wait for the signal to be positive
-        Timer3wait(quarter_period); 
+        waitus(quarter_period); 
         v[1] = Volts_at_Pin(QFP32_MUX_P0_6);
 
         // calculating Vrms
@@ -395,16 +424,16 @@ void main(void)
         vrms[1] = 0.7071068 * v[1];
          
         // measuring phase diff
-        // Start tracking the reference signal @ p 1.7
         TL0 = 0;                                // Reset the timer 
         TH0 = 0;
         overflow_count = 0;
-        while (ADC_at_Pin(QFP32_MUX_P1_7) != 0); // Wait for the signal to be zero
-        while (ADC_at_Pin(QFP32_MUX_P1_7) == 0); // Wait for the signal to be positive
-        TR0 = 1; // Start the timer 0
         // Start tracking the secondary signal @ p 0.6
+        while (ADC_at_Pin(QFP32_MUX_P0_6) != 0); // Wait for the signal to be zero
+        while (ADC_at_Pin(QFP32_MUX_P0_6) == 0); // Wait for the signal to be positive
+        TR0 = 1; // Start the timer 0
+        // Start tracking the reference signal @ p 1.7
 
-        while (ADC_at_Pin(QFP32_MUX_P0_6) != 0)
+        while (ADC_at_Pin(QFP32_MUX_P1_7) != 0)
         {
             if (TF0 == 1) // Did the 16-bit timer overflow?
             {
@@ -412,7 +441,7 @@ void main(void)
                 overflow_count++;
             }
         }                                        // Wait for the signal to be zero
-        while (ADC_at_Pin(QFP32_MUX_P0_6) == 0)
+        while (ADC_at_Pin(QFP32_MUX_P1_7) == 0)
         {
             if (TF0 == 1) // Did the 16-bit timer overflow?
             {
@@ -430,7 +459,7 @@ void main(void)
 
         // speaker beep
         // display results vrms[0] vrms[1] phase_diff frequency
-        printf("VR:%f VT:%f phase diff:%f freq:%f V1:%f V2:%f perioddiff:%f \n", vrms[0], vrms[1], phase_diff, frequency, v[1], v[2], period_diff);
+        printf("VR:%f VT:%f phase diff:%f freq:%f V1:%f V2:%f perioddiff:%f \n", vrms[0], vrms[1], phase_diff, frequency, v[0], v[1], period_diff);
 
         sprintf(buff, "VR:%.1f Freq:%.1f", vrms[0], frequency); // print test Frequenct to LCD
         LCDprint(buff, 1, 1);
