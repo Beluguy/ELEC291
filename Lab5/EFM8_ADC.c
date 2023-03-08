@@ -383,10 +383,10 @@ void main(void)
                 phase_diff = temp;
 
                 // update display
-                sprintf(buff, "VR:%.1f F:%3.1f", vrms[0], frequency); // print test Frequenct to LCD
+                sprintf(buff, "VR:%.1f F:%5.1f", vrms[0], frequency); // print test Frequenct to LCD
                 LCDprint(buff, 1, 1);
 
-                sprintf(buff, "VT:%.1f P:%3.1f", vrms[1], phase_diff);
+                sprintf(buff, "VT:%.1f P:%5.1f", vrms[1], phase_diff);
                 LCDprint(buff, 2, 1);
             }
             if (UNIT_CHANGE_BUTTON == 0)
