@@ -1,7 +1,7 @@
 // ADC.c:  Shows how to use the 14-bit ADC.  This program
 // measures the voltage from some pins of the EFM8LB1 using the ADC.
 // (c) 2008-2023, Jesus Calvino-Fraga
-// Bonus: contrast, buzzer, volume control, unit conversion, psu, memory, button, display freq
+// Bonus: contrast, unit conversion, psu, memory, button, display freq
 #include <stdio.h>
 #include <stdlib.h>
 #include <EFM8LB1.h>
@@ -383,10 +383,10 @@ void main(void)
                 phase_diff = temp;
 
                 // update display
-                sprintf(buff, "VR:%.1f F:%.1f", vrms[0], frequency); // print test Frequenct to LCD
+                sprintf(buff, "VR:%.1f F:%3.1f", vrms[0], frequency); // print test Frequenct to LCD
                 LCDprint(buff, 1, 1);
 
-                sprintf(buff, "VT:%.1f P:%.1f", vrms[1], phase_diff);
+                sprintf(buff, "VT:%.1f P:%3.1f", vrms[1], phase_diff);
                 LCDprint(buff, 2, 1);
             }
             if (UNIT_CHANGE_BUTTON == 0)
@@ -394,13 +394,13 @@ void main(void)
                 units = !units;
                 if (units == 0)
                 {
-                    conversion_factor = 1;
+                    conversion_factor = 180 / 1415926535897932;
                     frequency = conversion_factor * frequency;
                     phase_diff = conversion_factor * phase_diff;
-                    sprintf(buff, "VR:%.1f F:%.1fD", vrms[0], frequency); // print test Frequenct to LCD
+                    sprintf(buff, "VR:%.1f F:%5.1fD", vrms[0], frequency); // print test Frequenct to LCD
                     LCDprint(buff, 1, 1);
 
-                    sprintf(buff, "VT:%.1f P:%.1fD", vrms[1], phase_diff); 
+                    sprintf(buff, "VT:%.1f P:%5.1fD", vrms[1], phase_diff); 
                     LCDprint(buff, 2, 1);
                 }
                 else
@@ -408,10 +408,10 @@ void main(void)
                     conversion_factor = 3.1415926535897932 / 180;
                     frequency = conversion_factor * frequency;
                     phase_diff = conversion_factor * phase_diff;
-                    sprintf(buff, "VR:%.1f F:%.1fR", vrms[0], frequency); // print test Frequenct to LCD
+                    sprintf(buff, "VR:%.1f F:%5.1fR", vrms[0], frequency); // print test Frequenct to LCD
                     LCDprint(buff, 1, 1);
 
-                    sprintf(buff, "VT:%.1f P:%.1fR", vrms[1], phase_diff); 
+                    sprintf(buff, "VT:%.1f P:%5.1fR", vrms[1], phase_diff); 
                     LCDprint(buff, 2, 1);
                 }
                 waitms(500);
@@ -504,10 +504,10 @@ void main(void)
         // display results vrms[0] vrms[1] phase_diff frequency
         printf("VR:%f VT:%f phase_diff:%f freq:%f V1:%f V2:%f\n", vrms[0], vrms[1], phase_diff, frequency, v[0], v[1]);
 
-        sprintf(buff, "VR:%.1f F:%.1f", vrms[0], frequency); // print test Frequenct to LCD
+        sprintf(buff, "VR:%.1f F:%5.1f", vrms[0], frequency); // print test Frequenct to LCD
         LCDprint(buff, 1, 1);
 
-        sprintf(buff, "VT:%.1f P:%.1f", vrms[1], phase_diff); 
+        sprintf(buff, "VT:%.1f P:%5.1f", vrms[1], phase_diff); 
         LCDprint(buff, 2, 1);
     }
 }
