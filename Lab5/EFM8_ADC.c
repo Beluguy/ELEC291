@@ -370,8 +370,25 @@ void main(void)
                 // switch to last read input
                 temp[0] = vrmsmem[0];
                 temp[1] = vrmsmem[1];
+                vrmsmem[0] = vrms[0];
+                vrmsmem[1] = vrms[1];
+                vrms[0] = temp[0];
+                vrms[1] = temp[1];
 
-                vrmsmem = vrms[]
+                temp = freqmem;
+                freqmem = frequency;
+                frequency = temp;
+
+                temp = phase_diffmem;
+                phase_diffmem = phase_diff;
+                phase_diff = temp;
+
+                // update display
+                sprintf(buff, "VR:%.1f Freq:%.1f", vrms[0], frequency); // print test Frequenct to LCD
+                LCDprint(buff, 1, 1);
+
+                sprintf(buff, "VT:%.1f P:%.1f", vrms[1], phase_diff);
+                LCDprint(buff, 2, 1);
             }
 
         }
