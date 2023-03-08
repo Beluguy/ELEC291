@@ -510,14 +510,5 @@ void main(void)
 
         sprintf(buff, "VT:%.1f P:%.1f", vrms[1], phase_diff); 
         LCDprint(buff, 2, 1);
-
-        /*
-        v[0] = Volts_at_Pin(QFP32_MUX_P2_2);
-        v[1] = Volts_at_Pin(QFP32_MUX_P2_3);
-        v[2] = Volts_at_Pin(QFP32_MUX_P2_4);
-        v[3] = Volts_at_Pin(QFP32_MUX_P2_5);
-        printf("V@P2.2=%7.5fV, V@P2.3=%7.5fV, V@P2.4=%7.5fV, V@P2.5=%7.5fV\r", v[0], v[1], v[2], v[3]);
-        waitms(500); 
-        */
     }
 }
