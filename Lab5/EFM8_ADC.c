@@ -153,18 +153,6 @@ void Timer3us(unsigned char us)
     TMR3CN0 = 0; // Stop Timer3 and clear overflow flag
 }
 
-void Timer3wait(unsigned int overflow) {
-    // The input for Timer 3 is selected as SYSCLK by setting T3ML (bit 6) of CKCON0:
-    CKCON0 |= 0b_0100_0000;
-
-    TMR3RL = (-(SYSCLK) * overflow); // Set Timer3 to overflow in overflow time.
-    TMR3 = TMR3RL;                   // Initialize Timer3 for first overflow
-
-    TMR3CN0 = 0x04;          // Sart Timer3 and clear overflow flag
-    while (!(TMR3CN0 & 0x80));               // Wait for overflow
-    TMR3CN0 = 0; // Stop Timer3 and clear overflow flag
-}
-
 void waitms(unsigned int ms)
 {
     unsigned int j;
@@ -486,7 +474,6 @@ void main(void)
         while (ADC_at_Pin(QFP32_MUX_P0_6) == 0); // Wait for the signal to be positive
         TR0 = 1; // Start the timer 0
         // Start tracking the reference signal @ p 1.7
-
         while (ADC_at_Pin(QFP32_MUX_P1_7) != 0)
         {
             if (TF0 == 1) // Did the 16-bit timer overflow?
