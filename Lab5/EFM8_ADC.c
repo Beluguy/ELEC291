@@ -373,7 +373,7 @@ void main(void)
                     LCDprint(buff, 2, 1);
                 }
                 else
-                {
+                {   
                     frequency = frequency / (2 * 3.14159265);              // hz to rad
                     phase_diff = phase_diff * 3.1415926535 / 180;          // degree to rad
                     sprintf(buff, "VR:%.1f F:%5.3fRS", vrms[0], frequency); // print test Frequenct to LCD
