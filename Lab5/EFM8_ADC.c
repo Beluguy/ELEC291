@@ -30,11 +30,10 @@ char _c51_external_startup (void)
 {
 	// Disable Watchdog with key sequence
 	SFRPAGE = 0x00;
-	WDTCN = 0xDE; //First key
-	WDTCN = 0xAD; //Second key
-  
-	VDM0CN=0x80;       // enable VDD monitor
-	RSTSRC=0x02|0x04;  // Enable reset on missing clock detector and VDD
+	WDTCN = 0xDE;       //First key
+	WDTCN = 0xAD;       //Second key
+	VDM0CN=0x80;        // enable VDD monitor
+	RSTSRC=0x02|0x04;   // Enable reset on missing clock detector and VDD
 
 	#if (SYSCLK == 48000000L)	
 		SFRPAGE = 0x10;
@@ -90,7 +89,6 @@ char _c51_external_startup (void)
 	TMOD |=  0x20;                       
 	TR1 = 1; // START Timer1
 	TI = 1;  // Indicate TX0 ready
-  	
 	return 0;
 }
 
@@ -310,9 +308,7 @@ void main(void)
     float v[2];
     float vrms[2] = {0,0};
     float vrmsmem[2] = {0,0};
-
     char buff[17];
-
     float temp;
 
     float frequency = 0;
@@ -343,7 +339,6 @@ void main(void)
            "File: %s\n"
            "Compiled: %s, %s\n\n",
            __FILE__, __DATE__, __TIME__);
-
     LCDprint("VR:X.X F:", 1, 1);
     LCDprint("VT:X.X P:", 2, 1);
 
@@ -378,8 +373,10 @@ void main(void)
                     LCDprint(buff, 2, 1);
                 }
                 else
-                {
-                    sprintf(buff, "VR:%.1f F:%5.3fR", vrms[0], frequency); // print test Frequenct to LCD
+                {   
+                    frequency = frequency / (2 * 3.14159265);              // hz to rad
+                    phase_diff = phase_diff * 3.1415926535 / 180;          // degree to rad
+                    sprintf(buff, "VR:%.1f F:%5.3fRS", vrms[0], frequency); // print test Frequenct to LCD
                     LCDprint(buff, 1, 1);
 
                     sprintf(buff, "VT:%.1f P:%5.3fR", vrms[1], phase_diff);
@@ -387,10 +384,10 @@ void main(void)
                 }
                 waitms(500);
             }
+
             if (UNIT_CHANGE_BUTTON == 0)
             {
                 units = !units;
-
                 if (units == 0)
                 {
                     frequency = frequency * 2 * 3.14159265;                 // rad to hz
@@ -402,23 +399,20 @@ void main(void)
                     LCDprint(buff, 2, 1);
                 }
                 else
-                {
+                {   
                     frequency = frequency / (2 * 3.14159265);              // hz to rad
                     phase_diff = phase_diff * 3.1415926535 / 180;          // degree to rad
-                    sprintf(buff, "VR:%.1f F:%5.3fR", vrms[0], frequency); // print test Frequenct to LCD
+                    sprintf(buff, "VR:%.1f F:%5.3fRS", vrms[0], frequency); // print test Frequenct to LCD
                     LCDprint(buff, 1, 1);
 
                     sprintf(buff, "VT:%.1f P:%5.3fR", vrms[1], phase_diff);
                     LCDprint(buff, 2, 1);
                 }
-
                 waitms(500);
             }
-
             waitms(50);
         }           // wait for boot to be pressed for next read
         waitms(50); // make sure switch doesn't bounce
-
 
         // store last val to mem
         vrmsmem[0] = vrms[0];
@@ -511,7 +505,7 @@ void main(void)
         {
             frequency = frequency / (2 * 3.14159265);              // hz to rad
             phase_diff = phase_diff * 3.1415926535 / 180;          // degree to rad
-            sprintf(buff, "VR:%.1f F:%5.3fR", vrms[0], frequency); // print test Frequenct to LCD
+            sprintf(buff, "VR:%.1f F:%5.3fRS", vrms[0], frequency); // print test Frequenct to LCD
             LCDprint(buff, 1, 1);
 
             sprintf(buff, "VT:%.1f P:%5.3fR", vrms[1], phase_diff);
