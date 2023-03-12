@@ -366,23 +366,21 @@ void main(void)
 
                 if (units == 0)
                 {
-                    sprintf(buff, "VR:%.1f F:%5.1fHz", vrms[0], frequency); // print test Frequenct to LCD
+                    sprintf(buff, "VR:%.1f F:%5.1f", vrms[0], frequency); // print test Frequenct to LCD
                     LCDprint(buff, 1, 1);
 
-                    sprintf(buff, "VT:%.1f P:%5.1fD", vrms[1], phase_diff);
+                    sprintf(buff, "VT:%.1f P:%5.1f", vrms[1], phase_diff);
                     LCDprint(buff, 2, 1);
                 }
                 else
                 {   
-                    frequency = frequency * 2 * 3.14159265;              // hz to rad
-                    phase_diff = phase_diff * 3.1415926535 / 180;          // degree to rad
-                    sprintf(buff, "VR:%.1f F:%5.1fRS", vrms[0], frequency); // print test Frequenct to LCD
+                    sprintf(buff, "VR:%.1f F:%5.1f", vrms[0], frequency); // print test Frequenct to LCD
                     LCDprint(buff, 1, 1);
 
-                    sprintf(buff, "VT:%.1f P:%5.2fR", vrms[1], phase_diff);
+                    sprintf(buff, "VT:%.1f P:%5.2f", vrms[1], phase_diff);
                     LCDprint(buff, 2, 1);
                 }
-                waitms(500);
+                waitms(250);
             }
 
             if (UNIT_CHANGE_BUTTON == 0)
@@ -392,23 +390,23 @@ void main(void)
                 {
                     frequency = frequency / (2 * 3.14159265);                 // rad to hz
                     phase_diff = phase_diff * 180 / 3.1415926535;           // rad to degree
-                    sprintf(buff, "VR:%.1f F:%5.1fHz", vrms[0], frequency); // print test Frequenct to LCD
+                    sprintf(buff, "VR:%.1f F:%5.1f", vrms[0], frequency); // print test Frequenct to LCD
                     LCDprint(buff, 1, 1);
 
-                    sprintf(buff, "VT:%.1f P:%5.1fD", vrms[1], phase_diff);
+                    sprintf(buff, "VT:%.1f P:%5.1f", vrms[1], phase_diff);
                     LCDprint(buff, 2, 1);
                 }
                 else
                 {   
                     frequency = frequency * 2 * 3.14159265;              // hz to rad
                     phase_diff = phase_diff * 3.1415926535 / 180;          // degree to rad
-                    sprintf(buff, "VR:%.1f F:%5.1fRS", vrms[0], frequency); // print test Frequenct to LCD
+                    sprintf(buff, "VR:%.1f F:%5.1f", vrms[0], frequency); // print test Frequenct to LCD
                     LCDprint(buff, 1, 1);
 
-                    sprintf(buff, "VT:%.1f P:%5.2fR", vrms[1], phase_diff);
+                    sprintf(buff, "VT:%.1f P:%5.2f", vrms[1], phase_diff);
                     LCDprint(buff, 2, 1);
                 }
-                waitms(500);
+                waitms(250);
             }
             waitms(50);
         }           // wait for boot to be pressed for next read
@@ -490,26 +488,22 @@ void main(void)
         if (phase_diff > 180.0) {
             phase_diff = phase_diff - 360.0;
         }
-
-        // speaker beep
-
         if (units == 0)
-        {
-            sprintf(buff, "VR:%.1f F:%5.1fHz", vrms[0], frequency); // print test Frequenct to LCD
-            LCDprint(buff, 1, 1);
+            {
+                sprintf(buff, "VR:%.1f F:%5.1f", vrms[0], frequency); // print test Frequenct to LCD
+                LCDprint(buff, 1, 1);
 
-            sprintf(buff, "VT:%.1f P:%5.1fD", vrms[1], phase_diff);
-            LCDprint(buff, 2, 1);
-        }
-        else
-        {
-            frequency = frequency * 2 * 3.14159265;              // hz to rad
-            phase_diff = phase_diff * 3.1415926535 / 180;          // degree to rad
-            sprintf(buff, "VR:%.1f F:%5.1fRS", vrms[0], frequency); // print test Frequenct to LCD
-            LCDprint(buff, 1, 1);
+                sprintf(buff, "VT:%.1f P:%5.1f", vrms[1], phase_diff);
+                LCDprint(buff, 2, 1);
+            }
+            else
+            {   
+                sprintf(buff, "VR:%.1f F:%5.1f", vrms[0], frequency); // print test Frequenct to LCD
+                LCDprint(buff, 1, 1);
 
-            sprintf(buff, "VT:%.1f P:%5.2fR", vrms[1], phase_diff);
-            LCDprint(buff, 2, 1);
-        }
+                sprintf(buff, "VT:%.1f P:%5.2f", vrms[1], phase_diff);
+                LCDprint(buff, 2, 1);
+            }
+            waitms(250);
     }
 }
