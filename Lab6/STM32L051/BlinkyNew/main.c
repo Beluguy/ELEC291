@@ -23,7 +23,6 @@
 //       VSS -|16      17|- VDD
 //             ----------
 
-
 volatile int x;
 
 void delay(int dly)

@@ -1,7 +1,11 @@
 //This program measures the capacitance of a capactor between 0.1uF and 1uF
 
-#include <stm32.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include "../Common/Include/stm32l051xx.h"
+
+#define F_CPU 32000000L
 
 #define SYSCLK 72000000L // SYSCLK frequency in Hz
 #define BAUDRATE 115200L // Baud rate of UART in bps
