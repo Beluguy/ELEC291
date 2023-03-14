@@ -57,11 +57,11 @@ def read_serial():
     # Schedule the function to run again after 100ms
     root.after(100, read_serial)
 
-# Start the GUI loop
-root.mainloop()
-
 # Start the function to read from the serial port
 read_serial()
+
+# Start the GUI loop
+root.mainloop()
 
 # Close the serial connection when the program exits
 ser.close()
