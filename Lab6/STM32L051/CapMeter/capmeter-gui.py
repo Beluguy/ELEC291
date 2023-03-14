@@ -16,9 +16,6 @@ capacitance_heading.grid(row=0,column=0)
 frequency_heading = tk.Label(root, text="Frequency")
 frequency_heading.grid(row=0,column=1)
 
-capmem_
-
-
 # Create a label to display the received data
 capacitance_label = tk.Label(root, text="No capacitance measured yet.")
 capacitance_label.grid(row=1,column=0)
@@ -26,12 +23,31 @@ capacitance_label.grid(row=1,column=0)
 frequency_label = tk.Label(root, text="No frequency detected.")
 frequency_label.grid(row=1,column=1)
 
+capmem_heading = tk.Label(root, text="Prev Capacitance")
+capmem_heading.grid(row=2,column=0)
+
+freqmem_heading = tk.Label(root, text="Prev Capacitance")
+freqmem_heading.grid(row=2,column=1)
+
+capmem_label = tk.Label(root, text="No capacitance measured yet.")
+capmem_label.grid(row=3,column=0)
+
+freqmem_label = tk.Label(root, text="No frequency detected.")
+freqmem_label.grid(row=3,column=1)
+
+cap = 0
+freq = 0
+
 def read_serial():
     # Read a line of data from the serial port
     data = ser.readline().decode('utf-8').rstrip()
 
     if data:
         # If data was received, decode it as JSON and update the labels with the received data
+        if cap and freq:
+            capmem_label.config(text=cap)
+            freqmem_label.config(text=freq)
+        
         json_data = json.loads(data)
         cap = json_data['cap']
         freq = json_data['freq']
