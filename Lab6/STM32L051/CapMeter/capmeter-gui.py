@@ -52,7 +52,10 @@ capmem1_label.grid(row=5,column=0)
 freqmem1_label = tk.Label(root, text="No frequency detected.")
 freqmem1_label.grid(row=5,column=1)
 
+prevunit = "uF"
+
 def read_serial():
+    global prevunit
     # Read a line of data from the serial port
     data = ser.readline().decode('utf-8').rstrip()
 
@@ -71,6 +74,13 @@ def read_serial():
         capacitance_label.config(text=cap)
         frequency_label.config(text=freq)
         capacitance_heading.config(text="Capacitance [" + unit + "]")
+        if (unit != prevunit):
+            if (unit == "uF"):
+                capmem1_label.config(text=str(float(capmem1_label.cget("text")) / 1000.0))
+                capmem_label.config(text=str(float(capmem_label.cget("text")) / 1000.0))
+            else:
+                capmem1_label.config(text=str(float(capmem1_label.cget("text")) * 1000.0))
+                capmem_label.config(text=str(float(capmem_label.cget("text")) * 1000.0))
 
     # Schedule the function to run again after 100ms
     root.after(100, read_serial)
