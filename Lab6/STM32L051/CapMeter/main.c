@@ -1,5 +1,5 @@
 //This program uses an stm32 to measure the capacitance of a capacitor between 0.1uF and 1uF
-//Bonus: Contrast, battery with charging, unit changing, update button, memory, gui with python 
+//Bonus: Contrast, battery, recharge module, unit changing, update button, memory, gui with python 
 /* LQFP32 pinout
                                           ----------
                                     VDD -|1       32|- VSS
