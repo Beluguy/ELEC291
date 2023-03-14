@@ -75,12 +75,19 @@ def read_serial():
         frequency_label.config(text=freq)
         capacitance_heading.config(text="Capacitance [" + unit + "]")
         if (unit != prevunit):
+            prevunit = unit
             if (unit == "uF"):
-                capmem1_label.config(text=str(float(capmem1_label.cget("text")) / 1000.0))
-                capmem_label.config(text=str(float(capmem_label.cget("text")) / 1000.0))
+                try:
+                    capmem1_label.config(text=str(float(capmem1_label.cget("text")) / 1000.0))
+                    capmem_label.config(text=str(float(capmem_label.cget("text")) / 1000.0))
+                except:
+                    print("lol")
             else:
-                capmem1_label.config(text=str(float(capmem1_label.cget("text")) * 1000.0))
-                capmem_label.config(text=str(float(capmem_label.cget("text")) * 1000.0))
+                try:
+                    capmem1_label.config(text=str(float(capmem1_label.cget("text")) * 1000.0))
+                    capmem_label.config(text=str(float(capmem_label.cget("text")) * 1000.0))
+                except:
+                    print("lol")
 
     # Schedule the function to run again after 100ms
     root.after(100, read_serial)
