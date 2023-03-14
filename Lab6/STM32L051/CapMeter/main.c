@@ -1,40 +1,39 @@
 //This program uses an stm32 to measure the capacitance of a capacitor between 0.1uF and 1uF
-
-// LQFP32 pinout
-//              ----------
-//        VDD -|1       32|- VSS
-//       PC14 -|2       31|- BOOT0
-//       PC15 -|3       30|- PB7
-//       NRST -|4       29|- PB6
-//       VDDA -|5       28|- PB5
-// LCD_RS PA0 -|6       27|- PB4
-// LCD_E  PA1 -|7       26|- PB3
-// LCD_D4 PA2 -|8       25|- PA15
-// LCD_D5 PA3 -|9       24|- PA14
-// LCD_D6 PA4 -|10      23|- PA13
-// LCD_D7 PA5 -|11      22|- PA12
-//        PA6 -|12      21|- PA11
-//        PA7 -|13      20|- PA10 (Reserved for RXD)
-//        PB0 -|14      19|- PA9  (Reserved for TXD)
-//        PB1 -|15      18|- PA8
-//        VSS -|16      17|- VDD
-//              ----------
-
+//Bonus: Contrast, battery with charging, unit changing, update button, memory, gui with python 
+/* LQFP32 pinout
+                                          ----------
+                                    VDD -|1       32|- VSS
+                                   PC14 -|2       31|- BOOT0
+                                   PC15 -|3       30|- PB7
+                                   NRST -|4       29|- PB6
+                                   VDDA -|5       28|- PB5
+                             LCD_RS PA0 -|6       27|- PB4
+                             LCD_E  PA1 -|7       26|- PB3
+                             LCD_D4 PA2 -|8       25|- PA15
+                             LCD_D5 PA3 -|9       24|- PA14 (update pushbutton)
+                             LCD_D6 PA4 -|10      23|- PA13
+                             LCD_D7 PA5 -|11      22|- PA12
+                                    PA6 -|12      21|- PA11 (memory pushbutton)
+   (Measure the period at this pin) PA7 -|13      20|- PA10 (Reserved for RXD)
+                                    PB0 -|14      19|- PA9  (Reserved for TXD)
+                                    PB1 -|15      18|- PA8  (unit changing pushbutton)
+                                    VSS -|16      17|- VDD
+                                          ----------
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "lcd.h"
+#include "func.h"
 #include "../Common/Include/serial.h"
 #include "../Common/Include/stm32l051xx.h"
 
-#define F_CPU 32000000L
 #define RESISTANCE 1666.7
-#define CHARS_PER_LINE 16
 
 void Configure_Pins (void)
 {
 	RCC->IOPENR |= BIT0; // peripheral clock enable for port A
-	
+    
+	//------------------------for LCD-------------------------
 	// Make pins PA0 to PA5 outputs (page 200 of RM0451, two bits used to configure: bit0=1, bit1=0)
     GPIOA->MODER = (GPIOA->MODER & ~(BIT0|BIT1)) | BIT0; // PA0
 	GPIOA->OTYPER &= ~BIT0; // Push-pull
@@ -53,89 +52,70 @@ void Configure_Pins (void)
     
     GPIOA->MODER = (GPIOA->MODER & ~(BIT10|BIT11)) | BIT10; // PA5
 	GPIOA->OTYPER &= ~BIT5; // Push-pull
-}
+    //---------------------------------------------------------
 
+    //---------------------for pushbuttons---------------------
+     GPIOA->MODER &= ~(BIT16 | BIT17); // Make pin PA8 unit pushbutton input
+	// Activate pull up for pin PA31:
+	GPIOA->PUPDR |= BIT16; 
+	GPIOA->PUPDR &= ~(BIT17); 
+    
+    GPIOA->MODER &= ~(BIT22 | BIT23); // Make pin PA11 memory pushbutton input
+	// Activate pull up for pin PA11:
+	GPIOA->PUPDR |= BIT22; 
+	GPIOA->PUPDR &= ~(BIT23); 
+
+    GPIOA->MODER &= ~(BIT28 | BIT29); // Make pin PA14 update pushbutton input
+	// Activate pull up for pin PA14:
+	GPIOA->PUPDR |= BIT28; 
+	GPIOA->PUPDR &= ~(BIT29); 
+    //---------------------------------------------------------
+
+    //-----------------------for 555timer----------------------
+    GPIOA->MODER &= ~(BIT14 | BIT15); // Make pin PA7 input
+	// Activate pull up for pin PA8:
+	GPIOA->PUPDR |= BIT14; 
+	GPIOA->PUPDR &= ~(BIT15); 
+    //---------------------------------------------------------
+}
 
 void main(void)
 {  
-	char buff[17];
-	int i;
-
-	Configure_Pins();
+    Configure_Pins();
 	LCD_4BIT();
-	
-	//WARNING: notice that printf() of floating point numbers is not enabled in the makefile!
-	waitms(500);
-	printf("4-bit mode LCD Test using the STM32L051.\r\n");
-	
-   	// Display something in the LCD
-	LCDprint("LCD 4-bit test:", 1, 1);
-	LCDprint("Hello, World!", 2, 1);
-	while(1)
-	{
-		printf("Type what you want to display in line 2 (16 char max): ");
-		fflush(stdout); // GCC peculiarities: need to flush stdout to get string out without a '\n'
-		egets_echo(buff, sizeof(buff));
-		printf("\r\n");
-		for(i=0; i<sizeof(buff); i++)
-		{
-			if(buff[i]=='\n') buff[i]=0;
-			if(buff[i]=='\r') buff[i]=0;
-		}
-		LCDprint(buff, 2, 1);
-	}
-}
+    int current11, current8, previous11, previous8;
 
+    //----------------from period--------------
+    long int count;
+	float T, f;
+    //-----------------------------------------
 
-
-
-
-
-
-
-
-
-/*
-unsigned char overflow_count;
-
-
-void main(void)
-{
-    float period;
+    //---------------------from lab4----------------------------
     double capacitance = 0.0;
     char buff[17];
     double cap_old = 0.0;
     int units = 0;
     float conversion_factor = 1000000000.0;
-    P3_7 = 1;
-    P2_0 = 1;
+    //----------------------------------------------------------
+	
+	//WARNING: notice that printf() of floating point numbers is not enabled in the makefile!
+    waitms(500);
+    printf("STM32L051 Capacitance measurement at pin PA7.\r\n");
+	LCDprint("C measured [nF]:\r\n", 1, 1);
+    previous8=(GPIOA->IDR&BIT8)?0:1;       //read PA8, should be 1
+    previous11=(GPIOA->IDR&BIT11)?0:1;      //read PA11, should be 1
+    while(1)
+	{   
+		count=GetPeriod(100);
+        current11=(GPIOA->IDR&BIT11)?1:0;  	//read PA11
+        current8=(GPIOA->IDR&BIT8)?1:0;     //read PA8
 
-    TIMER0_Init(); //
-    LCD_4BIT();    // init lcd
-
-    LCDprint("C measured [nF]:", 1, 1);
-
-    waitms(500);       // Give PuTTY a chance to start.
-    printf("\x1b[2J"); // Clear screen using ANSI escape sequence.
-
-    printf("EFM8 Period measurement at pin P0.1 using Timer 0.\n"
-           "File: %s\n"
-           "Compiled: %s, %s\n\n",
-           __FILE__, __DATE__, __TIME__);
-
-    while (1)
-    {
-        // Reset the counter
-        TL0 = 0;
-        TH0 = 0;
-        TF0 = 0;
-        overflow_count = 0;
-
-        while (P3_7 != 0)
-        {
-            if (P2_0 == 0)
-            {
-                units = !units;
+		while(current11==previous11)     	// update
+		{
+            if(current8!=previous8)       	//unit
+			{
+			previous8=current8;
+            units = !units;
                 if (units == 0)
                 {
                     LCDprint("C measured [nF]:", 1, 1);
@@ -154,39 +134,28 @@ void main(void)
                     sprintf(buff, "%.3f %.3f", capacitance, cap_old);
                     LCDprint(buff, 2, 1);
                 }
-                waitms(500);
-            }
-            waitms(50);
-        }           // wait for boot to be pressed for next read
-        waitms(50); // make sure switch doesn't bounce
+			}
+		}
+		if(current11!=previous11)       	
+		{
+			previous11=current11;
+		}
 
-        while (P0_1 != 0); // Wait for the signal to be zero
-        while (P0_1 != 1);             // Wait for the signal to be one
-        TR0 = 1;          // Start the timer
-        while (P0_1 != 0) // Wait for the signal to be zero
-        {
-            if (TF0 == 1) // Did the 16-bit timer overflow?
-            {
-                TF0 = 0;
-                overflow_count++;
-            }
-        }
-        while (P0_1 != 1) // Wait for the signal to be one
-        {
-            if (TF0 == 1) // Did the 16-bit timer overflow?
-            {
-                TF0 = 0;
-                overflow_count++;
-            }
-        }
-        TR0 = 0; // Stop timer 0, the 24-bit number [overflow_count-TH0-TL0] has the period!
-        period = (overflow_count * 65536.0 + TH0 * 256.0 + TL0) * (12.0 / SYSCLK);
-        // Send the period to the serial port
-        printf("T=%f ms    \n", period * 1000.0);
         cap_old = capacitance;
-        capacitance = conversion_factor * period / (0.693 * RESISTANCE * 3.0);
-        printf("C=%f nF    \n", capacitance);
-        if (units == 0)
+        capacitance = conversion_factor * T / (0.693 * RESISTANCE * 3.0);
+    	
+		if(count>0)						// print to putty
+		{
+			T = count / (F_CPU*100.0); // Since we have the time of 100 periods, we need to divide by 100
+			f = 1.0 / T;
+			printf("f=%.2fHz, C=%.1f nF\r", f, capacitance);
+		}
+		else
+		{
+			printf("NO SIGNAL\r");
+		}
+
+        if (units == 0)					// print to LCD
         {
             sprintf(buff, "%.1f %.1f", capacitance, cap_old);
         }
@@ -195,7 +164,7 @@ void main(void)
             sprintf(buff, "%.3f %.3f", capacitance, cap_old);
         }
         LCDprint(buff, 2, 1);
-        waitms(500);
-    }
+        fflush(stdout); // GCC printf wants a \n in order to send something.  If \n is not present, we fflush(stdout)
+		waitms(200);
+	}
 }
-*/

@@ -10,22 +10,22 @@ LIBPATH1=$(subst \libgcc.a,,$(shell dir /s /b "$(GCCPATH)*libgcc.a" | find "v6-m
 LIBPATH2=$(subst \libc_nano.a,,$(shell dir /s /b "$(GCCPATH)*libc_nano.a" | find "v6-m"))
 LIBSPEC=-L"$(LIBPATH1)" -L"$(LIBPATH2)"
 
-OBJS=main.o lcd.o serial.o startup.o newlib_stubs.o
+OBJS=main.o func.o serial.o startup.o newlib_stubs.o
 
 PORTN=$(shell type COMPORT.inc)
 
 # For smaller hex file remove '-u _printf_float' below
-main.elf : $(OBJS)
-#	$(LD) $(OBJS) $(LIBSPEC) -Os -u _printf_float -nostdlib -lnosys -lgcc -T ../Common/LDscripts/stm32l051xx.ld --cref -Map main.map -o main.elf
-	$(LD) $(OBJS) $(LIBSPEC) -Os -nostdlib -lnosys -lgcc -T ../Common/LDscripts/stm32l051xx.ld --cref -Map main.map -o main.elf
+main.hex : $(OBJS)
+	$(LD) $(OBJS) $(LIBSPEC) -Os -u _printf_float -nostdlib -lnosys -lgcc -T ../Common/LDscripts/stm32l051xx.ld --cref -Map main.map -o main.elf
+#	$(LD) $(OBJS) $(LIBSPEC) -Os -nostdlib -lnosys -lgcc -T ../Common/LDscripts/stm32l051xx.ld --cref -Map main.map -o main.elf
 	arm-none-eabi-objcopy -O ihex main.elf main.hex
 	@echo Success!
 
 main.o: main.c
 	$(CC) -c $(CCFLAGS) main.c -o main.o
 
-lcd.o: lcd.c
-	$(CC) -c $(CCFLAGS) lcd.c -o lcd.o
+func.o: func.c
+	$(CC) -c $(CCFLAGS) func.c -o func.o
 
 startup.o: ../Common/Source/startup.c
 	$(CC) -c $(CCFLAGS) -DUSE_USART1 ../Common/Source/startup.c -o startup.o
@@ -41,7 +41,7 @@ clean:
 	@del main.elf main.hex main.map 2>NUL
 	@del *.lst 2>NUL
 	
-Flash_Load:
+Flash_Load: main.hex
 	@taskkill /f /im putty.exe /t /fi "status eq running" > NUL
 	@echo ..\stm32flash\stm32flash -w main.hex -v -g 0x0 ^^>sflash.bat
 	@..\stm32flash\BO230\BO230 -b >>sflash.bat
@@ -56,9 +56,5 @@ putty:
 	@..\stm32flash\BO230\BO230 -r >>sputty.bat
 	@sputty
 	
-Picture:
-	@cmd /c start Pictures\STM32L051_LCD.jpg
-	
 explorer:
 	@explorer .
-
