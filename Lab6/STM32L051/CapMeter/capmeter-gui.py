@@ -16,6 +16,8 @@ capacitance_heading.grid(row=0,column=0)
 frequency_heading = tk.Label(root, text="Frequency")
 frequency_heading.grid(row=0,column=1)
 
+capmem_
+
 
 # Create a label to display the received data
 capacitance_label = tk.Label(root, text="No capacitance measured yet.")
