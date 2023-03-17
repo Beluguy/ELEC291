@@ -1,0 +1,33 @@
+CC=arm-none-eabi-gcc
+AS=arm-none-eabi-as
+LD=arm-none-eabi-ld
+CCFLAGS=-mcpu=cortex-m0 -mthumb -g
+ASFLAGS=-mcpu=cortex-m0plus -mthumb -g
+PORTN=/dev/$(shell ls /dev | grep "cu.usbserial")
+LDFLAGS=-T linker_script.ld -cref
+
+# Search for the path of libraries.
+LIBPATH1=$(shell find /opt -name libgcc.a | grep "v6-m" | sed -e "s/libgcc.a//g")
+LIBPATH2=$(shell find /opt -name libc_nano.a | grep "v6-m" | sed -e "s/libc_nano.a//g")
+LIBSPEC=-L"$(LIBPATH1)" -L"$(LIBPATH2)"
+
+OBJS= startup.o main.o 
+
+main.elf: $(OBJS)
+	$(LD) $(OBJS) $(LDFLAGS) -Map main.map -o main.elf
+	arm-none-eabi-objcopy -O ihex main.elf main.hex
+
+main.o: main.c
+	$(CC) -c $(CCFLAGS) main.c -o main.o
+
+startup.o: startup.s
+	$(AS) $(ASFLAGS) startup.s -asghl=startup.lst -o startup.o
+
+clean:
+	rm $(OBJS) 
+	rm main.elf main.hex main.map
+
+Load_Flash: main.hex
+	../stm32flash/stm32flash -w main.hex -v -g 0x0 $(PORTN)
+
+

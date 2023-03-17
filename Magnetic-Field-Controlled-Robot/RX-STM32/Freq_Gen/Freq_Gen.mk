@@ -10,7 +10,7 @@ LIBPATH1=$(subst \libgcc.a,,$(shell dir /s /b "$(GCCPATH)*libgcc.a" | find "v6-m
 LIBPATH2=$(subst \libc_nano.a,,$(shell dir /s /b "$(GCCPATH)*libc_nano.a" | find "v6-m"))
 LIBSPEC=-L"$(LIBPATH1)" -L"$(LIBPATH2)"
 
-OBJS=main.o adc.o lcd.o serial.o startup.o newlib_stubs.o
+OBJS=main.o serial.o startup.o newlib_stubs.o
 
 PORTN=$(shell type COMPORT.inc)
 
@@ -24,12 +24,6 @@ main.elf : $(OBJS)
 main.o: main.c
 	$(CC) -c $(CCFLAGS) main.c -o main.o
 
-adc.o: adc.c
-	$(CC) -c $(CCFLAGS) adc.c -o adc.o
-
-lcd.o: lcd.c 
-	$(CC) -c $(CCFLAGS) ../LCD/lcd.c -o lcd.o
-
 startup.o: ../Common/Source/startup.c
 	$(CC) -c $(CCFLAGS) -DUSE_USART1 ../Common/Source/startup.c -o startup.o
 
@@ -42,18 +36,15 @@ newlib_stubs.o: ../Common/Source/newlib_stubs.c
 clean: 
 	@del $(OBJS) 2>NUL
 	@del main.elf main.hex main.map 2>NUL
+	@del *.lst 2>NUL
 	
 Flash_Load:
 	@taskkill /f /im putty.exe /t /fi "status eq running" > NUL
 	@echo ..\stm32flash\stm32flash -w main.hex -v -g 0x0 ^^>sflash.bat
 	@..\stm32flash\BO230\BO230 -b >>sflash.bat
-	@sflash.bat
-	@echo cmd /c start putty.exe -sercfg 115200,8,n,1,N -serial ^^>sputty.bat
-	@..\stm32flash\BO230\BO230 -r >>sputty.bat
-	@sputty
+	@sflash
 
 putty:
-	@taskkill /f /im putty.exe /t /fi "status eq running" > NUL
 	@echo cmd /c start putty.exe -sercfg 115200,8,n,1,N -serial ^^>sputty.bat
 	@..\stm32flash\BO230\BO230 -r >>sputty.bat
 	@sputty
