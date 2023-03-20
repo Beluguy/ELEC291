@@ -1,17 +1,20 @@
 SHELL=cmd
 CC=c51
 COMPORT = $(shell type COMPORT.inc)
-OBJS=Tone_gen.obj Startup.obj
+OBJS=Tone_gen.obj Startup.obj lcd.obj
 
 Tone_gen.hex: $(OBJS)
 	$(CC) $(OBJS)
 	@echo Done!
 	
-Tone_gen.obj: Tone_gen.c globals.h
+Tone_gen.obj: Tone_gen.c globals.h lcd.h
 	$(CC) -c Tone_gen.c
 
 Startup.obj: Startup.c globals.h
 	$(CC) -c Startup.c
+
+lcd.obj: lcd.c lcd.h globals.h
+	$(CC) -c lcd.c
 
 clean:
 	@del $(OBJS) *.asm *.lkr *.lst *.map *.hex *.map 2> nul
