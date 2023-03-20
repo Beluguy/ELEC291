@@ -359,5 +359,17 @@ MigrationBackup/
 *.lkr
 *.map
 
+# VS Code files for those working on multiple tools
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Local History for Visual Studio Code
+.history/
+
 Lab4/*.asm
 Lab5/*.asm
+Magnetic-Field-Controlled-Robot/**/*.asm
