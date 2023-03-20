@@ -27,7 +27,7 @@ main.o: main.c
 adc.o: adc.c
 	$(CC) -c $(CCFLAGS) adc.c -o adc.o
 
-lcd.o: lcd.c 
+lcd.o: ../LCD/lcd.c
 	$(CC) -c $(CCFLAGS) ../LCD/lcd.c -o lcd.o
 
 macros.o: macros.c
