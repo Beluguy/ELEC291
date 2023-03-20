@@ -10,7 +10,7 @@ LIBPATH1=$(subst \libgcc.a,,$(shell dir /s /b "$(GCCPATH)*libgcc.a" | find "v6-m
 LIBPATH2=$(subst \libc_nano.a,,$(shell dir /s /b "$(GCCPATH)*libc_nano.a" | find "v6-m"))
 LIBSPEC=-L"$(LIBPATH1)" -L"$(LIBPATH2)"
 
-OBJS=main.o adc.o lcd.o serial.o startup.o newlib_stubs.o
+OBJS=main.o adc.o lcd.o macros.o serial.o startup.o newlib_stubs.o
 
 PORTN=$(shell type COMPORT.inc)
 
@@ -29,6 +29,9 @@ adc.o: adc.c
 
 lcd.o: lcd.c 
 	$(CC) -c $(CCFLAGS) ../LCD/lcd.c -o lcd.o
+
+macros.o: macros.c
+	$(CC) -c $(CCFLAGS) macros.c -o macros.o
 
 startup.o: ../Common/Source/startup.c
 	$(CC) -c $(CCFLAGS) -DUSE_USART1 ../Common/Source/startup.c -o startup.o
