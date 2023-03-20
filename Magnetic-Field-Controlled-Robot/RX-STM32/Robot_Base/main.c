@@ -10,18 +10,18 @@
 //           VDD -|1       32|- VSS
 //          PC14 -|2       31|- BOOT0
 //          PC15 -|3       30|- PB7 (OUT 5)
-//          NRST -|4       29|- PB6 (OUT 4)
-//          VDDA -|5       28|- PB5 (OUT 3)
-// LCD_RS    PA0 -|6       27|- PB4 (OUT 2)
-// LCD_E     PA1 -|7       26|- PB3 (OUT 1)
+//          NRST -|4       29|- PB6 (OUT 4) (LF)
+//          VDDA -|5       28|- PB5 (OUT 3) (LB)
+// LCD_RS    PA0 -|6       27|- PB4 (OUT 2) (RF)
+// LCD_E     PA1 -|7       26|- PB3 (OUT 1) (RB)
 // LCD_D4    PA2 -|8       25|- PA15
 // LCD_D5    PA3 -|9       24|- PA14 (push button)
 // LCD_D6    PA4 -|10      23|- PA13
 // LCD_D7    PA5 -|11      22|- PA12 (pwm2)
-// (LF)		 PA6 -|12      21|- PA11 (pwm1)
-// (RB)      PA7 -|13      20|- PA10 (Reserved for RXD)
-// (RF) 	 PB0 -|14      19|- PA9  (Reserved for TXD)
-// (LB) 	 PB1 -|15      18|- PA8  (Measure the period at this pin)
+//   		 PA6 -|12      21|- PA11 (pwm1)
+//           PA7 -|13      20|- PA10 (Reserved for RXD)
+// (ADC_IN8) PB0 -|14      19|- PA9  (Reserved for TXD)
+// (ADC_IN9) PB1 -|15      18|- PA8  (Measure the period at this pin)
 //           VSS -|16      17|- VDD
 //                 ----------
 
@@ -112,6 +112,8 @@ void Hardware_Init(void)
 // A define to easily read PA14 (PA14 must be configured as input first)
 #define PA14 (GPIOA->IDR & BIT14)
 
+#define ADC50CM 1000
+
 int main(void)
 {
     int j, v;
@@ -119,6 +121,7 @@ int main(void)
     unsigned char pmode=0;
 	long int count, f;
 	unsigned char LED_toggle=0; // Used to test the outputs
+    float L, R;
 
 	Hardware_Init(); // configure pins
     LCD_4BIT(); // init lcd
@@ -138,6 +141,9 @@ int main(void)
 	PB5_0;
 	PB6_0;
 	PB7_0;
+    
+    // print initial
+    LCDPrint(1,1, "Automatic");
 					
 	while (1)
 	{
@@ -164,6 +170,18 @@ int main(void)
             remote if you wish. */
 
         
+
+        if (mode == 0) {
+            L = readADC(ADC_CHSELR_CHSEL8);
+            R = readADC(ADC_CHSELR_CHSEL9);
+
+            if (L > ADC50CM) {
+                PB6_1;
+                
+            }
+        } else {
+
+        }
 
         j=readADC(ADC_CHSELR_CHSEL8);
 		v=(j*33000)/0xfff;
