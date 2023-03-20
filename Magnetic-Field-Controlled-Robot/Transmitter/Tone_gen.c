@@ -3,6 +3,16 @@
 //  Copyright (c) 2010-2018 Jesus Calvino-Fraga
 //  ~C51~
 
+//COMMAND LAYOUT
+//Continious 1 do nothing
+//Initial Manual
+//Switch to Tracking (Stuck in Tracking till Switch Button) - Read 0
+//Forward - Read 00
+//Backward - Read 000
+//Right - Read 0000
+//Left - Read 00000
+
+
 #include <EFM8LB1.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -69,18 +79,67 @@ void main (void)
 		scanf("%lu \n", &f);
 		//printf("\nActual frequency: %lu\n", f);
 		FREQ:
-		if(P1_4 == 0)
+		if(SWITCHEROO == 0)
 		{
 			waitms(100);
 			LOOP_OFFA:
-			if(P1_4 == 0)
+			if(SWITCHEROO == 0)
 			{
 				waitms(100);
 				goto LOOP_OFFA;
 			}
-			goto STOP;
+			goto SWITCHEROO;
 
 		}
+		if(FORWARD == 0)
+		{
+			waitms(100);
+			LOOP_OFFB:
+			if(FORWARD == 0)
+			{
+				waitms(100);
+				goto LOOP_OFFB;
+			}	
+			goto MOVF;
+		}
+		
+		if(BACKWARD == 0)
+		{
+			waitms(100);
+			LOOP_OFFC:
+			if(BACKWARD == 0)
+			{
+				waitms(100);
+				goto LOOP_OFFC;
+			}	
+			goto MOVB;
+		}
+		
+		if(RIGHT == 0)
+		{
+			waitms(100);
+			LOOP_OFFD:
+			if(RIGHT == 0)
+			{
+				waitms(100);
+				goto LOOP_OFFD;
+			}	
+			goto MOVR;
+		}
+		
+		if(LEFT == 0)
+		{
+			waitms(100);
+			LOOP_OFFE:
+			if(LEFT == 0)
+			{
+				waitms(100);
+				goto LOOP_OFFE;
+			}	
+			goto MOVL;
+		}
+	
+			
 		x=(SYSCLK/(2L*f));
 		if(x>0xffff)
 		{
@@ -95,9 +154,52 @@ void main (void)
 		}
 		goto FREQ;
 		
-		STOP:
-		printf("WAIT \n");
+		SWITCHEROO:
+		printf("SWTICH \n");
 		TR2=0;
+		waitms(1000);
+		goto FREQ;
+		
+		MOVF:
+		printf("MOVE FORWARD \n");
+		printf("MOVE FORWARD \n");
+		TR2=0;
+		waitms(1000);
+		waitms(1000);
+		goto FREQ;
+		
+		MOVB:
+		printf("MOVE BACKWARD \n");
+		printf("MOVE BACKWARD \n");
+		printf("MOVE BACKWARD \n");
+		TR2=0;
+		waitms(1000);
+		waitms(1000);
+		waitms(1000);
+		goto FREQ;
+		
+		MOVR:
+		printf("MOVE RIGHT \n");
+		printf("MOVE RIGHT \n");
+		printf("MOVE RIGHT \n");
+		printf("MOVE RIGHT \n");
+		TR2=0;
+		waitms(1000);
+		waitms(1000);
+		waitms(1000);
+		waitms(1000);
+		goto FREQ;
+		
+		MOVL:
+		printf("MOVE LEFT \n");
+		printf("MOVE LEFT \n");
+		printf("MOVE LEFT \n");
+		printf("MOVE LEFT \n");
+		printf("MOVE LEFT \n");
+		TR2=0;
+		waitms(1000);
+		waitms(1000);
+		waitms(1000);
 		waitms(1000);
 		waitms(1000);
 		goto FREQ;
