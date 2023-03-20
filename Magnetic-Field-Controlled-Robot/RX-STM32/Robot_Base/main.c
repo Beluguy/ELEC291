@@ -12,12 +12,12 @@
 //          PC15 -|3       30|- PB7 (OUT 5)
 //          NRST -|4       29|- PB6 (OUT 4)
 //          VDDA -|5       28|- PB5 (OUT 3)
-//           PA0 -|6       27|- PB4 (OUT 2)
-//           PA1 -|7       26|- PB3 (OUT 1)
-//           PA2 -|8       25|- PA15
-//           PA3 -|9       24|- PA14 (push button)
-//           PA4 -|10      23|- PA13
-//           PA5 -|11      22|- PA12 (pwm2)
+// LCD_RS    PA0 -|6       27|- PB4 (OUT 2)
+// LCD_E     PA1 -|7       26|- PB3 (OUT 1)
+// LCD_D4    PA2 -|8       25|- PA15
+// LCD_D5    PA3 -|9       24|- PA14 (push button)
+// LCD_D6    PA4 -|10      23|- PA13
+// LCD_D7    PA5 -|11      22|- PA12 (pwm2)
 //           PA6 -|12      21|- PA11 (pwm1)
 //           PA7 -|13      20|- PA10 (Reserved for RXD)
 // (ADC_IN8) PB0 -|14      19|- PA9  (Reserved for TXD)
@@ -34,6 +34,25 @@ void Hardware_Init(void)
 	GPIOB->MODER |= (BIT2|BIT3);  // Select analog mode for PB1 (pin 15 of LQFP32 package)
 
 	initADC();
+
+    // Make pins PA0 to PA5 outputs (page 200 of RM0451, two bits used to configure: bit0=1, bit1=0)
+    GPIOA->MODER = (GPIOA->MODER & ~(BIT0|BIT1)) | BIT0; // PA0
+	GPIOA->OTYPER &= ~BIT0; // Push-pull
+    
+    GPIOA->MODER = (GPIOA->MODER & ~(BIT2|BIT3)) | BIT2; // PA1
+	GPIOA->OTYPER &= ~BIT1; // Push-pull
+    
+    GPIOA->MODER = (GPIOA->MODER & ~(BIT4|BIT5)) | BIT4; // PA2
+	GPIOA->OTYPER &= ~BIT2; // Push-pull
+    
+    GPIOA->MODER = (GPIOA->MODER & ~(BIT6|BIT7)) | BIT6; // PA3
+	GPIOA->OTYPER &= ~BIT3; // Push-pull
+    
+    GPIOA->MODER = (GPIOA->MODER & ~(BIT8|BIT9)) | BIT8; // PA4
+	GPIOA->OTYPER &= ~BIT4; // Push-pull
+    
+    GPIOA->MODER = (GPIOA->MODER & ~(BIT10|BIT11)) | BIT10; // PA5
+	GPIOA->OTYPER &= ~BIT5; // Push-pull
 	
 	// Configure the pin used to measure period
 	GPIOA->MODER &= ~(BIT16 | BIT17); // Make pin PA8 input
@@ -96,10 +115,13 @@ void Hardware_Init(void)
 int main(void)
 {
     int j, v;
+    unsigned char mode=0;
+    unsigned char pmode=0;
 	long int count, f;
 	unsigned char LED_toggle=0; // Used to test the outputs
 
-	Hardware_Init();
+	Hardware_Init(); // configure pins
+    LCD_4BIT(); // init lcd
 	
 	waitms(500); // Give putty a chance to start before we send characters with printf()
 	eputs("\x1b[2J\x1b[1;1H"); // Clear screen using ANSI escape sequence.
@@ -119,7 +141,31 @@ int main(void)
 					
 	while (1)
 	{
-		j=readADC(ADC_CHSELR_CHSEL8);
+        // happens on change of mode
+        if (pmode != mode)
+        {
+            pmode = mode;
+            if (mode == 0)
+            {
+                LCDPrint(1, 1, "Automatic");
+            }
+            else
+            {
+                LCDPrint(1, 1, "Manual");
+            }
+        }
+
+        /*  If (d1>d) move motor 1 back.
+            If (d2>d) move motor 2 back.
+            If (d1<d) move motor 1 forward.
+            If (d2<d) move motor 2 forward.
+            d is preset after reset, but it can be 
+            changed by receiving a command from the 
+            remote if you wish. */
+
+        
+
+        j=readADC(ADC_CHSELR_CHSEL8);
 		v=(j*33000)/0xfff;
 		eputs("ADC[8]=0x");
 		PrintNumber(j, 16, 4);
