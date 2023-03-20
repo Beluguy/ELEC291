@@ -2,13 +2,13 @@
 #define MACROS_H
 
 #define F_CPU 32000000L
+#define SYSCLK 32000000L
 #define DEF_F 100000L // 10us tick
 
-extern volatile int PWM_Counter = 0;
-extern volatile unsigned char ISR_pwm1=100, ISR_pwm2=100;
+extern volatile int PWM_Counter;
+extern volatile unsigned char ISR_pwm1, ISR_pwm2;
 
 void wait_1ms(void);
-void waitms(int len);
 void TIM2_Handler(void);
 
 // A define to easily read PA8 (PA8 must be configured as input first)
@@ -16,5 +16,10 @@ void TIM2_Handler(void);
 long int GetPeriod (int n);
 
 void PrintNumber(long int val, int Base, int digits);
+
+// for timer21
+#define TICK_FREQ 1000L
+extern volatile int Count = 0;
+extern volatile int OffCycles = 0;
 
 #endif
