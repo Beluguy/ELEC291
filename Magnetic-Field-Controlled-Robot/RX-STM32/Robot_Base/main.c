@@ -18,10 +18,10 @@
 // LCD_D5    PA3 -|9       24|- PA14 (push button)
 // LCD_D6    PA4 -|10      23|- PA13
 // LCD_D7    PA5 -|11      22|- PA12 (pwm2)
-//           PA6 -|12      21|- PA11 (pwm1)
-//           PA7 -|13      20|- PA10 (Reserved for RXD)
-// (ADC_IN8) PB0 -|14      19|- PA9  (Reserved for TXD)
-// (ADC_IN9) PB1 -|15      18|- PA8  (Measure the period at this pin)
+// (LF)		 PA6 -|12      21|- PA11 (pwm1)
+// (RB)      PA7 -|13      20|- PA10 (Reserved for RXD)
+// (RF) 	 PB0 -|14      19|- PA9  (Reserved for TXD)
+// (LB) 	 PB1 -|15      18|- PA8  (Measure the period at this pin)
 //           VSS -|16      17|- VDD
 //                 ----------
 
