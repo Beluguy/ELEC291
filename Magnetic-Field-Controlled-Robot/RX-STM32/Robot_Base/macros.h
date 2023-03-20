@@ -19,7 +19,7 @@ void PrintNumber(long int val, int Base, int digits);
 
 // for timer21
 #define TICK_FREQ 1000L
-extern volatile int Count = 0;
-extern volatile int OffCycles = 0;
+extern volatile int Count;
+extern volatile int OffCycles;
 
 #endif
