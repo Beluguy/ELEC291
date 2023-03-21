@@ -1,3 +1,5 @@
+#ifndef LCD_H
+#define LCD_H
 #define F_CPU 32000000L
 
 #define LCD_RS_0 (GPIOA->ODR &= ~BIT0)
@@ -22,3 +24,5 @@ void WriteData (unsigned char x);
 void WriteCommand (unsigned char x);
 void LCD_4BIT (void);
 void LCDprint(char * string, unsigned char line, unsigned char clear);
+
+#endif

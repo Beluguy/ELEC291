@@ -3,6 +3,11 @@
 #include <stdlib.h>
 #include "macros.h"
 
+volatile int PWM_Counter = 0;
+volatile unsigned char ISR_pwm1=100, ISR_pwm2=100;
+volatile int Count = 0;
+volatile int OffCycles = 0;
+
 void wait_1ms(void)
 {
 	// For SysTick info check the STM32l0xxx Cortex-M0 programming manual.
@@ -11,11 +16,6 @@ void wait_1ms(void)
 	SysTick->CTRL  = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_ENABLE_Msk; // Enable SysTick IRQ and SysTick Timer */
 	while((SysTick->CTRL & BIT16)==0); // Bit 16 is the COUNTFLAG.  True when counter rolls over from zero.
 	SysTick->CTRL = 0x00; // Disable Systick counter
-}
-
-void waitms(int len)
-{
-	while(len--) wait_1ms();
 }
 
 // Interrupt service routines are the same as normal
@@ -112,3 +112,4 @@ void PrintNumber(long int val, int Base, int digits)
 	}
 	eputs(&buff[j+1]);
 }
+

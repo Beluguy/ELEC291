@@ -4,6 +4,7 @@
 #include "../Common/Include/serial.h"
 #include "adc.h"
 #include "macros.h"
+#include "../LCD/lcd.h"
 
 // LQFP32 pinout
 //                 ----------
@@ -24,6 +25,50 @@
 //  	 	 PB1 -|15      18|- PA8  (Measure the period at this pin)
 //           VSS -|16      17|- VDD
 //                 ----------
+
+//  ----------------------------------------- GLOBAL VARS ------------------------------------------------------------
+unsigned char mode=0;
+
+// Interrupt service routines are the same as normal
+// subroutines (or C funtions) in Cortex-M microcontrollers.
+// The following should happen at a rate of 1kHz.
+// The following function is associated with the TIM21 interrupt 
+// via the interrupt vector table defined in startup.s
+void TIM21_Handler(void) 
+{
+	TIM21->SR &= ~BIT0; // clear update interrupt flag
+	Count++;
+	if (Count > 10) // happens every 10ms
+	{ 
+		Count = 0;
+		if (readADC(ADC_CHSELR_CHSEL8) < 100) {
+            OffCycles++;
+        } else {
+            switch(OffCycles)
+            {
+                case 0:
+                    break;
+                case 1:
+                    mode = 0;
+                    LCDprint("Automatic", 1, 1);
+                    break;
+                case 2:
+                    mode = 1;
+                    LCDprint("Manual", 1, 1);
+                    break;
+                case 3:
+
+                    break;
+                case 4:
+                    break;
+                default:
+                    mode = 0;
+                    break;
+            }
+            OffCycles = 0;
+        }
+	}   
+}
 
 void Hardware_Init(void)
 {
@@ -85,7 +130,7 @@ void Hardware_Init(void)
     GPIOA->MODER = (GPIOA->MODER & ~(BIT24|BIT25)) | BIT24; // Make pin PA12 output (page 200 of RM0451, two bits used to configure: bit0=1, bit1=0)
 	GPIOA->OTYPER &= ~BIT12; // Push-pull
 
-	// Set up timer
+	// Set up timer 2
 	RCC->APB1ENR |= BIT0;  // turn on clock for timer2 (UM: page 177)
 	TIM2->ARR = F_CPU/DEF_F-1;
 	NVIC->ISER[0] |= BIT15; // enable timer 2 interrupts in the NVIC
@@ -94,6 +139,16 @@ void Hardware_Init(void)
 	TIM2->DIER |= BIT0;     // enable update event (reload event) interrupt 
 	TIM2->CR1 |= BIT0;      // enable counting    
 	
+	// Set up timer 21
+	RCC->APB2ENR |= BIT2;  // turn on clock for timer21 (UM: page 188)
+	TIM21->ARR = SYSCLK/TICK_FREQ;
+	NVIC->ISER[0] |= BIT20; // enable timer 21 interrupts in the NVIC
+	TIM21->CR1 |= BIT4;      // Downcounting    
+	TIM21->CR1 |= BIT0;      // enable counting    
+	TIM21->DIER |= BIT0;     // enable update event (reload event) interrupt  
+
+    LCD_4BIT(); // init lcd
+
 	__enable_irq();
 }
 
@@ -117,14 +172,10 @@ void Hardware_Init(void)
 int main(void)
 {
     int j, v;
-    unsigned char mode=0;
-    unsigned char pmode=0;
 	long int count, f;
-	unsigned char LED_toggle=0; // Used to test the outputs
-    float L, R;
+    int L, R;
 
-	Hardware_Init(); // configure pins
-    LCD_4BIT(); // init lcd
+	Hardware_Init(); // configure pins, adc, lcd
 	
 	waitms(500); // Give putty a chance to start before we send characters with printf()
 	eputs("\x1b[2J\x1b[1;1H"); // Clear screen using ANSI escape sequence.
@@ -135,54 +186,58 @@ int main(void)
 	eputs("Generates servo PWMs on PA11, PA12 (pins 21, 22 of LQFP32 package)\r\n");
 	eputs("Reads the push-button on pin PA14 (pin 24 of LQFP32 package)\r\n\r\n");
 
-    LED_toggle=0;
-	PB3_0;
-	PB4_0;
-	PB5_0;
-	PB6_0;
-	PB7_0;
+	PB3_1;
+	PB4_1;
+	PB5_1;
+	PB6_1;
+	PB7_0; // unused for now
     
     // print initial
-    LCDPrint(1,1, "Automatic");
+    LCDprint("Automatic", 1, 1);
 					
 	while (1)
 	{
-        // happens on change of mode
-        if (pmode != mode)
-        {
-            pmode = mode;
-            if (mode == 0)
-            {
-                LCDPrint(1, 1, "Automatic");
-            }
-            else
-            {
-                LCDPrint(1, 1, "Manual");
-            }
-        }
+        /*
+        char buf[32];
+        printf("L Reading: ");
+    	fflush(stdout);
+    	egets_echo(buf, 31); // wait here until data is received
+        L = atoi(buf);
 
-        /*  If (d1>d) move motor 1 back.
-            If (d2>d) move motor 2 back.
-            If (d1<d) move motor 1 forward.
-            If (d2<d) move motor 2 forward.
-            d is preset after reset, but it can be 
-            changed by receiving a command from the 
-            remote if you wish. */
-
-        
-
+        printf("R Reading: ");
+    	fflush(stdout);
+    	egets_echo(buf, 31); // wait here until data is received
+        R = atoi(buf);
+*/
         if (mode == 0) {
-            L = readADC(ADC_CHSELR_CHSEL8);
-            R = readADC(ADC_CHSELR_CHSEL9);
+            if (readADC(ADC_CHSELR_CHSEL8) > 100) { // read only if its on
+                L = readADC(ADC_CHSELR_CHSEL8);
+                R = readADC(ADC_CHSELR_CHSEL9);
+            }
 
-            if (L > ADC50CM) {
+            if (L > ADC50CM) { // move L back
                 PB6_1;
-                
+                PB5_0;
+            } else { // move L forward
+                PB6_0;
+                PB5_1;
+            }
+
+            if (R > ADC50CM) { // move R back
+                PB4_1;
+                PB3_0;
+            } else { // move R forward
+                PB4_0;
+                PB3_1;
             }
         } else {
-
+                PB6_0;
+                PB5_0;
+                PB4_0;
+                PB3_0;
         }
 
+        /*
         j=readADC(ADC_CHSELR_CHSEL8);
 		v=(j*33000)/0xfff;
 		eputs("ADC[8]=0x");
@@ -202,7 +257,9 @@ int main(void)
 		eputc('.');
 		PrintNumber(v%10000, 10, 4);
 		eputs("V ");
-		
+		*/
+    
+        /*
 		eputs("PA14=");
 		if(PA14)
 		{
@@ -212,7 +269,9 @@ int main(void)
 		{
 			eputs("0 ");
 		}
+        */
 
+        /*
 		// Not very good for high frequencies because of all the interrupts in the background
 		// but decent for low frequencies around 10kHz.
 		count=GetPeriod(60);
@@ -228,34 +287,6 @@ int main(void)
 		else
 		{
 			eputs("NO SIGNAL                     \r");
-		}
-
-		// Now turn on one of outputs per cycle to check
-		switch (LED_toggle++)
-		{
-			case 0:
-				PB3_1;
-				break;
-			case 1:
-				PB4_1;
-				break;
-			case 2:
-				PB5_1;
-				break;
-			case 3:
-				PB6_1;
-				break;
-			case 4:
-				PB7_1;
-				break;
-			default:
-			    LED_toggle=0;
-				PB3_0;
-				PB4_0;
-				PB5_0;
-				PB6_0;
-				PB7_0;
-				break;
 		}
 		
 		// Change the servo PWM signals
@@ -276,6 +307,7 @@ int main(void)
 		{
 			ISR_pwm2=200;	
 		}
+        */
 		
 		waitms(200);	
 	}
