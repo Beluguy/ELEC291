@@ -77,14 +77,14 @@ int divider = 0, noteDuration = 0;
 //          VDDA -|5       28|- PB5 (LB)
 // LCD_RS    PA0 -|6       27|- PB4 (RF)
 // LCD_E     PA1 -|7       26|- PB3 (RB)
-// LCD_D4    PA2 -|8       25|- PA15
+// LCD_D4    PA2 -|8       25|- PA15 (buzzer)
 // LCD_D5    PA3 -|9       24|- PA14 (push button)
 // LCD_D6    PA4 -|10      23|- PA13
 // LCD_D7    PA5 -|11      22|- PA12 (pwm2)
 // 		 	 PA6 -|12      21|- PA11 (pwm1)
 //        	 PA7 -|13      20|- PA10 (Reserved for RXD)
-// 		 	 PB0 -|14      19|- PA9  (Reserved for TXD)
-//  	 	 PB1 -|15      18|- PA8  (Measure the period at this pin)
+// L input 	 PB0 -|14      19|- PA9  (Reserved for TXD)
+// R input	 PB1 -|15      18|- PA8  (Measure the period at this pin) unused
 //           VSS -|16      17|- VDD
 //                 ----------
 
