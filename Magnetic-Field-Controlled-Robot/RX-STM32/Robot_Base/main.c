@@ -8,6 +8,8 @@
 #include "pitches.h"
 
 #define SPKR_F 520L
+#define ZERO_TOL 100L
+#define ADC50CM 3000
 
 int melody[] = {
 
@@ -102,20 +104,21 @@ void TIM21_Handler(void)
 	if (Count > 10) // happens every 10ms
 	{ 
 		Count = 0;
-		if (readADC(ADC_CHSELR_CHSEL8) < 100) {
+		if (readADC(ADC_CHSELR_CHSEL8) < ZERO_TOL) {
             OffCycles++;
+            printf("OffCycles: %d\r\n", OffCycles);
         } else {
             switch(OffCycles)
             {
                 case 0:
                     break;
                 case 1:
-                    printf("togglemode\n");
-                    togglemode();
+                    //printf("togglemode\n");
+                    //togglemode();
                     break;
                 case 2:
                     // fwd
-                    printf("fwd\n");
+                    printf("fwd\r\n");
                     PB6_0;
                     PB5_1;
                     PB4_0;
@@ -123,7 +126,7 @@ void TIM21_Handler(void)
                     break;
                 case 3:
                     // back
-                    printf("back\n");
+                    printf("back\r\n");
                     PB6_1;
                     PB5_0;
                     PB6_0;
@@ -131,7 +134,7 @@ void TIM21_Handler(void)
                     break;
                 case 4:
                     // right
-                    printf("right\n");
+                    printf("right\r\n");
                     PB6_0;
                     PB5_1;
                     PB4_1;
@@ -139,7 +142,7 @@ void TIM21_Handler(void)
                     break;
                 case 5:
                     // left
-                    printf("left\n");
+                    printf("left\r\n");
                     PB6_1;
                     PB5_0;
                     PB4_0;
@@ -147,7 +150,7 @@ void TIM21_Handler(void)
                     break;
                 case 6:
                     //tetris
-                    printf("tetris\n");
+                    printf("tetris\r\n");
                     for (int thisNote = 0; thisNote < notes * 2; thisNote = thisNote + 2)
                     {
 
@@ -173,11 +176,10 @@ void TIM21_Handler(void)
                     }
                     break;
                 case 7:
-                    printf("following dist\n");
+                    printf("following dist\r\n");
                     //following dist
                     break;
                 default:
-                    mode = 0;
                     break;
             }
             OffCycles = 0;
@@ -296,8 +298,6 @@ void Hardware_Init(void)
 // A define to easily read PA14 (PA14 must be configured as input first)
 #define PA14 (GPIOA->IDR & BIT14)
 
-#define ADC50CM 1000
-
 int main(void)
 {
     int j, v;
@@ -340,35 +340,50 @@ int main(void)
         R = atoi(buf);
 */
 
-        if (mode == 0) {
-            if (readADC(ADC_CHSELR_CHSEL8) > 100) { // read only if its on
-                L = readADC(ADC_CHSELR_CHSEL8);
-                R = readADC(ADC_CHSELR_CHSEL9);
-            }
+        if (mode == 0)
+        {
+            if (readADC(ADC_CHSELR_CHSEL8) > ZERO_TOL)
+            { // read only if its on
+                    L = readADC(ADC_CHSELR_CHSEL8);
+                    R = readADC(ADC_CHSELR_CHSEL9);
+                    printf("L: %d R: %d\r\n", L, R);
+                    if (L > ADC50CM)
+                    { // move L back
+                        PB6_1;
+                        PB5_0;
+                    }
+                    else
+                    { // move L forward
+                        PB6_0;
+                        PB5_1;
+                    }
 
-            if (L > ADC50CM) { // move L back
-                PB6_1;
-                PB5_0;
-            } else { // move L forward
-                PB6_0;
-                PB5_1;
+                    if (R > ADC50CM)
+                    { // move R back
+                        PB4_1;
+                        PB3_0;
+                    }
+                    else
+                    { // move R forward
+                        PB4_0;
+                        PB3_1;
+                    }
             }
-
-            if (R > ADC50CM) { // move R back
-                PB4_1;
-                PB3_0;
-            } else { // move R forward
-                PB4_0;
-                PB3_1;
+            else
+            {
+                    PB6_0;
+                    PB5_0;
+                    PB4_0;
+                    PB3_0;
             }
-        } else {
-                PB6_0;
-                PB5_0;
-                PB4_0;
-                PB3_0;
         }
-
-
+        else
+        {
+            PB6_0;
+            PB5_0;
+            PB4_0;
+            PB3_0;
+        }
 
         if (PA14)
         {
