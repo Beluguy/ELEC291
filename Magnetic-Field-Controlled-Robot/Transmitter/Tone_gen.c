@@ -208,6 +208,8 @@ void main (void)
 				printf ("Move forward");
 				LCDprint("Move forward", 1, 1);
 				TR2=0;
+				OUT1 = 0;
+				OUT0 = 0;
 				goto LOOP_OFFB;
 			}	
 		}
