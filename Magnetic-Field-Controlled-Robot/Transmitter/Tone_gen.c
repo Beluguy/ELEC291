@@ -198,6 +198,21 @@ void main (void)
 			goto TEMP;
 		}
 
+		if(SWTICHER == 0)
+		{
+			waitms(20);
+			LOOP_F:
+			if(SWITCHER == 0)
+			{
+				printf("Switch Modes");
+				LCDprint("Switch Modes",1,1);
+				TR2 = 0;
+				OUT1 = 0;
+				OUT0 = 0;
+				waitms(100);
+			}
+		}
+
 		if(FORWARD == 0)
 		{
 			waitms(20);
@@ -236,9 +251,10 @@ void main (void)
 		}
 		
 		if(RIGHT == 0)
-		{	waitms(20);
+		{	
+			waitms(20);
 			LOOP_D:
-			if(LEFT == 0)
+			if(RIGHT == 0)
 			{
 				printf ("Move Right");
 				LCDprint("Move Right", 1, 1);
