@@ -201,13 +201,19 @@ void main (void)
 		
 		if(FORWARD == 0)
 		{
-			waitms(100);
 			LOOP_OFFB:
 			if(FORWARD == 0)
-			{
-				printf ("Move forward");
+			{	
+				//printf ("Move forward");
 				LCDprint("Move forward", 1, 1);
+				TR2=1;
+				printf("1");
+				waitms(100);
 				TR2=0;
+				OUT0=0;
+				OUT1=0;
+				printf("0");
+				waitms(500);
 				goto LOOP_OFFB;
 			}	
 		}
