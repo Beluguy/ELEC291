@@ -201,10 +201,14 @@ void main (void)
 
 		if(SWTICHER == 0)
 		{
-			waitms(20);
+			waitms(80);
 			LOOP_F:
 			if(SWITCHER == 0)
 			{
+				waitms(80);
+				goto LOOP_F;
+
+			}
 				printf("Switch Modes");
 				LCDprint("Switch Modes",1,1);
 				TR2 = 0;
