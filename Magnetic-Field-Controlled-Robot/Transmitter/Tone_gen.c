@@ -181,7 +181,8 @@ void main (void)
 			waitms(500);
 		}	
 		DISPLAY_BUFFER:
-		LCDprint("Waiting For Command", 1, 1);
+		LCDprint("Waiting For", 1, 1);
+		LCDprint("Command",2,1);
 		LCDprint(" ", 2, 1);
 
 		FREQ:
@@ -210,6 +211,9 @@ void main (void)
 				OUT1 = 0;
 				OUT0 = 0;
 				waitms(100);
+				waitms(100);
+				TR2 = 1;
+				goto LOOP_F;
 			}
 		}
 
@@ -224,6 +228,7 @@ void main (void)
 				TR2=0;
 				OUT1 = 0;
 				OUT0 = 0;
+				waitms(100);
 				waitms(100);
 				waitms(100);
 				TR2 = 1;
@@ -245,6 +250,7 @@ void main (void)
 				waitms(100);
 				waitms(100);
 				waitms(100);
+				waitms(100);
 				TR2 = 1;
 				goto LOOP_C;
 			}	
@@ -261,6 +267,7 @@ void main (void)
 				TR2=0;
 				OUT1 = 0;
 				OUT0 = 0;
+				waitms(100);
 				waitms(100);
 				waitms(100);
 				waitms(100);
@@ -286,6 +293,7 @@ void main (void)
 				waitms(100);
 				waitms(100);
 				waitms(100);
+				waitms(100);
 				TR2 = 1;
 				goto LOOP_E;
 			}	
@@ -304,6 +312,7 @@ void main (void)
 			TR2=1; // Start timer 2
 			f=SYSCLK/(2L*(0x10000L-TMR2RL));
 		}
+
 
 	}
 }
