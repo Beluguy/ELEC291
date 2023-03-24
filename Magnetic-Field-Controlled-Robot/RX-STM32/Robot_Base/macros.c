@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "macros.h"
 #include "../LCD/lcd.h"
+#include "../Common/Include/serial.h"
 
 volatile int PWM_Counter = 0;
 volatile unsigned char ISR_pwm1=100, ISR_pwm2=100;
@@ -22,7 +23,7 @@ void tone(unsigned int frequency, unsigned int duration)
     TIM2->CR1 &= ~BIT0; // disable timer
 }
 
-unsigned char mode=0;
+unsigned char mode=1;
 
 void togglemode(void) {
     if (mode == 0)
