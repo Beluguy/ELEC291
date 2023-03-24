@@ -8,6 +8,11 @@
 extern volatile int PWM_Counter;
 extern volatile unsigned char ISR_pwm1, ISR_pwm2;
 
+void tone(unsigned int frequency, unsigned int duration);
+
+extern unsigned char mode;
+void togglemode(void);
+
 void wait_1ms(void);
 void TIM2_Handler(void);
 

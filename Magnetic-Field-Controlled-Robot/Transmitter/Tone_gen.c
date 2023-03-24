@@ -6,11 +6,11 @@
 //COMMAND LAYOUT
 //Continious 1 do nothing
 //Initial Manual
-//Switch to Tracking (Stuck in Tracking till Switch Button) - Read 0
-//Forward - Read 00
-//Backward - Read 000
-//Right - Read 0000
-//Left - Read 00000
+//Switch to Tracking (Stuck in Tracking till Switch Button) - Read 00
+//Forward - Read 000
+//Backward - Read 0000
+//Right - Read 00000
+//Left - Read 000000
 
 
 #include <EFM8LB1.h>
@@ -150,10 +150,10 @@ void main (void)
 	printf("Variable frequency generator for the EFM8LB1.\r\n"
 	       "Check pins P2.0 and P2.1 with the oscilloscope.\r\n");
 	       
-	printf("New frequency=");
-	scanf("%lu \n", &f);
-	printf("\n");       
-
+	//printf("New frequency=");
+	//scanf("%lu \n", &f);
+	//printf("\n");       
+	f = 15920;
 
 	while(1)
 	{
@@ -181,76 +181,122 @@ void main (void)
 			waitms(500);
 		}	
 		DISPLAY_BUFFER:
-		LCDprint("...", 1, 1);
+		LCDprint("Wait Command", 1, 1);
 		LCDprint(" ", 2, 1);
 
 		FREQ:
 		if(DISPLAY == 0)
 		{
 			waitms(100);
-			LOOP_OFFA:
+			LOOP_A:
 			if(DISPLAY == 0)
 			{
 				waitms(100);
 				temp_flag = 1;
-				goto LOOP_OFFA;
+				goto LOOP_A;
 			}	
 			goto TEMP;
 		}
-		
-		
+
+		if(SWITCHER == 0)
+		{
+			waitms(80);
+			LOOP_F:
+			if(SWITCHER == 0)
+			{
+				printf("Switch Modes");
+				LCDprint("Switch Modes",1,1);
+				LCDprint(" ", 2, 1);
+				waitms(80);
+				goto LOOP_F;
+
+			}
+
+				TR2 = 0;
+				OUT1 = 0;
+				OUT0 = 0;
+				waitms(100);
+				waitms(100);
+				TR2 = 1;
+		}
+
 		if(FORWARD == 0)
 		{
-			LOOP_OFFB:
+			LOOP_B:
 			if(FORWARD == 0)
-			{	
-				//printf ("Move forward");
+			{
+				printf ("Move forward");
 				LCDprint("Move forward", 1, 1);
-				TR2=1;
-				printf("1");
-				waitms(100);
 				TR2=0;
-				OUT0=0;
-				OUT1=0;
-				printf("0");
-				waitms(500);
-				goto LOOP_OFFB;
+				OUT1 = 0;
+				OUT0 = 0;
+				waitms(100);
+				waitms(100);
+				TR2 = 1;
+				waitms(49);
+				goto LOOP_B;
 			}	
 		}
 		
 		if(BACKWARD == 0)
-		{
-			waitms(100);
-			LOOP_OFFC:
+		{	
+			LOOP_C:
 			if(BACKWARD == 0)
 			{
 				printf ("Move backward");
 				LCDprint("Move backward", 1, 1);
-				goto LOOP_OFFC;
+				TR2=0;
+				OUT1 = 0;
+				OUT0 = 0;
+				waitms(100);
+				waitms(100);
+				waitms(100);
+				TR2 = 1;
+				waitms(49);
+				goto LOOP_C;
 			}	
 		}
 		
 		if(RIGHT == 0)
-		{
-			waitms(100);
-			LOOP_OFFD:
+		{	
+			waitms(20);
+			LOOP_D:
 			if(RIGHT == 0)
 			{
-				printf ("Move right");
-				LCDprint("Move right", 1, 1);
-				goto LOOP_OFFD;
-			}	
+				printf ("Move Right");
+				LCDprint("Move Right", 1, 1);
+				TR2=0;
+				OUT1 = 0;
+				OUT0 = 0;
+				waitms(100);
+				waitms(100);
+				waitms(100);
+				waitms(100);
+				waitms(50);
+				TR2 = 1;
+				goto LOOP_D;
+			}
 		}
 		
 		if(LEFT == 0)
 		{
-			waitms(100);
-			LOOP_OFFE:
+			waitms(20);
+			LOOP_E:
 			if(LEFT == 0)
 			{
 				printf ("Move left");
 				LCDprint("Move left", 1, 1);
-				goto LOOP_OFFE;
+				TR2=0;
+				OUT1 = 0;
+				OUT0 = 0;
+				waitms(100);
+				waitms(100);
+				waitms(100);
+				waitms(100);
+				waitms(100);
+				waitms(50);
+				TR2 = 1;
+				goto LOOP_E;
 			}	
 		}
 	
@@ -267,6 +313,5 @@ void main (void)
 			TR2=1; // Start timer 2
 			f=SYSCLK/(2L*(0x10000L-TMR2RL));
 		}
-		goto FREQ;
 	}
 }

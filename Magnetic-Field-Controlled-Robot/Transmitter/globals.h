@@ -1,4 +1,4 @@
-#define SYSCLK    72000000L // SYSCLK frequency in Hz
+#define SYSCLK    72000000L // SYSCLK frequency in Hz 32000000
 #define BAUDRATE  115200L   // Baud rate of UART in bps
 #define DEFAULT_F 15500L
 #define SARCLK 18000000L
@@ -10,4 +10,5 @@
 #define LEFT P1_2
 #define RIGHT P1_0
 #define BACKWARD P0_5
+#define SWITCHER P0_3
 #define VDD 3.3035 // The measured value of VDD in volts

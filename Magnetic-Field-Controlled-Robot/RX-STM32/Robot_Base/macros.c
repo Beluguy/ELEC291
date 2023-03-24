@@ -2,11 +2,44 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "macros.h"
+#include "../LCD/lcd.h"
 
 volatile int PWM_Counter = 0;
 volatile unsigned char ISR_pwm1=100, ISR_pwm2=100;
 volatile int Count = 0;
 volatile int OffCycles = 0;
+
+void tone(unsigned int frequency, unsigned int duration) 
+{
+    int reload;
+    reload=(SYSCLK/frequency);
+    TIM2->CR1 &= ~BIT0; // disable timer
+    TIM2->ARR = reload - 1;
+    TIM2->CCR1 = reload / 2; // Adjust PWM output to 50%
+    TIM2->EGR |= BIT0;       // UG=1
+    TIM2->CR1 |= BIT0;       // enable timer
+    waitms(duration);
+    TIM2->CR1 &= ~BIT0; // disable timer
+}
+
+unsigned char mode=0;
+
+void togglemode(void) {
+    if (mode == 0)
+    {
+        mode = 1;
+        LCDprint("Manual", 1, 1);
+        tone(500, 100);
+    }
+    else
+    {
+        mode = 0;
+        LCDprint("Automatic", 1, 1);
+        tone(500, 100);
+        waitms(50);
+        tone(500, 100);
+    }
+}
 
 void wait_1ms(void)
 {
