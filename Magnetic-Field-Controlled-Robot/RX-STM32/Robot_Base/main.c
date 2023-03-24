@@ -101,90 +101,98 @@ void TIM21_Handler(void)
 {
 	TIM21->SR &= ~BIT0; // clear update interrupt flag
 	Count++;
-	if (Count > 10) // happens every 10ms
-	{ 
-		Count = 0;
-		if (readADC(ADC_CHSELR_CHSEL8) < ZERO_TOL) {
+    if (Count > 100) // happens every 100ms
+    {
+        Count = 0;
+        if (readADC(ADC_CHSELR_CHSEL8) < 450)
+        {
             OffCycles++;
-            printf("OffCycles: %d\r\n", OffCycles);
         } else {
-            switch(OffCycles)
-            {
-                case 0:
-                    break;
-                case 1:
-                    //printf("togglemode\n");
-                    //togglemode();
-                    break;
-                case 2:
-                    // fwd
-                    printf("fwd\r\n");
-                    PB6_0;
-                    PB5_1;
-                    PB4_0;
-                    PB3_1;
-                    break;
-                case 3:
-                    // back
-                    printf("back\r\n");
-                    PB6_1;
-                    PB5_0;
-                    PB6_0;
-                    PB5_1;
-                    break;
-                case 4:
-                    // right
-                    printf("right\r\n");
-                    PB6_0;
-                    PB5_1;
-                    PB4_1;
-                    PB3_0;
-                    break;
-                case 5:
-                    // left
-                    printf("left\r\n");
-                    PB6_1;
-                    PB5_0;
-                    PB4_0;
-                    PB3_1;
-                    break;
-                case 6:
-                    //tetris
-                    printf("tetris\r\n");
-                    for (int thisNote = 0; thisNote < notes * 2; thisNote = thisNote + 2)
+            switch (OffCycles) {
+            case 0:
+                PB6_0;
+                PB5_0;
+                PB4_0;
+                PB3_0;
+                break;
+            case 1:
+                puts("toggle\r\n");
+                togglemode();
+                break;
+            case 2:
+                // fwd
+                puts("fwd\r\n");
+                PB6_0;
+                PB5_1;
+                PB4_0;
+                PB3_1;
+                break;
+            case 3:
+                // back
+                puts("back\r\n");
+                PB6_1;
+                PB5_0;
+                PB4_1;
+                PB3_0;
+                break;
+            case 4:
+                // right
+                puts("right\r\n");
+                PB6_0;
+                PB5_1;
+                PB4_1;
+                PB3_0;
+                break;
+            case 5:
+                // left
+                puts("left\r\n");
+                PB6_1;
+                PB5_0;
+                PB4_0;
+                PB3_1;
+                break;
+            case 6:
+                // tetris
+                puts("tetris\r\n");
+                for (int thisNote = 0; thisNote < notes * 2; thisNote = thisNote + 2)
+                {
+
+                    // calculates the duration of each note
+                    divider = melody[thisNote + 1];
+                    if (divider > 0)
                     {
-
-                        // calculates the duration of each note
-                        divider = melody[thisNote + 1];
-                        if (divider > 0)
-                        {
-                            // regular note, just proceed
-                            noteDuration = (wholenote) / divider;
-                        }
-                        else if (divider < 0)
-                        {
-                            // dotted notes are represented with negative durations!!
-                            noteDuration = (wholenote) / abs(divider);
-                            noteDuration *= 1.5; // increases the duration in half for dotted notes
-                        }
-
-                        // we only play the note for 90% of the duration, leaving 10% as a pause
-                        tone(melody[thisNote], noteDuration * 0.9);
-
-                        // Wait for the specief duration before playing the next note.
-                        waitms(noteDuration);
+                        // regular note, just proceed
+                        noteDuration = (wholenote) / divider;
                     }
-                    break;
-                case 7:
-                    printf("following dist\r\n");
-                    //following dist
-                    break;
-                default:
-                    break;
+                    else if (divider < 0)
+                    {
+                        // dotted notes are represented with negative durations!!
+                        noteDuration = (wholenote) / abs(divider);
+                        noteDuration *= 1.5; // increases the duration in half for dotted notes
+                    }
+
+                    // we only play the note for 90% of the duration, leaving 10% as a pause
+                    tone(melody[thisNote], noteDuration * 0.9);
+
+                    // Wait for the specief duration before playing the next note.
+                    waitms(noteDuration);
+                }
+                break;
+            case 7:
+                puts("following dist\r\n");
+                // following dist
+                break;
+            default:
+                PB6_0;
+                PB5_0;
+                PB4_0;
+                PB3_0;
+                break;
             }
             OffCycles = 0;
         }
-	}   
+    }
+    return;
 }
 
 void Hardware_Init(void)
@@ -303,10 +311,7 @@ int main(void)
     int j, v;
 	long int count, f;
     int L, R;
-    int newF, reload;
 
-	Hardware_Init(); // configure pins, adc, lcd
-	
 	waitms(500); // Give putty a chance to start before we send characters with printf()
 	eputs("\x1b[2J\x1b[1;1H"); // Clear screen using ANSI escape sequence.
 	eputs("\r\nSTM32L051 multi I/O example.\r\n");
@@ -316,6 +321,8 @@ int main(void)
 	eputs("Generates servo PWMs on PA11, PA12 (pins 21, 22 of LQFP32 package)\r\n");
 	eputs("Reads the push-button on pin PA14 (pin 24 of LQFP32 package)\r\n\r\n");
 
+	Hardware_Init(); // configure pins, adc, lcd
+
 	PB3_1;
 	PB4_1;
 	PB5_1;
@@ -323,7 +330,7 @@ int main(void)
 	PB7_0; // unused for now
     
     // print initial
-    LCDprint("Automatic", 1, 1);
+    LCDprint("Manual", 1, 1);
 					
 	while (1)
 	{
@@ -344,45 +351,42 @@ int main(void)
         {
             if (readADC(ADC_CHSELR_CHSEL8) > ZERO_TOL)
             { // read only if its on
-                    L = readADC(ADC_CHSELR_CHSEL8);
-                    R = readADC(ADC_CHSELR_CHSEL9);
-                    printf("L: %d R: %d\r\n", L, R);
-                    if (L > ADC50CM)
-                    { // move L back
-                        PB6_1;
-                        PB5_0;
-                    }
-                    else
-                    { // move L forward
-                        PB6_0;
-                        PB5_1;
-                    }
+                L = readADC(ADC_CHSELR_CHSEL8);
+                R = readADC(ADC_CHSELR_CHSEL9);
+                //printf("L: %d R: %d \r\n", L, R);
+                if (L > ADC50CM)
+                { // move L back
+                    PB6_1;
+                    PB5_0;
+                }
+                else
+                { // move L forward
+                    PB6_0;
+                    PB5_1;
+                }
 
-                    if (R > ADC50CM)
-                    { // move R back
-                        PB4_1;
-                        PB3_0;
-                    }
-                    else
-                    { // move R forward
-                        PB4_0;
-                        PB3_1;
-                    }
+                if (R > ADC50CM)
+                { // move R back
+                    PB4_1;
+                    PB3_0;
+                }
+                else
+                { // move R forward
+                    PB4_0;
+                    PB3_1;
+                }
             }
             else
             {
-                    PB6_0;
-                    PB5_0;
-                    PB4_0;
-                    PB3_0;
+                PB6_0;
+                PB5_0;
+                PB4_0;
+                PB3_0;
             }
         }
         else
         {
-            PB6_0;
-            PB5_0;
-            PB4_0;
-            PB3_0;
+
         }
 
         if (PA14)
@@ -453,6 +457,6 @@ int main(void)
 		}
         */
 		
-		waitms(200);	
+		waitms(100);	
 	}
 }

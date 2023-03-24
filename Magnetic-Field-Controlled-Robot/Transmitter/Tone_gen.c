@@ -211,7 +211,6 @@ void main (void)
 				goto LOOP_F;
 
 			}
-
 				TR2 = 0;
 				OUT1 = 0;
 				OUT0 = 0;
@@ -232,6 +231,7 @@ void main (void)
 				OUT0 = 0;
 				waitms(100);
 				waitms(100);
+				waitms(100);
 				TR2 = 1;
 				waitms(49);
 				goto LOOP_B;
@@ -248,6 +248,7 @@ void main (void)
 				TR2=0;
 				OUT1 = 0;
 				OUT0 = 0;
+				waitms(100);
 				waitms(100);
 				waitms(100);
 				waitms(100);
