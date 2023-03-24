@@ -10,4 +10,5 @@
 #define LEFT P1_2
 #define RIGHT P1_0
 #define BACKWARD P0_5
+#define SWITHCHER P0_3
 #define VDD 3.3035 // The measured value of VDD in volts
