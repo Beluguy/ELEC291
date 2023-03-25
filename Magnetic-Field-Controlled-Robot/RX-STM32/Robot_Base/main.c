@@ -353,7 +353,7 @@ int main(void)
             { // read only if its on
                 L = readADC(ADC_CHSELR_CHSEL8);
                 R = readADC(ADC_CHSELR_CHSEL9);
-                //printf("L: %d R: %d \r\n", L, R);
+                printf("L: %d R: %d \r\n", L, R);
                 if (L > ADC50CM)
                 { // move L back
                     PB6_1;
