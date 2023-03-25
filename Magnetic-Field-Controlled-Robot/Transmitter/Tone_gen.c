@@ -232,8 +232,8 @@ void main (void)
 				waitms(100);
 				waitms(100);
 				waitms(100);
+				waitms(50);
 				TR2 = 1;
-				waitms(49);
 				goto LOOP_B;
 			}	
 		}
@@ -251,16 +251,14 @@ void main (void)
 				waitms(100);
 				waitms(100);
 				waitms(100);
-				waitms(100);
+				waitms(50);
 				TR2 = 1;
-				waitms(49);
 				goto LOOP_C;
 			}	
 		}
 		
 		if(RIGHT == 0)
 		{	
-			waitms(20);
 			LOOP_D:
 			if(RIGHT == 0)
 			{
@@ -281,7 +279,6 @@ void main (void)
 		
 		if(LEFT == 0)
 		{
-			waitms(20);
 			LOOP_E:
 			if(LEFT == 0)
 			{
