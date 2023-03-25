@@ -231,7 +231,6 @@ void main (void)
 				OUT0 = 0;
 				waitms(100);
 				waitms(100);
-				waitms(100);
 				waitms(50);
 				TR2 = 1;
 				goto LOOP_B;
