@@ -111,6 +111,7 @@ void TIM21_Handler(void)
         readings[2] = readADC(ADC_CHSELR_CHSEL8);
     } else if (Count > 100) { // every 100ms
         readings[3] = readADC(ADC_CHSELR_CHSEL8);
+        printf("%d,%d,%d,%d \r\n", readings[0],readings[1],readings[2],readings[3]);
         Count = 0;
         int average = 0;
         for (int i = 0; i < 4; i++) {
