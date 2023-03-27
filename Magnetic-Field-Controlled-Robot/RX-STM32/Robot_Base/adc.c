@@ -1,5 +1,4 @@
 #include  "../Common/Include/stm32l051xx.h"
-//Try
 // All of this code is mostly copy/paste from the STM32L05X reference manual RM0451.
 
 void initADC(void)

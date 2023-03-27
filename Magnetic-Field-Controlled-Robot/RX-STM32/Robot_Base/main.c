@@ -101,7 +101,7 @@ void TIM21_Handler(void)
 {
 	TIM21->SR &= ~BIT0; // clear update interrupt flag
 	Count++;
-    if (Count > 100) // happens every 100ms
+    if (Count > 101) // happens every 100ms
     {
         Count = 0;
         if (readADC(ADC_CHSELR_CHSEL8) < 450)
