@@ -11,6 +11,8 @@
 #define ZERO_TOL 100L
 #define ADC50CM 3000
 
+int readings[4];
+
 int melody[] = {
 
   //Based on the arrangement at https://www.flutetunes.com/tunes.php?id=192
@@ -101,10 +103,27 @@ void TIM21_Handler(void)
 {
 	TIM21->SR &= ~BIT0; // clear update interrupt flag
 	Count++;
+<<<<<<< HEAD
     if (Count > 101) // happens every 100ms
     {
+=======
+    if (Count == 85) {
+        readings[0] = readADC(ADC_CHSELR_CHSEL8);
+    } else if (Count == 90) {
+        readings[1] = readADC(ADC_CHSELR_CHSEL8);
+    } else if (Count == 95) {
+        readings[2] = readADC(ADC_CHSELR_CHSEL8);
+    } else if (Count > 100) { // every 100ms
+        readings[3] = readADC(ADC_CHSELR_CHSEL8);
+        printf("%d,%d,%d,%d \r\n", readings[0],readings[1],readings[2],readings[3]);
+>>>>>>> 98ceb191ee3cf75dc059d1e122feb31dc7f50c79
         Count = 0;
-        if (readADC(ADC_CHSELR_CHSEL8) < 450)
+        int average = 0;
+        for (int i = 0; i < 4; i++) {
+            average += readings[i];
+        }
+        average = average * 0.25;
+        if (average < 450)
         {
             OffCycles++;
         } else {
@@ -353,7 +372,7 @@ int main(void)
             { // read only if its on
                 L = readADC(ADC_CHSELR_CHSEL8);
                 R = readADC(ADC_CHSELR_CHSEL9);
-                //printf("L: %d R: %d \r\n", L, R);
+                printf("L: %d R: %d \r\n", L, R);
                 if (L > ADC50CM)
                 { // move L back
                     PB6_1;
