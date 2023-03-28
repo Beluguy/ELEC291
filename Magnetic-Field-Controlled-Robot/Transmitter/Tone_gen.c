@@ -136,6 +136,7 @@ void main (void)
 	unsigned long int x, f;
 	int test_press = 1;
 	float v;
+	float vtest;
 	int temp_flag = 0;
 	float temperature;
 	char buff[17];
@@ -162,19 +163,21 @@ void main (void)
 		{	
 			if(DISPLAY == 0)
 			{
-				waitms(100);
+				waitms(80);
 				LOOP_OFFF:
 				if(DISPLAY == 0)
 				{
-					waitms(100);
+					waitms(80);
 					temp_flag = 0;
 					goto LOOP_OFFF;
 				}	
 				goto DISPLAY_BUFFER;
 			}
 			v = Volts_at_Pin(QFP32_MUX_P1_6);
-			temperature = 100*(v - 2.73);
-			printf ("temperature=%7.5f, v=%f\n", temperature, v);
+			vtest = v * 240.963855422;
+			//temperature = 100*(v - 2.73);
+			temperature = v * 240.963855422 + 22;
+			printf ("temperature=%7.5f, v=%f\n", temperature, vtest);
 			LCDprint("temperature:", 1, 1);
 			sprintf(buff, "%f", temperature);
 			LCDprint(buff, 2, 1);
@@ -187,11 +190,11 @@ void main (void)
 		FREQ:
 		if(DISPLAY == 0)
 		{
-			waitms(100);
+			waitms(80);
 			LOOP_A:
 			if(DISPLAY == 0)
 			{
-				waitms(100);
+				waitms(80);
 				temp_flag = 1;
 				goto LOOP_A;
 			}	
@@ -215,8 +218,8 @@ void main (void)
 				OUT1 = 0;
 				OUT0 = 0;
 				waitms(100);
-				waitms(100);
 				TR2 = 1;
+				waitms(52);
 		}
 
 		if(FORWARD == 0)
@@ -231,8 +234,8 @@ void main (void)
 				OUT0 = 0;
 				waitms(100);
 				waitms(100);
-				waitms(50);
 				TR2 = 1;
+				waitms(52);
 				goto LOOP_B;
 			}	
 		}
@@ -250,8 +253,8 @@ void main (void)
 				waitms(100);
 				waitms(100);
 				waitms(100);
-				waitms(50);
 				TR2 = 1;
+				waitms(52);
 				goto LOOP_C;
 			}	
 		}
@@ -261,8 +264,8 @@ void main (void)
 			LOOP_D:
 			if(RIGHT == 0)
 			{
-				printf ("Move Right");
-				LCDprint("Move Right", 1, 1);
+				printf ("Move right");
+				LCDprint("Move right", 1, 1);
 				TR2=0;
 				OUT1 = 0;
 				OUT0 = 0;
@@ -270,8 +273,8 @@ void main (void)
 				waitms(100);
 				waitms(100);
 				waitms(100);
-				waitms(50);
 				TR2 = 1;
+				waitms(52);
 				goto LOOP_D;
 			}
 		}
@@ -291,8 +294,8 @@ void main (void)
 				waitms(100);
 				waitms(100);
 				waitms(100);
-				waitms(50);
 				TR2 = 1;
+				waitms(52);
 				goto LOOP_E;
 			}	
 		}
