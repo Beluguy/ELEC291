@@ -7,7 +7,6 @@
 
 volatile int PWM_Counter = 0;
 volatile unsigned char ISR_pwm1=100, ISR_pwm2=100;
-volatile int Count = 0;
 volatile int OffCycles = 0;
 
 void tone(unsigned int frequency, unsigned int duration) 
@@ -23,9 +22,10 @@ void tone(unsigned int frequency, unsigned int duration)
     TIM2->CR1 &= ~BIT0; // disable timer
 }
 
-unsigned char mode=1;
+volatile unsigned char mode=1;
 
 void togglemode(void) {
+    
     if (mode == 0)
     {
         mode = 1;
@@ -40,6 +40,11 @@ void togglemode(void) {
         waitms(50);
         tone(500, 100);
     }
+    PB6_1;
+    PB5_1;
+    PB4_1;
+    PB3_1;
+    return;
 }
 
 void wait_1ms(void)

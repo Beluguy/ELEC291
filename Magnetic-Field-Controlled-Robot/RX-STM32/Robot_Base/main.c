@@ -8,8 +8,11 @@
 #include "pitches.h"
 
 #define SPKR_F 520L
-#define ZERO_TOL 100L
-#define ADC50CM 3000
+#define ZERO_TOL 700L
+#define LTHRESH1 3000
+#define LTHRESH2 800
+#define RTHRESH1 3900
+#define RTHRESH2 900
 
 int readings[4];
 
@@ -60,17 +63,14 @@ int wholenote = (60000 * 4) / TEMPO;
 
 int divider = 0, noteDuration = 0;
 
-// Some 'defines' to turn pins on/off easily (pins must be configured as outputs)
-#define PB3_0 (GPIOB->ODR &= ~BIT3)
-#define PB3_1 (GPIOB->ODR |=  BIT3)
-#define PB4_0 (GPIOB->ODR &= ~BIT4)
-#define PB4_1 (GPIOB->ODR |=  BIT4)
-#define PB5_0 (GPIOB->ODR &= ~BIT5)
-#define PB5_1 (GPIOB->ODR |=  BIT5)
-#define PB6_0 (GPIOB->ODR &= ~BIT6)
-#define PB6_1 (GPIOB->ODR |=  BIT6)
-#define PB7_0 (GPIOB->ODR &= ~BIT7)
-#define PB7_1 (GPIOB->ODR |=  BIT7)
+volatile int Count10 = 0;
+volatile int Count = 0;
+
+volatile char start_read;
+volatile char togglethresh = 0;
+volatile char toggle = 0;
+int lthresh = LTHRESH1;
+int rthresh = RTHRESH1;
 
 // LQFP32 pinout
 //                 ----------
@@ -102,7 +102,20 @@ int divider = 0, noteDuration = 0;
 void TIM21_Handler(void) 
 {
 	TIM21->SR &= ~BIT0; // clear update interrupt flag
-	Count++;
+    Count10++;
+
+    if (Count10 > 10) {
+        Count10=0;
+        if (readADC(ADC_CHSELR_CHSEL8) < ZERO_TOL && start_read == 0) {
+            start_read = 1;
+            OffCycles++;
+        }
+    }
+
+    if (start_read == 1) {
+	    Count++;
+    }
+
     if (Count == 85) {
         readings[0] = readADC(ADC_CHSELR_CHSEL8);
     } else if (Count == 90) {
@@ -111,27 +124,28 @@ void TIM21_Handler(void)
         readings[2] = readADC(ADC_CHSELR_CHSEL8);
     } else if (Count > 100) { // every 100ms
         readings[3] = readADC(ADC_CHSELR_CHSEL8);
-        printf("%d,%d,%d,%d \r\n", readings[0],readings[1],readings[2],readings[3]);
+        //printf("%d,%d,%d,%d \r\n", readings[0],readings[1],readings[2],readings[3]);
         Count = 0;
         int average = 0;
         for (int i = 0; i < 4; i++) {
             average += readings[i];
         }
         average = average * 0.25;
-        if (average < 450)
+        if (average < ZERO_TOL)
         {
             OffCycles++;
         } else {
             switch (OffCycles) {
             case 0:
-                PB6_0;
-                PB5_0;
-                PB4_0;
-                PB3_0;
+                PB6_1;
+                PB5_1;
+                PB4_1;
+                PB3_1;
+                start_read = 0;
                 break;
             case 1:
                 puts("toggle\r\n");
-                togglemode();
+                toggle = 1;
                 break;
             case 2:
                 // fwd
@@ -165,9 +179,14 @@ void TIM21_Handler(void)
                 PB4_0;
                 PB3_1;
                 break;
-            case 6:
-                // tetris
+            case 7:
+                // tetris 
+                PB6_1;
+                PB5_1;
+                PB4_1;
+                PB3_1;
                 puts("tetris\r\n");
+                LCDprint("Tetris",2,1);
                 for (int thisNote = 0; thisNote < notes * 2; thisNote = thisNote + 2)
                 {
 
@@ -192,15 +211,16 @@ void TIM21_Handler(void)
                     waitms(noteDuration);
                 }
                 break;
-            case 7:
+            case 6:
                 puts("following dist\r\n");
-                // following dist
+                togglethresh = 1;
                 break;
             default:
-                PB6_0;
-                PB5_0;
-                PB4_0;
-                PB3_0;
+                PB6_1;
+                PB5_1;
+                PB4_1;
+                PB3_1;
+                start_read = 0;
                 break;
             }
             OffCycles = 0;
@@ -322,8 +342,6 @@ void Hardware_Init(void)
 
 int main(void)
 {
-    int j, v;
-	long int count, f;
     int L, R;
 
 	waitms(500); // Give putty a chance to start before we send characters with printf()
@@ -345,6 +363,7 @@ int main(void)
     
     // print initial
     LCDprint("Manual", 1, 1);
+    LCDprint("follow: Short",2,1);
 					
 	while (1)
 	{
@@ -360,47 +379,68 @@ int main(void)
     	egets_echo(buf, 31); // wait here until data is received
         R = atoi(buf);
 */
+        if (togglethresh) {
+            togglethresh = 0;
+            if (lthresh == LTHRESH1) {
+                lthresh = LTHRESH2;
+                rthresh = RTHRESH2;
+                LCDprint("Follow: Long",2,1);
+            } else {
+                lthresh = LTHRESH1;
+                rthresh = RTHRESH1;
+                LCDprint("Follow: Short",2,1);
+            }
+        }
 
         if (mode == 0)
         {
-            if (readADC(ADC_CHSELR_CHSEL8) > ZERO_TOL)
-            { // read only if its on
-                L = readADC(ADC_CHSELR_CHSEL8);
-                R = readADC(ADC_CHSELR_CHSEL9);
-                printf("L: %d R: %d \r\n", L, R);
-                if (L > ADC50CM)
-                { // move L back
-                    PB6_1;
-                    PB5_0;
-                }
-                else
-                { // move L forward
-                    PB6_0;
-                    PB5_1;
-                }
-
-                if (R > ADC50CM)
-                { // move R back
-                    PB4_1;
-                    PB3_0;
-                }
-                else
-                { // move R forward
-                    PB4_0;
-                    PB3_1;
-                }
+            L = readADC(ADC_CHSELR_CHSEL8);
+            R = readADC(ADC_CHSELR_CHSEL9);
+            printf("L: %d R: %d \r\n", L, R);
+            if (L > lthresh)
+            { // move L back
+                PB6_1;
+                PB5_0;
+            }
+            else if (L < lthresh - 100)
+            { // move L forward
+                PB6_0;
+                PB5_1;
             }
             else
             {
-                PB6_0;
-                PB5_0;
-                PB4_0;
+                PB6_1;
+                PB5_1;
+                PB4_1;
+                PB3_1;
+            }
+
+            if (R > rthresh)
+            { // move R back
+                PB4_1;
                 PB3_0;
+            }
+            else if (R < rthresh - 100)
+            { // move R forward
+                PB4_0;
+                PB3_1;
+            }
+            else
+            {
+                PB6_1;
+                PB5_1;
+                PB4_1;
+                PB3_1;
             }
         }
         else
         {
+        }
 
+        if (toggle == 1)
+        {
+            toggle = 0;
+            togglemode();
         }
 
         if (PA14)
@@ -408,69 +448,11 @@ int main(void)
         }
         else
         {
-           togglemode(); 
+            toggle = 0;
+            togglemode();
+            waitms(100);
         }
 
-        /*
-        j=readADC(ADC_CHSELR_CHSEL8);
-		v=(j*33000)/0xfff;
-		eputs("ADC[8]=0x");
-		PrintNumber(j, 16, 4);
-		eputs(", ");
-		PrintNumber(v/10000, 10, 1);
-		eputc('.');
-		PrintNumber(v%10000, 10, 4);
-		eputs("V ");;
-
-		j=readADC(ADC_CHSELR_CHSEL9);
-		v=(j*33000)/0xfff;
-		eputs("ADC[9]=0x");
-		PrintNumber(j, 16, 4);
-		eputs(", ");
-		PrintNumber(v/10000, 10, 1);
-		eputc('.');
-		PrintNumber(v%10000, 10, 4);
-		eputs("V ");
-		*/
-
-        /*
-		// Not very good for high frequencies because of all the interrupts in the background
-		// but decent for low frequencies around 10kHz.
-		count=GetPeriod(60);
-		if(count>0)
-		{
-			f=(F_CPU*60)/count;
-			eputs("f=");
-			PrintNumber(f, 10, 7);
-			eputs("Hz, count=");
-			PrintNumber(count, 10, 6);
-			eputs("          \r");
-		}
-		else
-		{
-			eputs("NO SIGNAL                     \r");
-		}
-		
-		// Change the servo PWM signals
-		if (ISR_pwm1<200)
-		{
-			ISR_pwm1++;
-		}
-		else
-		{
-			ISR_pwm1=100;	
-		}
-
-		if (ISR_pwm2>100)
-		{
-			ISR_pwm2--;
-		}
-		else
-		{
-			ISR_pwm2=200;	
-		}
-        */
-		
-		waitms(100);	
-	}
+        waitms(50);
+    }
 }
