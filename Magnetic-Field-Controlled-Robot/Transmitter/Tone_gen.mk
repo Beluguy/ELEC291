@@ -16,6 +16,13 @@ Startup.obj: Startup.c globals.h
 lcd.obj: lcd.c lcd.h globals.h
 	$(CC) -c lcd.c
 
+EFM8_I2C_Nunchuck.hex: $(OBJS)
+	$(CC) $(OBJS)
+	@echo Done!
+	
+EFM8_I2C_Nunchuck.obj: Tone_gen.c
+	$(CC) -c Tone_gen.c
+
 clean:
 	@del $(OBJS) *.asm *.lkr *.lst *.map *.hex *.map 2> nul
 
