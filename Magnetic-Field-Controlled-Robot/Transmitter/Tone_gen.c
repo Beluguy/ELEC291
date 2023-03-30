@@ -350,43 +350,91 @@ void main (void)
 		if (rbuf[5] & 0x20) acc_y+=1;
 		if (rbuf[5] & 0x40) acc_z+=2;
 		if (rbuf[5] & 0x80) acc_z+=1;
-		/*
-		if (joy_x <50 && joy_y < 50 && joy_x > -50 && joy_y > -50){
-		printf("Buttons(Z:%c, C:%c) Joystick(%4d, %4d) Accelerometer(%3d, %3d, %3d)\x1b[0J\r",
-			   but1?'1':'0', but2?'1':'0', joy_x, joy_y, acc_x, acc_y, acc_z);
-		LCDprint("Wait Command", 1, 1);
-		Timer4ms(100);
+		
+		if(joy_y > 90)
+		{
+			printf ("Move forward\x1b[0J\r");
+			LCDprint("Move forward", 1, 1);
+			TR2=0;
+			OUT1 = 0;
+			OUT0 = 0;
+			waitms(100);
+			waitms(100);
+			TR2 = 1;
+			waitms(52);	
 		}
-		*/
 		
-		
-		if(joy_y > 90){
-			printf("Forward\x1b[0J\r");
-			LCDprint("Forward", 1, 1);
+		else if(joy_y < -90){
+			printf("Backward\x1b[0J\r");
+			LCDprint("Backward", 1, 1);
+			TR2=0;
+			OUT1 = 0;
+			OUT0 = 0;
+			waitms(100);
+			waitms(100);
+			waitms(100);
+			TR2 = 1;
+			waitms(52);
 		}
 		else if(joy_x > 90){
 			printf("Right\x1b[0J\r");
 			LCDprint("Right", 1, 1);
+			TR2=0;
+			OUT1 = 0;
+			OUT0 = 0;
+			waitms(100);
+			waitms(100);
+			waitms(100);
+			waitms(100);
+			TR2 = 1;
+			waitms(52);
 		}
-		else if(joy_y < -90){
-			printf("Backward\x1b[0J\r");
-			LCDprint("Backward", 1, 1);
-		}
+
 		else if(joy_x < -90){
 			printf("Left\x1b[0J\r");
 			LCDprint("Left", 1, 1);
+			TR2=0;
+			OUT1 = 0;
+			OUT0 = 0;
+			waitms(100);
+			waitms(100);
+			waitms(100);
+			waitms(100);
+			waitms(100);
+			TR2 = 1;
+			waitms(52);
 		}
 		
 		else if(but1 == 0)
 		{
 			printf("Switch Mode\x1b[0J\r");
 			LCDprint("Switch Mode", 1, 1);
+			TR2=0;
+			OUT1 = 0;
+			OUT0 = 0;
+			waitms(100);
+			TR2 = 1;
+			waitms(52);
+			waitms(100);
+			waitms(100);
 		}
+		
 		
 		else if(but2 == 0)
 		{
 			printf("Changing Dis\x1b[0J\r");
 			LCDprint("Changing Dis", 1, 1);
+			TR2=0;
+			OUT1 = 0;
+			OUT0 = 0;
+			waitms(100);
+			waitms(100);
+			waitms(100);
+			waitms(100);
+			waitms(100);
+			waitms(100);
+			TR2 = 1;
+			waitms(52);
 		}
 		
 		else
