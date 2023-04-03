@@ -3,12 +3,12 @@ CC=c51
 COMPORT = $(shell type COMPORT.inc)
 OBJS=Tone_gen.obj Startup.obj lcd.obj tetris.obj
 
-tetris.hex: $(OBJS)
+tetris.hex: $(OBJS) 
 	$(CC) $(OBJS)
 	@echo Done!
 	
-tetris.obj: tetris.c globals.h
-	$(CC) -c tetris.c
+tetris.obj: Tone_gen.c globals.h
+	$(CC) -c Tonge_gen.c
 
 Tone_gen.hex: $(OBJS)
 	$(CC) $(OBJS)
