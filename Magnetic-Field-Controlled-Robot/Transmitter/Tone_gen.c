@@ -18,6 +18,8 @@
 #include <stdio.h>
 #include "globals.h"
 #include "lcd.h"
+#include "tetris.c"
+
 
 void InitADC (void)
 {
@@ -309,7 +311,110 @@ void main (void)
  	int joy_x, joy_y, off_x, off_y, acc_x, acc_y, acc_z;
  	bit but1, but2;
  	unsigned long int x, f;
- 	//char buff[17];
+ 	float v, temperature;
+ 	char buff[17];
+ 	int TEMP_flag = 0;
+	char Fell, NewShape, NewX, NewY;
+	char Shape, X, Y;
+	char Key;
+
+	/*-------------------------------------TETRIS OUTPUT---------------------------------*/
+	#define TEXT_POS (SCN_WID*2+2)
+    /* Banner screen */
+	printf_tiny(CLEAR_SCREEN CURSOR_OFF);
+	printf_tiny(GOTO_YX "TETRIS by Alexei Pazhitnov", 1, TEXT_POS);
+	printf_tiny(GOTO_YX "Originally by Chris Giese", 2, TEXT_POS);
+	printf_tiny(GOTO_YX "8052/C51 port by Jesus Calvino-Fraga", 3, TEXT_POS);
+	printf_tiny(GOTO_YX "'K':Rotate, 'P':Pause, 'Q':Quit", 5, TEXT_POS);
+	printf_tiny(GOTO_YX "'J':Left, 'L':Right, 'M':Down", 6, TEXT_POS);
+	screenInit();
+	refresh();
+NEW_GAME:
+	printf_tiny(BKF_WTB GOTO_YX "Press 'B' to begin", 8, TEXT_POS);
+	do
+	{
+		Key=getKey();
+		if(Key==KEY_QUIT) exit();
+	} while (Key!=KEY_BEGIN);
+	screenInit();
+	
+	Level=1;
+	Score=0;
+	printf_tiny(BKF_WTB GOTO_YX CLR_TO_END_LINE, 8, TEXT_POS);
+	goto NEW_SHAPE;
+
+	while(1)
+	{
+	    Fell=0;
+		NewShape=Shape;
+		NewX=X;
+		NewY=Y;
+		Key=getKey();
+		if(Key == 0)
+		{
+		    NewY++;
+			Fell=1;
+			/*Level 42 is pretty hard already, so set it as the limit*/
+			wastetime(15000-((Level<42?Level:42)*300));
+		}
+		
+		if(RI) Key=getKey();
+		
+		if(Key != 0)
+		{
+			NewY=Y;
+		    if(Key == KEY_QUIT) break;
+			if(Key == KEY_CCW)
+				NewShape=Shapes[Shape].Plus90;
+			else if(Key == KEY_CW)
+				NewShape=Shapes[Shape].Minus90;
+			else if(Key == KEY_LEFT)
+			{	if(X) NewX=X - 1; }
+			else if(Key == KEY_RIGHT)
+			{	if(X < SCN_WID - 1) NewX=X + 1; }
+            /*else if(Key == KEY_UP)
+			{	if(Y) NewY=Y - 1; } 	cheat */
+			else if(Key == KEY_DOWN)
+			{	if(Y < SCN_HT - 1) NewY=Y + 1; }
+			Fell=0;
+		}
+        /* If nothing has changed, skip the bottom half of this loop */
+		if((NewX == X) && (NewY == Y) && (NewShape == Shape))
+			continue;
+        /* Otherwise, erase old shape from the old pos'n */
+		shapeErase(X, Y, Shape);
+        /* Hit anything? */
+		if(shapeHit(NewX, NewY, NewShape) == 0) /* no, update pos'n */
+		{
+		    X=NewX;
+			Y=NewY;
+			Shape=NewShape;
+		}
+		else if(Fell) /* Yes -- did the piece hit something while falling on its own? */
+		{
+    		shapeDraw(X, Y, Shape); /* Yes, draw it at the old pos'n... */
+            /* ... and spawn new shape */
+NEW_SHAPE:
+			Y=3;
+			X=SCN_WID / 2;
+			Shape=TL0 % 19; //rand() was here, use timer 0 register instead...
+			collapse();
+            /* If newly spawned shape hits something, game over */
+			if(shapeHit(X, Y, Shape))
+			{
+			    printf(BKF_WTB GOTO_YX " GAME OVER ", SCN_HT/2, (SCN_WID-5));
+				goto NEW_GAME;
+			}
+			Score+=Level;
+			printf(GOTO_YX CLR_TO_END_LINE "Level: %u", 15, TEXT_POS, Level);
+			printf(GOTO_YX CLR_TO_END_LINE "Score: %u", 16, TEXT_POS, Score);
+		}
+        /* Hit something because of user movement/rotate OR no hit: just redraw it */
+		shapeDraw(X, Y, Shape);
+		refresh();
+	}
+    exit();
+/*---------------------------------------TETRIS END-----------------------------------------------*/
 	
 	InitPinADC(1, 6); // Configure P1.6 as analog input
     InitADC();
@@ -330,7 +435,7 @@ void main (void)
 	off_y=(int)rbuf[1]-128;
 	printf("Offset_X:%4d Offset_Y:%4d\n\n", off_x, off_y);
 	
-	f = 15920;    
+	f = 16275;    
 
 	while(1)
 	{
@@ -359,26 +464,24 @@ void main (void)
 			OUT1 = 0;
 			OUT0 = 0;
 			waitms(100);
-			waitms(100);
 			TR2 = 1;
 			waitms(52);	
 		}
 		
 		else if(joy_y < -90){
-			printf("Backward\x1b[0J\r");
-			LCDprint("Backward", 1, 1);
+			printf("Move backward\x1b[0J\r");
+			LCDprint("Move backward", 1, 1);
 			TR2=0;
 			OUT1 = 0;
 			OUT0 = 0;
 			waitms(100);
 			waitms(100);
-			waitms(100);
 			TR2 = 1;
 			waitms(52);
 		}
-		else if(joy_x > 90){
-			printf("Right\x1b[0J\r");
-			LCDprint("Right", 1, 1);
+		else if(joy_x < -90){
+			printf("Left\x1b[0J\r");
+			LCDprint("Left", 1, 1);
 			TR2=0;
 			OUT1 = 0;
 			OUT0 = 0;
@@ -390,14 +493,12 @@ void main (void)
 			waitms(52);
 		}
 
-		else if(joy_x < -90){
-			printf("Left\x1b[0J\r");
-			LCDprint("Left", 1, 1);
+		else if(joy_x > 90){
+			printf("Right\x1b[0J\r");
+			LCDprint("Right", 1, 1);
 			TR2=0;
 			OUT1 = 0;
 			OUT0 = 0;
-			waitms(100);
-			waitms(100);
 			waitms(100);
 			waitms(100);
 			waitms(100);
@@ -412,6 +513,10 @@ void main (void)
 			TR2=0;
 			OUT1 = 0;
 			OUT0 = 0;
+			waitms(100);
+			waitms(100);
+			waitms(100);
+			waitms(100);
 			waitms(100);
 			TR2 = 1;
 			waitms(52);
@@ -437,9 +542,52 @@ void main (void)
 			waitms(52);
 		}
 		
+		else if(SOUND == 0)
+		{
+			LOOP_B:
+			if(SOUND == 0)
+			{
+				printf ("Play Sound");
+				LCDprint("Play Sound", 1, 1);
+				TR2=0;
+				OUT1 = 0;
+				OUT0 = 0;
+				waitms(100);
+				waitms(100);
+				waitms(100);
+				waitms(100);
+				waitms(100);
+				waitms(100);
+				waitms(100);
+				TR2 = 1;
+				waitms(52);
+				goto LOOP_B;
+			}	
+		}
+		
+		else if(TEMP == 0)
+		{
+			TEMP_flag = 1;
+			while(TEMP_flag == 1)
+			{
+				if(TEMP == 0)
+					TEMP_flag = 0;
+				LCDprint("Temperature", 1, 1);
+				v = Volts_at_Pin(QFP32_MUX_P1_6);
+				temperature = 100*(v - 2.73);
+				printf ("temperature=%7.5f, v=%f\n", temperature, v);
+				LCDprint("temperature:", 1, 1);
+				sprintf(buff, "%f", temperature);
+				LCDprint(buff, 2, 1);
+				waitms(500);
+			}
+			
+		}
+		
 		else
 		{
-			LCDprint("Wait Commond", 1, 1);
+			LCDprint("Wait Command", 1, 1);
+			LCDprint(" ", 2, 1);
 		}
 		
 		x=(SYSCLK/(2L*f));
@@ -454,6 +602,7 @@ void main (void)
 			TR2=1; // Start timer 2
 			f=SYSCLK/(2L*(0x10000L-TMR2RL));
 		}
+
    }
 }
 
@@ -466,7 +615,15 @@ void main (void)
 	//float vtest;
 	int temp_flag = 0;
 	float temperature;
+	char Fell, NewShape, NewX, NewY;
+	char Shape, X, Y;
+	char Key;
+	
+	
+	
+	
     
+    //-------------------------------------Begin Main Portion---------------------------------
     // Configure the LCD
 	LCD_4BIT();
 	

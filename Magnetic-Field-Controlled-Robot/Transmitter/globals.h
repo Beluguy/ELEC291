@@ -6,10 +6,7 @@
 
 #define OUT0 P2_0
 #define OUT1 P2_1
-#define DISPLAY P1_7
-#define FORWARD P1_4
-#define LEFT P1_2
-#define RIGHT P1_0
-#define BACKWARD P0_5
-#define SWITCHER P0_3
+#define SOUND P1_7
+#define TEMP P1_4
 #define VDD 3.3035 // The measured value of VDD in volts
+
