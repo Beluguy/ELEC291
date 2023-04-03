@@ -12,6 +12,9 @@
 *.lst
 *.hex
 *.bat
+*.mp4
+*.o 
+*.elf
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
@@ -353,3 +356,20 @@ MigrationBackup/
 
 *.lst
 *.hex
+*.lkr
+*.map
+
+# VS Code files for those working on multiple tools
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Local History for Visual Studio Code
+.history/
+
+Lab4/*.asm
+Lab5/*.asm
+Magnetic-Field-Controlled-Robot/**/*.asm

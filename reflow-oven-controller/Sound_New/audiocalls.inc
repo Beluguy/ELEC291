@@ -1,7 +1,6 @@
 cseg
 
 main_player_1sec:
-
     push acc
     push psw
     lcall playnum

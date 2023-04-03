@@ -4,12 +4,23 @@ import matplotlib.animation as animation
 import sys, time, math
 import time 
 import serial 
+import pyttsx3
 
-xsize=240
+# Initialize the pyttsx3 engine
+engine = pyttsx3.init()
+
+# Set the voice property of the engine
+voices = engine.getProperty('voices')
+engine.setProperty('voice', voices[0].id) # 0 represents the index of the voice in the list of available voices
+
+colour="blue"
+
+xsize=360
+sectimer = 0
 
 # configure the serial port 
 ser = serial.Serial( 
- port='COM4', 
+ port='COM8', 
  baudrate=115200, 
  parity=serial.PARITY_NONE, 
  stopbits=serial.STOPBITS_TWO, 
@@ -17,11 +28,53 @@ ser = serial.Serial(
 ) 
    
 def data_gen():
+    global sectimer, colour
     t = data_gen.t
     while True:
-       t+=1
-       val=int(ser.readline())
-       yield t, val
+        t+=1
+        val=int(ser.readline())
+        state=int(ser.readline())
+        yield t, val
+        
+        if val == -1:
+            engine.say("oven is now cool, pcb may still be hot")
+            engine.runAndWait()
+            quit()
+        if state == -1:
+            engine.say("oven is now cool, pcb may still be hot")
+            engine.runAndWait()
+            quit()
+        
+        sectimer=sectimer+1
+        if sectimer >= 10:
+            sectimer = 0
+            # Convert text to speech and play it
+            engine.say(str(val) + " degrees celsius")
+            engine.runAndWait()
+            engine.say("state: ")
+            engine.runAndWait()
+            if state == 1:
+                engine.say("ramp to soak")
+                engine.runAndWait()
+                line.set_color("blue")
+            elif state == 2:
+                engine.say("soak")
+                engine.runAndWait()
+                line.set_color("green")
+            elif state == 3:
+                engine.say("ramp to peak")
+                engine.runAndWait()
+                line.set_color("red")
+            elif state == 4:
+                engine.say("reflow")
+                engine.runAndWait()
+                line.set_color("purple")
+            elif state == 5:
+                engine.say("cooling")
+                engine.runAndWait()
+                line.set_color("orange")
+            else:
+                print(state)
 
 def run(data):
     # update the data
@@ -43,7 +96,7 @@ data_gen.t = -1
 fig = plt.figure()
 fig.canvas.mpl_connect('close_event', on_close_figure)
 ax = fig.add_subplot(111)
-line, = ax.plot([], [], lw=2)
+line, = ax.plot([], [], lw=2, color=colour)
 ax.set_ylim(0, 300)
 ax.set_xlim(0, xsize)
 ax.grid()
