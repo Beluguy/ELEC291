@@ -511,7 +511,7 @@ forever_loop:
 	
 	;jnb P4.5, $ ; Wait for push-button release
 	; Play the whole memory
-	clr TR1 ; Stop Timer 1 ISR from playing previous request
+	;clr TR1 ; Stop Timer 1 ISR from playing previous request
 	setb FLASH_CE
 	clr SPEAKER ; Turn off speaker.
 	
@@ -533,8 +533,26 @@ forever_loop:
 	
 next:
 	
-	load_X(100)
+	load_X(2)
 	lcall main_player_1sec
+	
+	lcall delay
+	
+	lcall reset_speaker
+	
+	;mov w+2, #0x00
+	;mov w+1, #0x56
+	;mov w+0, #0x22
+ 
+    ;setb SPEAKER ; Turn on speaker.
+    ;setb TR1 ; Start playback by enabling Timer 1
+    
+	;load_X(100)
+	;lcall main_player_1sec
+	lcall cooling
+	
+	lcall delay
+	
 	
 	;lcall cooling
 	;lcall safe_temp
@@ -546,17 +564,27 @@ next:
 	;Wait_Milli_Seconds(#250)
 	;load_X(5)
 	;lcall main_player_1sec
-	;Wait_Milli_Seconds(#250)
+	;WaitMilli_Seconds(#250)
 		
 	setb SPEAKER ; Turn on speaker.
 	setb TR1 ; Start playback by enabling Timer 1
 	
 	
 	ljmp forever_loop
+
+delay:
+	Wait_Milli_Seconds(#250)
+	Wait_Milli_Seconds(#250)
+	Wait_Milli_Seconds(#250)
+	ret
+	
+
+foreverloopbooster:
+	ljmp forever_loop
 	
 serial_get:
 	lcall getchar ; Wait for data to arrive
-	cjne a, #'#', forever_loop ; Message format is #n[data] where 'n' is '0' to '9'
+	cjne a, #'#', foreverloopbooster ; Message format is #n[data] where 'n' is '0' to '9'
 	clr TR1 ; Stop Timer 1 from playing previous request
 	setb FLASH_CE ; Disable SPI Flash	
 	clr SPEAKER ; Turn off speaker.
@@ -758,5 +786,11 @@ Command_6_loop:
 Command_6_skip:
 
 	ljmp forever_loop
+
+reset_speaker:
+	clr TR1
+	setb FLASH_CE
+	clr SPEAKER
+	ret
 
 END
