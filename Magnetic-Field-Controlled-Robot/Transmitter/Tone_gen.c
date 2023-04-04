@@ -708,16 +708,21 @@ void nunchuck_getdata(unsigned char * s)
 
 void main (void)
 {
-	unsigned char rbuf[6];
+	char rbuf[6];
  	int joy_x, joy_y, off_x, off_y, acc_x, acc_y, acc_z;
  	bit but1, but2;
  	unsigned long int x, f;
- 	float v, temperature;
+<<<<<<< HEAD
+ 	float v[2], temperature;
  	char buff[17];
  	int TEMP_flag = 0;
-	char Fell, NewShape, NewX, NewY;
-	char Shape, X, Y;
-	char Key;
+=======
+ 	float v, temperature;
+ 	xdata char buff[17];
+ 	int TEMP_flag = 0;
+	xdata char Fell, NewShape, NewX, NewY;
+	xdata char Shape, X, Y;
+	xdata char Key;
 
 	/*-------------------------------------TETRIS OUTPUT---------------------------------*/
 	#define TEXT_POS (SCN_WID*2+2)
@@ -816,8 +821,10 @@ NEW_SHAPE:
 	}
     exit();
 /*---------------------------------------TETRIS END-----------------------------------------------*/
+>>>>>>> bab8be790a070e5117a99815dc1b81fda9b32586
 	
-	InitPinADC(1, 6); // Configure P1.6 as analog input
+	InitPinADC(1, 6); // Configure P1.6 as analog input.
+	InitPinADC(0, 2);
     InitADC();
  	
  	// Configure the LCD
@@ -837,7 +844,13 @@ NEW_SHAPE:
 	printf("Offset_X:%4d Offset_Y:%4d\n\n", off_x, off_y);
 	
 	f = 16275;    
+<<<<<<< HEAD
+	P1_5=0;
+=======
+>>>>>>> bab8be790a070e5117a99815dc1b81fda9b32586
 
+	
+	
 	while(1)
 	{
 		nunchuck_getdata(rbuf);
@@ -857,10 +870,17 @@ NEW_SHAPE:
 		if (rbuf[5] & 0x40) acc_z+=2;
 		if (rbuf[5] & 0x80) acc_z+=1;
 		
-		if(joy_y > 90)
+		if(joy_y>90)
 		{
 			printf ("Move forward\x1b[0J\r");
 			LCDprint("Move forward", 1, 1);
+			v[1] = Volts_at_Pin(QFP32_MUX_P0_2);
+			if(v[1]<1)
+				P1_5=1;
+			else if(v[1]<3)
+				P1_5=!P1_5;
+			else 
+				P1_5=0;
 			TR2=0;
 			OUT1 = 0;
 			OUT0 = 0;
@@ -869,9 +889,22 @@ NEW_SHAPE:
 			waitms(52);	
 		}
 		
+<<<<<<< HEAD
+		else if(joy_y<-90){
+			printf("Move backward\x1b[0J\r");
+			LCDprint("Move backward", 1, 1);
+			v[1] = Volts_at_Pin(QFP32_MUX_P0_2);
+			if(v[1]<1)
+				P1_5=1;
+			else if(v[1]<3)
+				P1_5=!P1_5;
+			else 
+				P1_5=0;
+=======
 		else if(joy_y < -90){
 			printf("Move backward\x1b[0J\r");
 			LCDprint("Move backward", 1, 1);
+>>>>>>> bab8be790a070e5117a99815dc1b81fda9b32586
 			TR2=0;
 			OUT1 = 0;
 			OUT0 = 0;
@@ -880,9 +913,22 @@ NEW_SHAPE:
 			TR2 = 1;
 			waitms(52);
 		}
+<<<<<<< HEAD
+		else if(joy_x<-90){
+			printf("Left\x1b[0J\r");
+			LCDprint("Left", 1, 1);
+			v[1] = Volts_at_Pin(QFP32_MUX_P0_2);
+			if(v[1]<1)
+				P1_5=1;
+			else if(v[1]<3)
+				P1_5=!P1_5;
+			else 
+				P1_5=0;
+=======
 		else if(joy_x < -90){
 			printf("Left\x1b[0J\r");
 			LCDprint("Left", 1, 1);
+>>>>>>> bab8be790a070e5117a99815dc1b81fda9b32586
 			TR2=0;
 			OUT1 = 0;
 			OUT0 = 0;
@@ -894,9 +940,22 @@ NEW_SHAPE:
 			waitms(52);
 		}
 
+<<<<<<< HEAD
+		else if(joy_x>90){
+			printf("Right\x1b[0J\r");
+			LCDprint("Right", 1, 1);
+			v[1] = Volts_at_Pin(QFP32_MUX_P0_2);
+			if(v[1]<1)
+				P1_5=1;
+			else if(v[1]<3)
+				P1_5=!P1_5;
+			else 
+				P1_5=0;
+=======
 		else if(joy_x > 90){
 			printf("Right\x1b[0J\r");
 			LCDprint("Right", 1, 1);
+>>>>>>> bab8be790a070e5117a99815dc1b81fda9b32586
 			TR2=0;
 			OUT1 = 0;
 			OUT0 = 0;
@@ -943,6 +1002,10 @@ NEW_SHAPE:
 			waitms(52);
 		}
 		
+<<<<<<< HEAD
+		
+=======
+>>>>>>> bab8be790a070e5117a99815dc1b81fda9b32586
 		else if(SOUND == 0)
 		{
 			LOOP_B:
@@ -974,8 +1037,13 @@ NEW_SHAPE:
 				if(TEMP == 0)
 					TEMP_flag = 0;
 				LCDprint("Temperature", 1, 1);
+<<<<<<< HEAD
+				v[0] = Volts_at_Pin(QFP32_MUX_P1_6);
+				temperature = 100*(v[0] - 2.73);
+=======
 				v = Volts_at_Pin(QFP32_MUX_P1_6);
 				temperature = 100*(v - 2.73);
+>>>>>>> bab8be790a070e5117a99815dc1b81fda9b32586
 				printf ("temperature=%7.5f, v=%f\n", temperature, v);
 				LCDprint("temperature:", 1, 1);
 				sprintf(buff, "%f", temperature);
@@ -989,6 +1057,17 @@ NEW_SHAPE:
 		{
 			LCDprint("Wait Command", 1, 1);
 			LCDprint(" ", 2, 1);
+<<<<<<< HEAD
+			v[1] = Volts_at_Pin(QFP32_MUX_P0_2);
+			if(v[1]<1)
+				P1_5=1;
+			else if(v[1]<3)
+				P1_5=!P1_5;
+			else 
+				P1_5=0;
+			waitms(100);
+=======
+>>>>>>> bab8be790a070e5117a99815dc1b81fda9b32586
 		}
 		
 		x=(SYSCLK/(2L*f));
