@@ -87,8 +87,8 @@ int rthresh = RTHRESH1;
 // LCD_D7    PA5 -|11      22|- PA12 (pwm2)
 // 		 	 PA6 -|12      21|- PA11 (pwm1)
 //        	 PA7 -|13      20|- PA10 (Reserved for RXD)
-// L input 	 PB0 -|14      19|- PA9  (Reserved for TXD)
-// R input	 PB1 -|15      18|- PA8  (Measure the period at this pin) unused
+// R input 	 PB0 -|14      19|- PA9  (Reserved for TXD)
+// L input	 PB1 -|15      18|- PA8  (Measure the period at this pin) unused
 //           VSS -|16      17|- VDD
 //                 ----------
 
@@ -450,7 +450,7 @@ int main(void)
         {
             toggle = 0;
             togglemode();
-            waitms(100);
+            waitms(50);
         }
 
         waitms(50);
