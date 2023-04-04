@@ -51,6 +51,7 @@ char _c51_external_startup (void)
 	
 	// Configure the pins used for square output
 	P2MDOUT|=0b_0000_0011;
+	P1MDOUT|=0b_0010_0000;
 	P0MDOUT |= 0x10; // Enable UART0 TX as push-pull output
 	XBR0     = 0b_0000_0101; // Enable UART0 on P0.4(TX) and P0.5(RX)                     
 	XBR1     = 0X10; // Enable T0 on P0.0
