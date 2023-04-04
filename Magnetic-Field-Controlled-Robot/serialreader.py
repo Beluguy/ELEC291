@@ -11,8 +11,8 @@ ser = serial.Serial('COM14',
 
 while True:
     # Read one line from the serial port
-    line = ser.readline().decode().strip()
-
+    line = ser.readline().decode('utf-8').rstrip()
+    
     if line == 'tetris':
         # Launch the Tetris game script using subprocess
-        subprocess.run(['python', 'tetrisgame.py'])
+        subprocess.Popen(['python', 'tetrisgame.py'])
