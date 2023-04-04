@@ -708,16 +708,16 @@ void nunchuck_getdata(unsigned char * s)
 
 void main (void)
 {
-	unsigned char rbuf[6];
+	char rbuf[6];
  	int joy_x, joy_y, off_x, off_y, acc_x, acc_y, acc_z;
  	bit but1, but2;
- 	unsigned long int x, f;
+ 	long int x, f;
  	float v, temperature;
- 	char buff[17];
+ 	xdata char buff[17];
  	int TEMP_flag = 0;
-	char Fell, NewShape, NewX, NewY;
-	char Shape, X, Y;
-	char Key;
+	xdata char Fell, NewShape, NewX, NewY;
+	xdata char Shape, X, Y;
+	xdata char Key;
 
 	/*-------------------------------------TETRIS OUTPUT---------------------------------*/
 	#define TEXT_POS (SCN_WID*2+2)
