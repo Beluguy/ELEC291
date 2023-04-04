@@ -44,6 +44,8 @@ void togglemode(void) {
     PB5_1;
     PB4_1;
     PB3_1;
+    PA6_0;
+    PA7_0;
     return;
 }
 

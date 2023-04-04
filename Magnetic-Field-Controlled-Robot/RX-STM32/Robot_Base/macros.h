@@ -16,6 +16,10 @@
 #define PB6_1 (GPIOB->ODR |=  BIT6)
 #define PB7_0 (GPIOB->ODR &= ~BIT7)
 #define PB7_1 (GPIOB->ODR |=  BIT7)
+#define PA6_0 (GPIOA->ODR &= ~BIT6)
+#define PA6_1 (GPIOA->ODR |=  BIT6)
+#define PA7_0 (GPIOA->ODR &= ~BIT7)
+#define PA7_1 (GPIOA->ODR |=  BIT7)
 
 extern volatile int PWM_Counter;
 extern volatile unsigned char ISR_pwm1, ISR_pwm2;

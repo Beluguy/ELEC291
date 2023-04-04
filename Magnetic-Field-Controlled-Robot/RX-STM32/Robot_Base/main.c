@@ -85,8 +85,8 @@ int rthresh = RTHRESH1;
 // LCD_D5    PA3 -|9       24|- PA14 (push button)
 // LCD_D6    PA4 -|10      23|- PA13
 // LCD_D7    PA5 -|11      22|- PA12 (pwm2)
-// 		 	 PA6 -|12      21|- PA11 (pwm1)
-//        	 PA7 -|13      20|- PA10 (Reserved for RXD)
+// left bl	 PA6 -|12      21|- PA11 (pwm1)
+// right bl	 PA7 -|13      20|- PA10 (Reserved for RXD)
 // R input 	 PB0 -|14      19|- PA9  (Reserved for TXD)
 // L input	 PB1 -|15      18|- PA8  (Measure the period at this pin) unused
 //           VSS -|16      17|- VDD
@@ -158,6 +158,9 @@ void TIM21_Handler(void)
                 PB5_0;
                 PB4_1;
                 PB3_0;
+                // reverse lights
+                PA6_1;
+                PA7_1;
                 break;
             case 3:
                 // right
@@ -166,6 +169,8 @@ void TIM21_Handler(void)
                 PB5_0;
                 PB4_0;
                 PB3_1;
+                // right blinker
+                PA7_1;
                 break;
             case 4:
                 // left
@@ -174,6 +179,9 @@ void TIM21_Handler(void)
                 PB5_1;
                 PB4_1;
                 PB3_0;
+
+                // left blinker
+                PA6_1;
                 break;
             case 5:
                 puts("toggle\r\n");
@@ -189,6 +197,9 @@ void TIM21_Handler(void)
                 PB5_1;
                 PB4_1;
                 PB3_1;
+
+                PA6_0;
+                PA7_0;
                 puts("tetris\r\n");
                 LCDprint("Tetris",2,1);
                 for (int thisNote = 0; thisNote < notes * 2; thisNote = thisNote + 2)
@@ -220,6 +231,8 @@ void TIM21_Handler(void)
                 PB5_1;
                 PB4_1;
                 PB3_1;
+                PA6_0;
+                PA7_0;
                 start_read = 0;
                 break;
             }
@@ -259,6 +272,12 @@ void Hardware_Init(void)
     
     GPIOA->MODER = (GPIOA->MODER & ~(BIT10|BIT11)) | BIT10; // PA5
 	GPIOA->OTYPER &= ~BIT5; // Push-pull
+
+    GPIOA->MODER = (GPIOA->MODER & ~(BIT11|BIT12)) | BIT11; // PA6
+	GPIOA->OTYPER &= ~BIT6; // Push-pull
+
+    GPIOA->MODER = (GPIOA->MODER & ~(BIT12|BIT13)) | BIT12; // PA7
+	GPIOA->OTYPER &= ~BIT7; // Push-pull
 	
 	// Configure the pin used to measure period
 	GPIOA->MODER &= ~(BIT16 | BIT17); // Make pin PA8 input
@@ -402,7 +421,7 @@ int main(void)
                 PB6_1;
                 PB5_0;
             }
-            else if (R < rthresh - 150)
+            else if (R < rthresh - 100)
             { // move R forward
                 PB6_0;
                 PB5_1;
@@ -420,7 +439,7 @@ int main(void)
                 PB4_1;
                 PB3_0;
             }
-            else if (L < lthresh - 150)
+            else if (L < lthresh - 100)
             { // move L forward
                 PB4_0;
                 PB3_1;
@@ -453,6 +472,6 @@ int main(void)
             waitms(50);
         }
 
-        waitms(50);
+        waitms(10);
     }
 }
