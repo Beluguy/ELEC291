@@ -4,8 +4,12 @@ main_player_1sec:
     push acc
     push psw
     lcall playnum
-    ;ret
+    pop acc
+    pop psw
+ret
+    
 play:
+;push pc
 	; multiply R0 by 3 and add it to the dptr
 	mov a, R0
 	mov b, #3
@@ -40,9 +44,7 @@ play:
 
     setb SPEAKER ; Turn on speaker.
 	setb TR1 ; Start playback by enabling Timer 1
-
-    pop acc
-    pop psw
+    
 
 ret
 
@@ -143,7 +145,7 @@ Load_Y MAC
 ENDMAC
 
 findones:
-
+;push pc
     check9:
     cjne a, #9, check8
     lcall nine
@@ -240,9 +242,7 @@ findtens:
 ret
 
 playnum:
-    push acc
-    push psw
-
+;push pc
     checkhundreds:
 
         mov a, x
@@ -250,7 +250,13 @@ playnum:
         div ab
         jz checktens
         lcall findones
-        lcall hundred    
+        ;mov a, #0
+        ;mov dptr,#0
+        mov w+2, #0x00
+        mov w+1, #0x56
+        mov w+0, #0x22
+        lcall hundred   
+     
 
     checktens: 
         mov a, b
@@ -264,9 +270,6 @@ playnum:
     checkones: 
         mov a, b
         lcall findones
-
-    pop psw
-    pop acc
     
     donefinal:
 
@@ -278,8 +281,10 @@ one:
     ret
 
 two:
+    ;push pc
     mov dptr, #sound_index+3
     lcall play
+    ;ljmp hundred
     ret
 
 three:
@@ -363,6 +368,7 @@ ninety:
     ret
 
 hundred:
+    ;push pc
     mov dptr, #sound_index+63
     lcall play
     ret

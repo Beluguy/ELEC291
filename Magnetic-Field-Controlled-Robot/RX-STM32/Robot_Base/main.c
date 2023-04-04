@@ -8,11 +8,11 @@
 #include "pitches.h"
 
 #define SPKR_F 520L
-#define ZERO_TOL 700L
-#define LTHRESH1 3000
-#define LTHRESH2 800
-#define RTHRESH1 3900
-#define RTHRESH2 900
+#define ZERO_TOL 800L
+#define LTHRESH1 2100
+#define LTHRESH2 870
+#define RTHRESH1 2050
+#define RTHRESH2 940
 
 int readings[4];
 
@@ -77,18 +77,18 @@ int rthresh = RTHRESH1;
 //           VDD -|1       32|- VSS
 //          PC14 -|2       31|- BOOT0
 //          PC15 -|3       30|- PB7 (OUT 5)
-//          NRST -|4       29|- PB6 (LF)
-//          VDDA -|5       28|- PB5 (LB)
-// LCD_RS    PA0 -|6       27|- PB4 (RF)
-// LCD_E     PA1 -|7       26|- PB3 (RB)
+//          NRST -|4       29|- PB6 (RF)
+//          VDDA -|5       28|- PB5 (RB)
+// LCD_RS    PA0 -|6       27|- PB4 (LF)
+// LCD_E     PA1 -|7       26|- PB3 (LB)
 // LCD_D4    PA2 -|8       25|- PA15 (buzzer)
 // LCD_D5    PA3 -|9       24|- PA14 (push button)
 // LCD_D6    PA4 -|10      23|- PA13
 // LCD_D7    PA5 -|11      22|- PA12 (pwm2)
 // 		 	 PA6 -|12      21|- PA11 (pwm1)
 //        	 PA7 -|13      20|- PA10 (Reserved for RXD)
-// L input 	 PB0 -|14      19|- PA9  (Reserved for TXD)
-// R input	 PB1 -|15      18|- PA8  (Measure the period at this pin) unused
+// R input 	 PB0 -|14      19|- PA9  (Reserved for TXD)
+// L input	 PB1 -|15      18|- PA8  (Measure the period at this pin) unused
 //           VSS -|16      17|- VDD
 //                 ----------
 
@@ -144,10 +144,6 @@ void TIM21_Handler(void)
                 start_read = 0;
                 break;
             case 1:
-                puts("toggle\r\n");
-                toggle = 1;
-                break;
-            case 2:
                 // fwd
                 puts("fwd\r\n");
                 PB6_0;
@@ -155,7 +151,7 @@ void TIM21_Handler(void)
                 PB4_0;
                 PB3_1;
                 break;
-            case 3:
+            case 2:
                 // back
                 puts("back\r\n");
                 PB6_1;
@@ -163,21 +159,29 @@ void TIM21_Handler(void)
                 PB4_1;
                 PB3_0;
                 break;
-            case 4:
+            case 3:
                 // right
                 puts("right\r\n");
+                PB6_1;
+                PB5_0;
+                PB4_0;
+                PB3_1;
+                break;
+            case 4:
+                // left
+                puts("left\r\n");
                 PB6_0;
                 PB5_1;
                 PB4_1;
                 PB3_0;
                 break;
             case 5:
-                // left
-                puts("left\r\n");
-                PB6_1;
-                PB5_0;
-                PB4_0;
-                PB3_1;
+                puts("toggle\r\n");
+                toggle = 1;
+                break;
+            case 6:
+                puts("following dist\r\n");
+                togglethresh = 1;
                 break;
             case 7:
                 // tetris 
@@ -210,10 +214,6 @@ void TIM21_Handler(void)
                     // Wait for the specief duration before playing the next note.
                     waitms(noteDuration);
                 }
-                break;
-            case 6:
-                puts("following dist\r\n");
-                togglethresh = 1;
                 break;
             default:
                 PB6_1;
@@ -397,13 +397,13 @@ int main(void)
             L = readADC(ADC_CHSELR_CHSEL8);
             R = readADC(ADC_CHSELR_CHSEL9);
             printf("L: %d R: %d \r\n", L, R);
-            if (L > lthresh)
-            { // move L back
+            if (R > rthresh)
+            { // move R back
                 PB6_1;
                 PB5_0;
             }
-            else if (L < lthresh - 100)
-            { // move L forward
+            else if (R < rthresh - 150)
+            { // move R forward
                 PB6_0;
                 PB5_1;
             }
@@ -415,13 +415,13 @@ int main(void)
                 PB3_1;
             }
 
-            if (R > rthresh)
-            { // move R back
+            if (L > lthresh)
+            { // move L back
                 PB4_1;
                 PB3_0;
             }
-            else if (R < rthresh - 100)
-            { // move R forward
+            else if (L < lthresh - 150)
+            { // move L forward
                 PB4_0;
                 PB3_1;
             }
@@ -450,7 +450,7 @@ int main(void)
         {
             toggle = 0;
             togglemode();
-            waitms(100);
+            waitms(50);
         }
 
         waitms(50);
