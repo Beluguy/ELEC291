@@ -309,9 +309,12 @@ void main (void)
  	int joy_x, joy_y, off_x, off_y, acc_x, acc_y, acc_z;
  	bit but1, but2;
  	unsigned long int x, f;
- 	//char buff[17];
+ 	float v[2], temperature;
+ 	char buff[17];
+ 	int TEMP_flag = 0;
 	
-	InitPinADC(1, 6); // Configure P1.6 as analog input
+	InitPinADC(1, 6); // Configure P1.6 as analog input.
+	InitPinADC(0, 2);
     InitADC();
  	
  	// Configure the LCD
@@ -330,8 +333,11 @@ void main (void)
 	off_y=(int)rbuf[1]-128;
 	printf("Offset_X:%4d Offset_Y:%4d\n\n", off_x, off_y);
 	
-	f = 15920;    
+	f = 16275;    
+	P1_5=0;
 
+	
+	
 	while(1)
 	{
 		nunchuck_getdata(rbuf);
@@ -351,34 +357,53 @@ void main (void)
 		if (rbuf[5] & 0x40) acc_z+=2;
 		if (rbuf[5] & 0x80) acc_z+=1;
 		
-		if(joy_y > 90)
+		if(joy_y>90)
 		{
 			printf ("Move forward\x1b[0J\r");
 			LCDprint("Move forward", 1, 1);
+			v[1] = Volts_at_Pin(QFP32_MUX_P0_2);
+			if(v[1]<1)
+				P1_5=1;
+			else if(v[1]<3)
+				P1_5=!P1_5;
+			else 
+				P1_5=0;
 			TR2=0;
 			OUT1 = 0;
 			OUT0 = 0;
-			waitms(100);
 			waitms(100);
 			TR2 = 1;
 			waitms(52);	
 		}
 		
-		else if(joy_y < -90){
-			printf("Backward\x1b[0J\r");
-			LCDprint("Backward", 1, 1);
+		else if(joy_y<-90){
+			printf("Move backward\x1b[0J\r");
+			LCDprint("Move backward", 1, 1);
+			v[1] = Volts_at_Pin(QFP32_MUX_P0_2);
+			if(v[1]<1)
+				P1_5=1;
+			else if(v[1]<3)
+				P1_5=!P1_5;
+			else 
+				P1_5=0;
 			TR2=0;
 			OUT1 = 0;
 			OUT0 = 0;
 			waitms(100);
 			waitms(100);
-			waitms(100);
 			TR2 = 1;
 			waitms(52);
 		}
-		else if(joy_x > 90){
-			printf("Right\x1b[0J\r");
-			LCDprint("Right", 1, 1);
+		else if(joy_x<-90){
+			printf("Left\x1b[0J\r");
+			LCDprint("Left", 1, 1);
+			v[1] = Volts_at_Pin(QFP32_MUX_P0_2);
+			if(v[1]<1)
+				P1_5=1;
+			else if(v[1]<3)
+				P1_5=!P1_5;
+			else 
+				P1_5=0;
 			TR2=0;
 			OUT1 = 0;
 			OUT0 = 0;
@@ -390,14 +415,19 @@ void main (void)
 			waitms(52);
 		}
 
-		else if(joy_x < -90){
-			printf("Left\x1b[0J\r");
-			LCDprint("Left", 1, 1);
+		else if(joy_x>90){
+			printf("Right\x1b[0J\r");
+			LCDprint("Right", 1, 1);
+			v[1] = Volts_at_Pin(QFP32_MUX_P0_2);
+			if(v[1]<1)
+				P1_5=1;
+			else if(v[1]<3)
+				P1_5=!P1_5;
+			else 
+				P1_5=0;
 			TR2=0;
 			OUT1 = 0;
 			OUT0 = 0;
-			waitms(100);
-			waitms(100);
 			waitms(100);
 			waitms(100);
 			waitms(100);
@@ -412,6 +442,10 @@ void main (void)
 			TR2=0;
 			OUT1 = 0;
 			OUT0 = 0;
+			waitms(100);
+			waitms(100);
+			waitms(100);
+			waitms(100);
 			waitms(100);
 			TR2 = 1;
 			waitms(52);
@@ -437,9 +471,61 @@ void main (void)
 			waitms(52);
 		}
 		
+		
+		else if(SOUND == 0)
+		{
+			LOOP_B:
+			if(SOUND == 0)
+			{
+				printf ("Play Sound");
+				LCDprint("Play Sound", 1, 1);
+				TR2=0;
+				OUT1 = 0;
+				OUT0 = 0;
+				waitms(100);
+				waitms(100);
+				waitms(100);
+				waitms(100);
+				waitms(100);
+				waitms(100);
+				waitms(100);
+				TR2 = 1;
+				waitms(52);
+				goto LOOP_B;
+			}	
+		}
+		
+		else if(TEMP == 0)
+		{
+			TEMP_flag = 1;
+			while(TEMP_flag == 1)
+			{
+				if(TEMP == 0)
+					TEMP_flag = 0;
+				LCDprint("Temperature", 1, 1);
+				v[0] = Volts_at_Pin(QFP32_MUX_P1_6);
+				temperature = 100*(v[0] - 2.73);
+				printf ("temperature=%7.5f, v=%f\n", temperature, v);
+				LCDprint("temperature:", 1, 1);
+				sprintf(buff, "%f", temperature);
+				LCDprint(buff, 2, 1);
+				waitms(500);
+			}
+			
+		}
+		
 		else
 		{
-			LCDprint("Wait Commond", 1, 1);
+			LCDprint("Wait Command", 1, 1);
+			LCDprint(" ", 2, 1);
+			v[1] = Volts_at_Pin(QFP32_MUX_P0_2);
+			if(v[1]<1)
+				P1_5=1;
+			else if(v[1]<3)
+				P1_5=!P1_5;
+			else 
+				P1_5=0;
+			waitms(100);
 		}
 		
 		x=(SYSCLK/(2L*f));
@@ -454,6 +540,7 @@ void main (void)
 			TR2=1; // Start timer 2
 			f=SYSCLK/(2L*(0x10000L-TMR2RL));
 		}
+
    }
 }
 
