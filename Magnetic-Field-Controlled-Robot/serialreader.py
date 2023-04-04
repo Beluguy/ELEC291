@@ -2,7 +2,7 @@ import serial
 import subprocess
 
 # Set up the serial connection
-ser = serial.Serial('COM3',
+ser = serial.Serial('COM14',
                     115200,
                     timeout=1,
                     parity=serial.PARITY_NONE,
