@@ -462,6 +462,7 @@ void main (void)
 		{
 			//printf("Changing Dis\x1b[0J\r");
 			LCDprint("Changing Dis", 1, 1);
+			printf("quit\r\n");
 			TR2=0;
 			OUT1 = 0;
 			OUT0 = 0;

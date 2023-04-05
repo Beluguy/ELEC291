@@ -19,7 +19,6 @@ from copy import deepcopy
 
 
 # DECLARE ALL THE CONSTANTS
-QUIT_GAME = 'q'
 BOARD_SIZE = 20
 # Extra two are for the walls, playing area will have size as BOARD_SIZE
 EFF_BOARD_SIZE = BOARD_SIZE + 2
@@ -88,16 +87,11 @@ def print_board(board, curr_piece, piece_pos, error_message=''):
         print("")
 
     print("Quick play instructions:\n")
-    print(" - a (return): move piece left")
-    print(" - d (return): move piece right")
-    print(" - w (return): rotate piece counter clockwise")
-    print(" - s (return): rotate piece clockwise")
+    print("move up/down to rotate and Z button to drop | C button to quit")
 
     # In case user doesn't want to alter the position of the piece
     # and he doesn't want to rotate the piece either and just wants to move
     # in the downward direction, he can choose 'f'
-    print(" - e (return): just move the piece downwards as is")
-    print(" - q (return): to quit the game anytime")
 
     if error_message:
         print(error_message)
@@ -485,9 +479,9 @@ def play_game():
                 do_move_down = True
             else:
                 ERR_MSG = "Cannot rotate clockwise!"
-        elif line == 'down':
+        elif line == 'drop':
             do_move_down = True
-        elif player_move == QUIT_GAME:
+        elif line == 'quit':
             print("Bye. Thank you for playing!")
             sys.exit(0)
         else:
