@@ -1,5 +1,6 @@
 import serial
 import subprocess
+import sys
 
 # Set up the serial connection
 ser = serial.Serial('COM14',
@@ -16,3 +17,4 @@ while True:
     if line == 'tetris':
         # Launch the Tetris game script using subprocess
         subprocess.Popen(['python', 'tetrisgame.py'])
+        sys.exit()

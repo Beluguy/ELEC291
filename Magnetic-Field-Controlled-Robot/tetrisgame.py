@@ -1,12 +1,13 @@
 import pygame
 import random
+import serial
  
 """
 10 x 20 square grid
 shapes: S, Z, I, O, J, L, T
 represented in order by 0 - 6
 """
- 
+
 pygame.font.init()
  
 # GLOBALS VARS
@@ -19,9 +20,15 @@ block_size = 20
 top_left_x = (s_width - play_width) // 2
 top_left_y = s_height - play_height - 50
  
- 
-# SHAPE FORMATS
- 
+#REPLACE WITH APPROPRIATE COM 
+ser = serial.Serial('COM14',
+                    115200,
+                    timeout=1,
+                    parity=serial.PARITY_NONE,
+                    stopbits=serial.STOPBITS_TWO,
+                    bytesize=serial.EIGHTBITS) 
+
+# SHAPE FORMATS 
 shape = [ # redesigned
 [[".....",
       ".....",
@@ -368,34 +375,41 @@ def main():
                 pygame.display.quit()
                 quit()
  
-            if event.type == pygame.KEYDOWN:
+            line = ''
+            line = ser.readline().decode('utf-8').rstrip()
+            print(line)
 
-                if event.key == pygame.K_LEFT:
-                    current_piece.x -= 1
-                    if not valid_space(current_piece, grid):
-                        current_piece.x += 1
- 
-                elif event.key == pygame.K_RIGHT:
+            if line == 'left':
+                print("works")
+                current_piece.x -= 1
+                if not valid_space(current_piece, grid):
                     current_piece.x += 1
-                    if not valid_space(current_piece, grid):
-                        current_piece.x -= 1
-                elif event.key == pygame.K_UP:
-                    # rotate shape
-                    current_piece.rotation = current_piece.rotation + 1 % len(current_piece.shape)
-                    if not valid_space(current_piece, grid):
-                        current_piece.rotation = current_piece.rotation - 1 % len(current_piece.shape)
  
-                if event.key == pygame.K_DOWN:
-                    # move shape down
-                    current_piece.y += 1
-                    if not valid_space(current_piece, grid):
-                        current_piece.y -= 1
+            elif line == 'right':
+                print("works")
+                current_piece.x += 1
+                if not valid_space(current_piece, grid):
+                    current_piece.x -= 1
+            elif line == 'forward':
+                # rotate shape
+                print("works")
+                current_piece.rotation = current_piece.rotation + 1 % len(current_piece.shape)
+                if not valid_space(current_piece, grid):
+                    current_piece.rotation = current_piece.rotation - 1 % len(current_piece.shape)
  
-                if event.key == pygame.K_SPACE:
-                   while valid_space(current_piece, grid):
-                       current_piece.y += 1
-                   current_piece.y -= 1
-                   #print(convert_shape_format(current_piece))"""  # todo fix
+            if line == 'backward':
+                # move shape down
+                print("works")
+                current_piece.y += 1
+                if not valid_space(current_piece, grid):
+                    current_piece.y -= 1
+ 
+            if line == 'drop':
+               print("works")
+               while valid_space(current_piece, grid):
+                   current_piece.y += 1
+               current_piece.y -= 1
+               #print(convert_shape_format(current_piece))"""  # todo fix
 
 
         shape_pos = convert_shape_format(current_piece)

@@ -358,6 +358,7 @@ void main (void)
 		if(joy_y>90)
 		{
 			//printf ("Move forward\x1b[0J\r");
+			printf("forward\r\n");
 			LCDprint("Move forward", 1, 1);
 			v[1] = Volts_at_Pin(QFP32_MUX_P0_2);
 			if(v[1]<1)
@@ -376,6 +377,7 @@ void main (void)
 		
 		else if(joy_y<-90){
 			//printf("Move backward\x1b[0J\r");
+			printf("backward\r\n");
 			LCDprint("Move backward", 1, 1);
 			v[1] = Volts_at_Pin(QFP32_MUX_P0_2);
 			if(v[1]<1)
@@ -395,6 +397,7 @@ void main (void)
 
 		else if(joy_x<-90){
 			//printf("Left\x1b[0J\r");
+			printf("left\r\n");
 			LCDprint("Left", 1, 1);
 			v[1] = Volts_at_Pin(QFP32_MUX_P0_2);
 			if(v[1]<1)
@@ -416,6 +419,7 @@ void main (void)
 
 		else if(joy_x>90){
 			//printf("Right\x1b[0J\r");
+			printf("right\r\n");
 			LCDprint("Right", 1, 1);
 			v[1] = Volts_at_Pin(QFP32_MUX_P0_2);
 			if(v[1]<1)
@@ -438,6 +442,7 @@ void main (void)
 		{
 			//printf("Switch Mode\x1b[0J\r");
 			LCDprint("Switch Mode", 1, 1);
+			printf("drop\r\n");
 			TR2=0;
 			OUT1 = 0;
 			OUT0 = 0;
