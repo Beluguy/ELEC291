@@ -1,6 +1,6 @@
 ### Hello there, 
-Here you can find all the parts that we used for this project. This list is should have sufficient detail that someone skilled in the art
-could reproduce our project.
+Here you can find all the parts that we used for this project. This list is should have sufficient detail that someone skilled in the art could reproduce our project.
+
 ---
 
 ###	Hardware Components:
