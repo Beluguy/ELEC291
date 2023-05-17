@@ -3,8 +3,8 @@ Here you can find all the parts that we used for this project. This list should 
 
 ---
 
-###	Hardware Components:
-#### Main chipsets: 
+##	Hardware Components:
+### Main chipsets: 
 - STMicroelectronics STM32L051
 - EFM8LB1 microcontroller board by Jesus Calvino-Fraga
 
@@ -67,9 +67,9 @@ Here you can find all the parts that we used for this project. This list should 
 -	2xFairchild Semiconductor FQP8P010 P-FET
 -	2xFairchild Semiconductor FQP13N06L N-FET
 
-### Software Features
-#### Base Functionality: 
-##### Robot:
+## Software Features
+### Base Functionality: 
+#### Robot:
 -	Constantly reads commands wireless using a pair of inductors via magnetic field from the remote control 
 -	The command encoding system is one-hot to minimize the delay between movement and trigger on the remote by prioritizing the most used commands to be the shortest  
 -	The one-hot encoding system supports the following five commands:
@@ -91,5 +91,5 @@ Here you can find all the parts that we used for this project. This list should 
   1.	Backward
   1.	Switch mode 
   
-#### Additional Features:
+### Additional Features:
 This sectioned was removed to encourge creativity of student when doing their version of the reflow oven controller.
