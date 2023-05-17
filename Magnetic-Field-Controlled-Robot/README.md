@@ -78,15 +78,15 @@ Here you can find all the parts that we used for this project. This list should 
 ##### Robot:
 -	Constantly reads commands wireless using a pair of inductors via magnetic field from the remote control 
 -	The command encoding system is one-hot to minimize the delay between movement and trigger on the remote by prioritizing the most used commands to be the shortest  
--	The one-hot encoding system supports the following seven commands:
+-	The one-hot encoding system supports the following five commands:
   1.	Turn left
   1.	Turn right
   1.	Go forward
   1.	Backward
   1.	Switch mode 
-1. Once in automatic/tracking mode, the robot is able to adjust its relative position and angle with respect to the controller 
-1.	The electromagnetic signal is operated at a constant frequency of 16.275kHz
-1.	Both the robot and the remote control are coded using the C programming language 
+-  Once in automatic/tracking mode, the robot is able to adjust its relative position and angle with respect to the controller 
+- The electromagnetic signal is operated at a constant frequency of 16.275kHz
+- Both the robot and the remote control are coded using the C programming language 
 #### Remote Controller:
 - The controller transmits one-hot commands via magnetic field mentioned above
 - Generates a sinusoidal wave at a frequency of 16.275kHz
