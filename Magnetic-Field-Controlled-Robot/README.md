@@ -13,7 +13,6 @@ Here you can find all the parts that we used for this project. This list should 
 -	2x1uF 50V Capacitors 
 -	2x270 Ohm Resistor 
 -	330 Ohm Resistor
--	2xRed LED – Used for Additional Feature
 -	Green LED
 -	Microchip MCP17003320E 3.3V Voltage regulator 
 -	BO230XS serial USB Adaptor
@@ -45,19 +44,14 @@ Here you can find all the parts that we used for this project. This list should 
 -	Custom waterjet cut aluminum chassis 
 -	4-40 screw/nut kit
 -	4xAA batter holder 
--	Lithium-ion battery charger - Used for Additional Feature
--	5V buck converter board - Used for Additional Feature
 -	DPDT Switch
 #### Accompanying hardware for remote control: 
--	Wii Nunchuk with Adapter - Used for Additional Feature
 -	220uF 63V Capacitor
 -	220uF 50V Capacitor 
 -	2x0.1uF 50V Capacitor 
--	Generic Arduino IR Obstacle Avoidance Sensor Module - Used for Additional Feature
 -	MC7800 5V Voltage Regulator 
 -	Microchip MCP17003320E 3.3V Voltage regulator 
 -	CTS Electrocomponents 206-4 through hole dip switch
--	STMicroelectronics LM335 Temperature Sensor - Used for Additional Feature
 #### Battery Capacity Sensor: - Additional Feature
 -	330K Ohm Resistor
 -	270 Ohm Resistor
